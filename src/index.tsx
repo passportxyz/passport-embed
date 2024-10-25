@@ -24,8 +24,6 @@ async function fetchPassportScore({
   apiKey: string;
   address: string;
 }) {
-  return { score: 20 };
-
   const response = await fetch(`https://TODO/${address}`, {
     headers: {
       Authorization: `Bearer ${apiKey}`,
