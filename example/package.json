@@ -1,0 +1,24 @@
+{
+  "name": "example-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "esbuild src/index.tsx --bundle --outfile=dist/bundle.js --platform=browser --loader:.js=jsx",
+    "prebuild": "mkdir -p dist && cp src/index.html dist/",
+    "start": "ws --spa index.html --directory dist",
+    "dev": "npm run build && npm run start"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.59.16",
+    "passport-widgets": "file:../",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "esbuild": "^0.19.0",
+    "local-web-server": "^5.3.0",
+    "typescript": "^5.0.0"
+  }
+}
