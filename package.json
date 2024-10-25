@@ -1,7 +1,8 @@
 {
   "version": "0.0.1",
   "description": "Passport XYZ Embeddable Widgets",
-  "repository": "https://github.com/passportxyz/passport-widgets",
+  "repository": "https://github.com/passportxyz/passport-widgets/widgets",
+  "license": "MIT",
   "author": "PassportXYZ",
   "type": "module",
   "main": "./dist/cjs/index.js",
@@ -21,7 +22,8 @@
     "build": "npm run build:esm && npm run build:cjs && npm run build:types",
     "build:esm": "tsc --module ESNext --outDir dist/esm",
     "build:cjs": "tsc --module CommonJS --outDir dist/cjs",
-    "build:types": "tsc --declaration --declarationDir dist --emitDeclarationOnly"
+    "build:types": "tsc --declaration --declarationDir dist --emitDeclarationOnly",
+    "dev": "cd example && yarn dev"
   },
   "peerDependencies": {
     "react": "^18.0.0",

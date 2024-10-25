@@ -5,7 +5,7 @@ const App = () => {
   return (
     <div>
       <h1>Passport Widgets Example</h1>
-      <PassportScoreWidget />
+      <PassportScoreWidget apiKey="TODO" address="0x" />
     </div>
   );
 };

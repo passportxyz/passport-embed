@@ -24,6 +24,7 @@ async function fetchPassportScore({
   apiKey: string;
   address: string;
 }) {
+  return "TODO";
   const response = await fetch(`https://TODO/${address}`, {
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -72,7 +73,7 @@ const PassportScore = ({ apiKey, address }: PassportScoreWidgetProps) => {
 
   return (
     <div>
-      <h1>Score Data</h1>
+      <h1>Score Data 23</h1>
       <pre>{JSON.stringify(data, null, 2)}</pre>
     </div>
   );
