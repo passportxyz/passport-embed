@@ -8,6 +8,17 @@
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "types": "./dist/index.d.ts",
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "last 2 versions",
+    "not IE 11"
+  ],
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
@@ -20,8 +31,8 @@
   ],
   "scripts": {
     "build": "npm run build:esm && npm run build:cjs && npm run build:types",
-    "build:esm": "tsc --module ESNext --outDir dist/esm",
-    "build:cjs": "tsc --module CommonJS --outDir dist/cjs",
+    "build:esm": "tsc --module ESNext --outDir dist/esm && postcss 'src/**/*.css' -d dist/esm/ --base src",
+    "build:cjs": "tsc --module CommonJS --outDir dist/cjs && postcss 'src/**/*.css' -d dist/cjs/ --base src",
     "build:types": "tsc --declaration --declarationDir dist --emitDeclarationOnly",
     "dev": "cd example && yarn dev"
   },
@@ -33,6 +44,9 @@
     "@testing-library/react": "^16.0.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "postcss-cli": "^11.0.0",
     "typescript": "^5.6.3"
   },
   "dependencies": {
