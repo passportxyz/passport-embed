@@ -1,5 +1,24 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400");
+@import url("https://fonts.googleapis.com/css2?family=Unbounded:wght@400");
+
+/*
+ * c6dbf459 is the first 4 bytes of
+ * keccak256("passport-widgets"), used
+ * as a unique postfix for the CSS
+ * variables to avoid conflicts
+ */
+
 :root {
-  --color-primary: 255, 255, 255;
-  --color-secondary: 108, 182, 173;
-  --color-background: 0, 0, 0;
+  --color-primary-c6dbf459: 255, 255, 255;
+  --color-secondary-c6dbf459: 108, 182, 173;
+  --color-background-c6dbf459: 0, 0, 0;
+  --color-success-c6dbf459: 0, 255, 0;
+  --color-failure-c6dbf459: 255, 0, 0;
+  --widget-padding-x-c6dbf459: 24px;
+  --widget-padding-y-c6dbf459: 16px;
+  --widget-radius-c6dbf459: 10px;
+  --button-radius-c6dbf459: 5px;
+  --transition-speed-c6dbf459: 100ms;
+  --font-family-body-c6dbf459: "Poppins", sans-serif;
+  --font-family-heading-c6dbf459: "Unbounded", sans-serif;
 }
