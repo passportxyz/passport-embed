@@ -9,9 +9,10 @@ const App = () => {
       <h1>Passport Widgets Example</h1>
       <h3>Check your Passport score</h3>
       <PassportScoreWidget
-        apiKey="TODO"
+        apiKey="0x123"
         address="0x96DB2c6D93A8a12089f7a6EdA5464e967308AdEd"
         scorerId="5"
+        overrideIamUrl="http://localhost:8888/api/v0.0.0"
         /*
         theme={{
           colors: {

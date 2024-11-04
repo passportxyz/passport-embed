@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-const IAM_URL = "http://localhost:8888/api/v0.0.0";
+const DEFAULT_IAM_URL = "https://iam.passport.xyz/api/v0.0.0";
 import axios from "axios";
 
 export type PassportScoreProps = {
   apiKey: string;
   address: string;
   scorerId: string;
+  overrideIamUrl?: string;
 };
 
 export const usePassportScore = ({
@@ -13,11 +14,13 @@ export const usePassportScore = ({
   apiKey,
   address,
   scorerId,
+  overrideIamUrl,
 }: PassportScoreProps & { enabled: boolean }) => {
   return useQuery({
     enabled,
-    queryKey: ["passportScore", address, scorerId],
-    queryFn: () => fetchPassportScore({ apiKey, address, scorerId }),
+    queryKey: ["passportScore", address, scorerId, overrideIamUrl],
+    queryFn: () =>
+      fetchPassportScore({ apiKey, address, scorerId, overrideIamUrl }),
   });
 };
 
@@ -25,10 +28,12 @@ const fetchPassportScore = async ({
   apiKey,
   address,
   scorerId,
+  overrideIamUrl,
 }: PassportScoreProps): Promise<{
   score: string;
   threshold: string;
   passingScore: boolean;
+  overrideIamUrl?: string;
 }> => {
   /*
   return {
@@ -38,7 +43,7 @@ const fetchPassportScore = async ({
   };
   */
   const response = await axios.post(
-    `${IAM_URL}/auto-verification`,
+    `${overrideIamUrl || DEFAULT_IAM_URL}/auto-verification`,
     {
       address,
       scorerId,
