@@ -51,7 +51,12 @@ const ScoreButton = ({
   </Button>
 );
 
-const PassportScore = ({ apiKey, address, scorerId }: PassportScoreProps) => {
+const PassportScore = ({
+  apiKey,
+  address,
+  scorerId,
+  overrideIamUrl,
+}: PassportScoreProps) => {
   const [enabled, setEnabled] = useState(false);
 
   const { data, isLoading, isError, error } = usePassportScore({
@@ -59,6 +64,7 @@ const PassportScore = ({ apiKey, address, scorerId }: PassportScoreProps) => {
     apiKey,
     address,
     scorerId,
+    overrideIamUrl,
   });
 
   return (
