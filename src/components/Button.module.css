@@ -1,0 +1,23 @@
+@import "../theme.css";
+
+.button {
+  background-color: rgba(var(--color-secondary-c6dbf459), 1);
+  color: rgba(var(--color-primary-c6dbf459), 1);
+
+  border: none;
+  border-radius: var(--button-radius-c6dbf459);
+
+  padding: 8px 16px;
+
+  cursor: pointer;
+  transition: outline var(--transition-speed-c6dbf459) ease;
+}
+
+.button:hover {
+  outline: 1px solid rgba(var(--color-primary-c6dbf459), 1);
+}
+
+.button:disabled {
+  filter: brightness(0.8);
+  cursor: not-allowed;
+}

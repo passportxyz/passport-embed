@@ -1,17 +1,32 @@
 import { createRoot } from "react-dom/client";
 import { PassportScoreWidget } from "passport-widgets";
 
+import "./index.css";
+
 const App = () => {
   return (
-    <div>
+    <div className="container">
       <h1>Passport Widgets Example</h1>
-      <PassportScoreWidget />
+      <h3>Check your Passport score</h3>
+      <PassportScoreWidget
+        apiKey="0x123"
+        address="0x96DB2c6D93A8a12089f7a6EdA5464e967308AdEd"
+        scorerId="5"
+        overrideIamUrl="http://localhost:8888/api/v0.0.0"
+        /*
+        theme={{
+          colors: {
+            primary: "255, 255, 0",
+          },
+        }}
+        */
+      />
     </div>
   );
 };
 
-const container = document.getElementById("root");
-if (container) {
-  const root = createRoot(container);
+const rootElement = document.getElementById("root");
+if (rootElement) {
+  const root = createRoot(rootElement);
   root.render(<App />);
 }
