@@ -1,6 +1,6 @@
 import { PassportWidgetProps, Widget } from "./Widget";
 import {
-  PassportScoreProps,
+  PassportEmbedProps,
   usePassportScore,
 } from "../hooks/usePassportScore";
 import styles from "./PassportScoreWidget.module.css";
@@ -51,20 +51,12 @@ const ScoreButton = ({
   </Button>
 );
 
-const PassportScore = ({
-  apiKey,
-  address,
-  scorerId,
-  overrideIamUrl,
-}: PassportScoreProps) => {
+const PassportScore = ({ address }: PassportEmbedProps) => {
   const [enabled, setEnabled] = useState(false);
 
   const { data, isLoading, isError, error } = usePassportScore({
     enabled,
-    apiKey,
     address,
-    scorerId,
-    overrideIamUrl,
   });
 
   return (
@@ -79,8 +71,8 @@ const PassportScore = ({
         <div className={styles.centerChildren}>
           <ScoreDisplay
             className={data ? styles.visible : styles.invisible}
-            passingScore={data?.passingScore}
-            score={data?.score}
+            passingScore={data?.passing_score}
+            score={data ? data.score.toString() : ""}
           />
           <ScoreButton
             className={data ? styles.invisible : styles.visible}
@@ -94,7 +86,7 @@ const PassportScore = ({
   );
 };
 
-export type PassportScoreWidgetProps = PassportScoreProps & PassportWidgetProps;
+export type PassportScoreWidgetProps = PassportEmbedProps & PassportWidgetProps;
 
 export const PassportScoreWidget = (props: PassportScoreWidgetProps) => {
   return (

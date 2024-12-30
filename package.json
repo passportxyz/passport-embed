@@ -50,6 +50,7 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.62.11",
     "axios": "^1.7.7"
   }
 }

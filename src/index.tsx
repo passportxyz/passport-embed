@@ -4,3 +4,4 @@ export type {
   PassportWidgetProps,
   PassportWidgetTheme,
 } from "./widgets/Widget";
+export { usePassportScore } from "./hooks/usePassportScore";
