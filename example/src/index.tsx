@@ -10,7 +10,8 @@ const SCORER_ID = import.meta.env.VITE_SCORER_ID;
 setConfig({
   apiKey: API_KEY,
   scorerId: SCORER_ID,
-  overrideIamUrl: "http://localhost:80",
+  // overrideIamUrl: "http://localhost:80",
+  overrideIamUrl: "https://embed.review.passport.xyz"
 });
 
 const App = () => {

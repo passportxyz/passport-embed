@@ -25,14 +25,14 @@ type PassportProviderPoints = {
 
 // TODO: define proper value types
 type PassportScore = {
-  address: String;
-  score: number;
-  passing_score: boolean;
-  last_score_timestamp: Date;
-  expiration_timestamp: Date;
-  threshold: number;
-  error: String;
-  stamps: Record<string, PassportProviderPoints>;
+  address?: String;
+  score?: number;
+  passing_score?: boolean;
+  last_score_timestamp?: Date;
+  expiration_timestamp?: Date;
+  threshold?: number;
+  error?: String;
+  stamps?: Record<string, PassportProviderPoints>;
 };
 
 type PassportScoreFetch = {
@@ -154,5 +154,9 @@ const fetchPassportScore = async ({
   } catch (error) {
     // TODO: handle error
     console.log("scoreData error", error);
+    const ret: PassportScore = {
+      error: scoreData.error,
+    };
+    return ret;
   }
 };
