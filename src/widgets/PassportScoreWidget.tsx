@@ -72,7 +72,7 @@ const PassportScore = ({ address }: PassportEmbedProps) => {
           <ScoreDisplay
             className={data ? styles.visible : styles.invisible}
             passingScore={data?.passing_score}
-            score={data ? data.score.toString() : ""}
+            score={data && data.score ? data.score.toString() : ""}
           />
           <ScoreButton
             className={data ? styles.invisible : styles.visible}
