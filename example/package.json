@@ -8,6 +8,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+<<<<<<< HEAD
+=======
+    "@tanstack/react-query": "^5.62.11",
+>>>>>>> 2964-demo-widget
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
