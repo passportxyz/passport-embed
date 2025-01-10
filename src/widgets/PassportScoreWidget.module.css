@@ -31,11 +31,6 @@
   align-items: center;
 }
 
-.title {
-  font-size: 24px;
-  font-family: var(--font-family-heading-c6dbf459);
-}
-
 .text {
   margin: 8px 0;
   text-align: center;

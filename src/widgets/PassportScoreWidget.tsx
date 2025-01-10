@@ -69,7 +69,7 @@ const PassportScore = ({
 
   return (
     <div className={styles.container}>
-      <div className={styles.title}>Passport Score</div>
+      <div className={styles.title}>Passport XYZ Score</div>
       <div className={styles.text}>
         Bla bla stuff about scoring and Passports and such
       </div>

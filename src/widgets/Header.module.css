@@ -1,0 +1,18 @@
+@import "../theme.css";
+
+.container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.titleStack {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}
+
+.subheading {
+  font-weight: 700;
+  font-size: 16px;
+}
