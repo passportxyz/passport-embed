@@ -12,16 +12,16 @@ export type PassportEmbedProps = {
 type PassportProviderPoints = {
   score: number;
   dedup: boolean;
-  expiration_date: Date;
+  expirationDate: Date;
 };
 
 // TODO: define proper value types
 type PassportScore = {
   address: String;
   score: number;
-  passing_score: boolean;
-  last_score_timestamp: Date;
-  expiration_timestamp: Date;
+  passingScore: boolean;
+  lastScoreTimestamp: Date;
+  expirationTimestamp: Date;
   threshold: number;
   stamps: Record<string, PassportProviderPoints>;
 };
@@ -83,9 +83,9 @@ const fetchPassportScore = async ({
   const ret: PassportScore = {
     address: scoreData.address,
     score: parseFloat(scoreData.score),
-    passing_score: scoreData.passing_score,
-    last_score_timestamp: new Date(scoreData.last_score_timestamp),
-    expiration_timestamp: new Date(scoreData.expiration_timestamp),
+    passingScore: scoreData.passing_score,
+    lastScoreTimestamp: new Date(scoreData.last_score_timestamp),
+    expirationTimestamp: new Date(scoreData.expiration_timestamp),
     threshold: parseFloat(scoreData.threshold),
     stamps: ((stamps: Record<string, any>) => {
       const ret: Record<string, PassportProviderPoints> = {};
@@ -95,7 +95,7 @@ const fetchPassportScore = async ({
           ret[key] = {
             score: parseFloat(stamp.score),
             dedup: stamp.dedup,
-            expiration_date: new Date(stamp.expiration_date),
+            expirationDate: new Date(stamp.expiration_date),
           };
         }
       }

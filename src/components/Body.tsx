@@ -1,5 +1,6 @@
 import styles from "./Body.module.css";
 import { Button } from "../components/Button";
+import { useStep } from "../contexts/StepContext";
 
 const ScoreButton = ({
   onClick,
@@ -24,34 +25,44 @@ const ScoreButton = ({
   </Button>
 );
 
-export const Body = ({
-  errorMessage,
-  enabled,
-  setEnabled,
-  isLoading,
-}: {
-  errorMessage?: string;
-  enabled: boolean;
-  setEnabled: (enabled: boolean) => void;
-  isLoading: boolean;
-}) => {
+const BodyWrapper = ({ children }: { children: React.ReactNode }) => (
+  <div className={styles.container}>{children}</div>
+);
+
+const BodyRouter = ({ isLoading }: { isLoading: boolean }) => {
+  const { currentStep, gotoStep } = useStep();
+
   return (
-    <div className={styles.container}>
+    <>
       <div className={styles.text}>
         Bla bla stuff about scoring and Passports and such
       </div>
+      <div className={styles.centerChildren}>
+        <ScoreButton
+          className=""
+          onClick={() => gotoStep("checking")}
+          disabled={false}
+          isLoading={isLoading}
+        />
+      </div>
+    </>
+  );
+};
+
+export const Body = ({
+  errorMessage,
+  isLoading,
+}: {
+  errorMessage?: string;
+  isLoading: boolean;
+}) => {
+  return (
+    <BodyWrapper>
       {errorMessage ? (
         <div>Error: {errorMessage}</div>
       ) : (
-        <div className={styles.centerChildren}>
-          <ScoreButton
-            className=""
-            onClick={() => setEnabled(true)}
-            disabled={enabled}
-            isLoading={isLoading}
-          />
-        </div>
+        <BodyRouter isLoading={isLoading} />
       )}
-    </div>
+    </BodyWrapper>
   );
 };

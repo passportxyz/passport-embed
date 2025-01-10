@@ -4,9 +4,9 @@ import {
   usePassportScore,
 } from "../hooks/usePassportScore";
 import styles from "./PassportScoreWidget.module.css";
-import { useState } from "react";
-import { Header } from "./Header";
-import { Body } from "./Body";
+import { Header } from "../components/Header";
+import { Body } from "../components/Body";
+import { StepContextProvider, useStep } from "../contexts/StepContext";
 
 const PassportScore = ({
   apiKey,
@@ -14,12 +14,12 @@ const PassportScore = ({
   scorerId,
   overrideIamUrl,
 }: PassportEmbedProps) => {
-  const [enabled, setEnabled] = useState(false);
+  const { currentStep } = useStep();
 
   const { data, isLoading, isError, error } = usePassportScore({
-    enabled,
-    address,
+    enabled: currentStep !== "initial",
     apiKey,
+    address,
     scorerId,
     overrideIamUrl,
   });
@@ -29,8 +29,6 @@ const PassportScore = ({
       <Header score={data?.score} passingScore={data?.passingScore} />
       <Body
         errorMessage={isError ? error?.message : undefined}
-        enabled={enabled}
-        setEnabled={setEnabled}
         isLoading={isLoading}
       />
     </div>
@@ -43,7 +41,9 @@ export type PassportScoreWidgetProps = PassportEmbedProps &
 export const PassportScoreWidget = (props: PassportScoreWidgetProps) => {
   return (
     <Widget {...props}>
-      <PassportScore {...props} />
+      <StepContextProvider>
+        <PassportScore {...props} />
+      </StepContextProvider>
     </Widget>
   );
 };
