@@ -1,0 +1,51 @@
+@import "../theme.css";
+
+.container {
+  width: 100%;
+  padding: var(--widget-padding-y-c6dbf459) var(--widget-padding-x-c6dbf459);
+  box-sizing: border-box;
+
+  border-width: 1px;
+  border-style: none solid solid solid;
+  border-color: rgba(var(--color-secondary-c6dbf459), 1);
+  border-bottom-left-radius: var(--widget-radius-c6dbf459);
+  border-bottom-right-radius: var(--widget-radius-c6dbf459);
+
+  background-color: rgba(var(--color-background-c6dbf459), 1);
+}
+
+.container,
+.flexCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.text {
+  flex-grow: 1;
+  margin-bottom: 12px;
+}
+
+.invisible {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.visible {
+  opacity: 1;
+}
+
+.invisible,
+.visible {
+  transition: opacity var(--transition-speed-c6dbf459) ease;
+}
+
+.centerChildren {
+  display: grid;
+  place-items: center;
+}
+
+.centerChildren > * {
+  grid-row: 1;
+  grid-column: 1;
+}

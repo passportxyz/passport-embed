@@ -5,23 +5,13 @@
   all: initial;
 
   font-family: var(--font-family-body-c6dbf459);
+  font-size: 14px;
+  font-weight: 400;
 
   color: rgba(var(--color-primary-c6dbf459), 1);
-  background-color: rgba(var(--color-background-c6dbf459), 1);
-  background-image: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0),
-    rgba(var(--color-secondary-c6dbf459), 0.8)
-  );
-
   border-radius: var(--widget-radius-c6dbf459);
-  border: 1px solid rgba(var(--color-secondary-c6dbf459), 1);
 
-  padding: var(--widget-padding-y-c6dbf459) var(--widget-padding-x-c6dbf459);
   max-width: 320px;
-  gap: 8px;
-
-  box-shadow: 0px 0px 32px 0px rgba(var(--color-secondary-c6dbf459), 0.5);
 }
 
 .container,
@@ -34,14 +24,6 @@
 .text {
   margin: 8px 0;
   text-align: center;
-}
-
-.success {
-  color: rgba(var(--color-success-c6dbf459), 1);
-}
-
-.failure {
-  color: rgba(var(--color-failure-c6dbf459), 1);
 }
 
 .invisible {

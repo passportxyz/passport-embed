@@ -9,12 +9,12 @@
 
 :root {
   --color-primary-c6dbf459: 255, 255, 255;
-  --color-secondary-c6dbf459: 108, 182, 173;
+  --color-secondary-c6dbf459: 109, 109, 109;
   --color-background-c6dbf459: 0, 0, 0;
-  --color-success-c6dbf459: 0, 255, 0;
-  --color-failure-c6dbf459: 255, 0, 0;
-  --widget-padding-x-c6dbf459: 24px;
-  --widget-padding-y-c6dbf459: 16px;
+  --color-success-c6dbf459: 164, 255, 169;
+  --color-failure-c6dbf459: 255, 255, 255;
+  --widget-padding-x-c6dbf459: 20px;
+  --widget-padding-y-c6dbf459: 12px;
   --widget-radius-c6dbf459: 10px;
   --button-radius-c6dbf459: 5px;
   --transition-speed-c6dbf459: 100ms;
