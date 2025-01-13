@@ -2,19 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 const DEFAULT_IAM_URL = "https://iam.passport.xyz/api/v0.0.0";
 import axios from "axios";
 
-import { config } from "../config";
-import { useEffect, useState } from "react";
-
-export type PassportEmbedApiProps = {
-  apiKey: string;
-  address: string;
-  scorerId: string;
-  overrideIamUrl?: string;
-};
-
 export type PassportEmbedProps = {
+  apiKey: string;
+  scorerId: string;
   address: string;
-  enabled: boolean;
+  overrideIamUrl?: string;
 };
 
 type PassportProviderPoints = {
@@ -25,17 +17,16 @@ type PassportProviderPoints = {
 
 // TODO: define proper value types
 type PassportScore = {
-  address?: String;
-  score?: number;
-  passing_score?: boolean;
-  last_score_timestamp?: Date;
-  expiration_timestamp?: Date;
-  threshold?: number;
-  error?: String;
-  stamps?: Record<string, PassportProviderPoints>;
+  address: String;
+  score: number;
+  passing_score: boolean;
+  last_score_timestamp: Date;
+  expiration_timestamp: Date;
+  threshold: number;
+  stamps: Record<string, PassportProviderPoints>;
 };
 
-type PassportScoreFetch = {
+type PassportEmbedResult = {
   data: PassportScore | undefined;
   isLoading: boolean;
   isError: boolean;
@@ -44,65 +35,27 @@ type PassportScoreFetch = {
 
 export const usePassportScore = ({
   enabled,
+  apiKey,
   address,
-}: PassportEmbedProps): PassportScoreFetch => {
-  const [score, setScore] = useState<PassportScoreFetch>({
-    data: undefined,
-    isLoading: false,
-    isError: false,
-    error: undefined,
+  scorerId,
+  overrideIamUrl,
+}: PassportEmbedProps & { enabled?: boolean }): PassportEmbedResult => {
+  return useQuery({
+    // Default to enabled
+    enabled: enabled === undefined ? true : enabled,
+    queryKey: ["passportScore", address, scorerId, overrideIamUrl],
+    queryFn: () =>
+      fetchPassportScore({ apiKey, address, scorerId, overrideIamUrl }),
   });
-
-  useEffect(() => {
-    setScore({ ...score, isLoading: true, isError: false, error: undefined });
-    fetchPassportScore({
-      apiKey: config.apiKey,
-      address,
-      scorerId: config.scorerId,
-      overrideIamUrl: config.overrideIamUrl,
-    })
-      .then((response) => {
-        console.log("-----------------------");
-        console.log("response", response);
-        setScore({
-          ...score,
-          data: response,
-          isLoading: false,
-          isError: false,
-          error: undefined,
-        });
-      })
-      .catch((error) => {
-        setScore({ ...score, isLoading: false, isError: false, error: error });
-      });
-  }, [enabled, address]);
-
-  return score;
-
-  // return useQuery({
-  //   enabled,
-  //   queryKey: [
-  //     "passportScore",
-  //     address,
-  //     config.scorerId,
-  //     config.overrideIamUrl,
-  //   ],
-  //   queryFn: () =>
-  //     fetchPassportScore({
-  //       apiKey: config.apiKey,
-  //       address,
-  //       scorerId: config.scorerId,
-  //       overrideIamUrl: config.overrideIamUrl,
-  //     }),
-  // });
 };
 
+// Any errors are automatically propagated into the react-query hook response (i.e. isError, error)
 const fetchPassportScore = async ({
   apiKey,
   address,
   scorerId,
   overrideIamUrl,
-}: PassportEmbedApiProps): Promise<PassportScore> => {
+}: PassportEmbedProps): Promise<PassportScore> => {
   /*
   return {
     score: "32.113512",
@@ -126,37 +79,29 @@ const fetchPassportScore = async ({
 
   const scoreData = response.data;
   console.log("geri scoreData", scoreData);
-  try {
-    const ret: PassportScore = {
-      address: scoreData.address,
-      score: parseFloat(scoreData.score),
-      passing_score: scoreData.passing_score,
-      last_score_timestamp: new Date(scoreData.last_score_timestamp),
-      expiration_timestamp: new Date(scoreData.expiration_timestamp),
-      threshold: parseFloat(scoreData.threshold),
-      error: scoreData.error,
-      stamps: ((stamps: Record<string, any>) => {
-        const ret: Record<string, PassportProviderPoints> = {};
-        for (const key in stamps) {
-          if (stamps.hasOwnProperty(key)) {
-            const stamp = stamps[key];
-            ret[key] = {
-              score: parseFloat(stamp.score),
-              dedup: stamp.dedup,
-              expiration_date: new Date(stamp.expiration_date),
-            };
-          }
+
+  const ret: PassportScore = {
+    address: scoreData.address,
+    score: parseFloat(scoreData.score),
+    passing_score: scoreData.passing_score,
+    last_score_timestamp: new Date(scoreData.last_score_timestamp),
+    expiration_timestamp: new Date(scoreData.expiration_timestamp),
+    threshold: parseFloat(scoreData.threshold),
+    stamps: ((stamps: Record<string, any>) => {
+      const ret: Record<string, PassportProviderPoints> = {};
+      for (const key in stamps) {
+        if (stamps.hasOwnProperty(key)) {
+          const stamp = stamps[key];
+          ret[key] = {
+            score: parseFloat(stamp.score),
+            dedup: stamp.dedup,
+            expiration_date: new Date(stamp.expiration_date),
+          };
         }
-        return ret;
-      })(scoreData.stamps),
-    };
-    return ret;
-  } catch (error) {
-    // TODO: handle error
-    console.log("scoreData error", error);
-    const ret: PassportScore = {
-      error: scoreData.error,
-    };
-    return ret;
-  }
+      }
+      return ret;
+    })(scoreData.stamps),
+  };
+
+  return ret;
 };

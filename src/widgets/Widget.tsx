@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 
-export type PassportWidgetProps = {
+export type GenericPassportWidgetProps = {
   children?: React.ReactNode;
   theme?: PassportWidgetTheme;
 };
@@ -35,7 +35,7 @@ export type PassportWidgetTheme = {
   };
 };
 
-export const Widget = ({ children, theme }: PassportWidgetProps) => {
+export const Widget = ({ children, theme }: GenericPassportWidgetProps) => {
   useEffect(() => {
     setTheme(theme);
   }, [theme]);

@@ -1,22 +1,22 @@
 import { createRoot } from "react-dom/client";
 import { PassportScoreWidget, usePassportScore } from "passport-widgets";
-import { setConfig } from "passport-widgets/config";
 
 import "./index.css";
 
-const API_KEY = import.meta.env.VITE_API_KEY;
-const SCORER_ID = import.meta.env.VITE_SCORER_ID;
+const apiKey = import.meta.env.VITE_API_KEY;
+const scorerId = import.meta.env.VITE_SCORER_ID;
 
-setConfig({
-  apiKey: API_KEY,
-  scorerId: SCORER_ID,
-  // overrideIamUrl: "http://localhost:80",
-  overrideIamUrl: "https://embed.review.passport.xyz"
-});
+import "./index.css";
 
 const App = () => {
   const address = "0x85fF01cfF157199527528788ec4eA6336615C989";
-  const passportScore = usePassportScore({ enabled: true, address });
+  const passportScore = usePassportScore({
+    address,
+    apiKey,
+    scorerId,
+    // overrideIamUrl: "http://localhost:80"
+  });
+
   console.log("passportScore", passportScore);
   return (
     <div className="container">
@@ -24,7 +24,9 @@ const App = () => {
       <h3>Check your Passport score</h3>
       <PassportScoreWidget
         address="0x85fF01cfF157199527528788ec4eA6336615C989"
-        enabled={true}
+        apiKey={apiKey}
+        scorerId={scorerId}
+        // overrideIamUrl="http://localhost:80"
         /*
         theme={{
           colors: {
@@ -38,7 +40,10 @@ const App = () => {
         <ul>
           <li>Passport Score: {passportScore.data?.score}</li>
           <li>Passport Threshold: {passportScore.data?.threshold}</li>
-          <li>Is passing threshold: {passportScore.data?.passing_score?"True":"False"}</li>
+          <li>
+            Is passing threshold:{" "}
+            {passportScore.data?.passing_score ? "True" : "False"}
+          </li>
           <li>
             What stamps?
             <pre>
