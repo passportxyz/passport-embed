@@ -22,7 +22,7 @@ const appQueryClient = new QueryClient({
 const passportEmbedParams = {
   apiKey: import.meta.env.VITE_API_KEY,
   scorerId: import.meta.env.VITE_SCORER_ID,
-  overrideIamUrl: "http://localhost:8888/api/v0.0.0",
+  overrideIamUrl: "http://localhost:8004",
 };
 
 const DirectPassportDataAccess = ({ address }: { address: string }) => {

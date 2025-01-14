@@ -1,5 +1,5 @@
 import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
-const DEFAULT_IAM_URL = "https://iam.passport.xyz/api/v0.0.0";
+const DEFAULT_IAM_URL = "https://embed.passport.xyz";
 import axios from "axios";
 
 export type PassportEmbedProps = {
