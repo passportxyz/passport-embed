@@ -16,7 +16,8 @@
     "paths": {
       "passport-widgets": ["../src/index"],
       "passport-widgets/*": ["../src/*"]
-    }
+    },
+    "types": ["vite/client"]
   },
   // Include both the dev src and the package src
   "include": [

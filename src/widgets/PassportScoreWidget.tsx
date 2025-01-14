@@ -1,4 +1,8 @@
-import { GenericPassportWidgetProps, Widget } from "./Widget";
+import {
+  GenericPassportWidgetProps,
+  Widget,
+  widgetQueryClient,
+} from "./Widget";
 import {
   PassportEmbedProps,
   usePassportScore,
@@ -13,6 +17,7 @@ const PassportScore = ({
   address,
   scorerId,
   overrideIamUrl,
+  queryClient,
 }: PassportEmbedProps) => {
   const { currentStep } = useStep();
 
@@ -22,6 +27,8 @@ const PassportScore = ({
     address,
     scorerId,
     overrideIamUrl,
+    // Pass the override if provided, otherwise use the widget's queryClient
+    queryClient: queryClient || widgetQueryClient,
   });
 
   return (

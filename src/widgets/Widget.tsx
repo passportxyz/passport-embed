@@ -41,14 +41,23 @@ export const Widget = ({ children, theme }: GenericPassportWidgetProps) => {
   }, [theme]);
 
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={widgetQueryClient}>
+      {children}
+    </QueryClientProvider>
   );
 };
 
-const queryClient = new QueryClient({
+export const widgetQueryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
+      // With this config, the query will be re-fetched when this tab/window
+      // is refocused or after the component is mounted, and the data has
+      // not been fetched for at least 1 minute
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+      refetchOnReconnect: false,
+      staleTime: 1000 * 60 * 1,
+      gcTime: Infinity,
       retry: 2,
     },
   },

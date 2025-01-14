@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 const DEFAULT_IAM_URL = "https://iam.passport.xyz/api/v0.0.0";
 import axios from "axios";
 
@@ -7,6 +7,9 @@ export type PassportEmbedProps = {
   scorerId: string;
   address: string;
   overrideIamUrl?: string;
+  // Optional, allows you to share a queryClient between the
+  // widget(s) and the wider app
+  queryClient?: QueryClient;
 };
 
 type PassportProviderPoints = {
@@ -39,14 +42,26 @@ export const usePassportScore = ({
   address,
   scorerId,
   overrideIamUrl,
+  queryClient,
 }: PassportEmbedProps & { enabled?: boolean }): PassportEmbedResult => {
-  return useQuery({
-    // Default to enabled
-    enabled: enabled === undefined ? true : enabled,
-    queryKey: ["passportScore", address, scorerId, overrideIamUrl],
-    queryFn: () =>
-      fetchPassportScore({ apiKey, address, scorerId, overrideIamUrl }),
-  });
+  // If a queryClient is not provided, use the nearest one
+  const nearestClient = useQueryClient();
+
+  return useQuery(
+    {
+      enabled: Boolean(
+        // Default to enabled
+        (enabled === undefined ? true : enabled) &&
+          address &&
+          apiKey &&
+          scorerId
+      ),
+      queryKey: ["passportScore", address, scorerId, overrideIamUrl],
+      queryFn: () =>
+        fetchPassportScore({ apiKey, address, scorerId, overrideIamUrl }),
+    },
+    queryClient || nearestClient
+  );
 };
 
 // Any errors are automatically propagated into the react-query hook response (i.e. isError, error)
