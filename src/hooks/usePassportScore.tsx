@@ -19,7 +19,7 @@ type PassportProviderPoints = {
 };
 
 // TODO: define proper value types
-type PassportScore = {
+export type PassportScore = {
   address: String;
   score: number;
   passingScore: boolean;
@@ -37,7 +37,6 @@ type PassportEmbedResult = {
 };
 
 export const usePassportScore = ({
-  enabled,
   apiKey,
   address,
   scorerId,
@@ -49,13 +48,7 @@ export const usePassportScore = ({
 
   return useQuery(
     {
-      enabled: Boolean(
-        // Default to enabled
-        (enabled === undefined ? true : enabled) &&
-          address &&
-          apiKey &&
-          scorerId
-      ),
+      enabled: Boolean(address && apiKey && scorerId),
       queryKey: ["passportScore", address, scorerId, overrideIamUrl],
       queryFn: () =>
         fetchPassportScore({ apiKey, address, scorerId, overrideIamUrl }),

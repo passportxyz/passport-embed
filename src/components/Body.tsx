@@ -1,67 +1,86 @@
 import styles from "./Body.module.css";
 import { Button } from "../components/Button";
-import { useStep } from "../contexts/StepContext";
-
-const ScoreButton = ({
-  onClick,
-  className,
-  disabled,
-  isLoading,
-}: {
-  onClick: () => void;
-  className: string;
-  disabled: boolean;
-  isLoading: boolean;
-}) => (
-  <Button onClick={onClick} className={className} disabled={disabled}>
-    <div className={styles.centerChildren}>
-      <div className={isLoading ? styles.visible : styles.invisible}>
-        Checking...
-      </div>
-      <div className={isLoading ? styles.invisible : styles.visible}>
-        Check your Passport score
-      </div>
-    </div>
-  </Button>
-);
+import { PassportScore } from "../hooks/usePassportScore";
 
 const BodyWrapper = ({ children }: { children: React.ReactNode }) => (
   <div className={styles.container}>{children}</div>
 );
 
-const BodyRouter = ({ isLoading }: { isLoading: boolean }) => {
-  const { currentStep, gotoStep } = useStep();
-
+const ConnectWalletBody = () => {
   return (
     <>
       <div className={styles.text}>
         Bla bla stuff about scoring and Passports and such
       </div>
       <div className={styles.centerChildren}>
-        <ScoreButton
+        <Button
           className=""
-          onClick={() => gotoStep("checking")}
-          disabled={false}
-          isLoading={isLoading}
-        />
+          onClick={() => {
+            /* TODO add a connectWallet callback*/
+            window.alert("Connect wallet callback not yet implemented");
+          }}
+        >
+          Connect your wallet
+        </Button>
       </div>
     </>
   );
 };
 
+const CheckingBody = () => {
+  return (
+    <>
+      <div className={styles.text}>Checking...</div>
+    </>
+  );
+};
+
+const ResultBody = ({ data }: { data?: PassportScore }) => {
+  return (
+    <>
+      <div className={styles.text}>Your score is {data?.score}</div>
+    </>
+  );
+};
+
+// Determines the current page based on the state of the widget
+const BodyRouter = ({
+  isLoading,
+  data,
+}: {
+  isLoading: boolean;
+  data?: PassportScore;
+}) => {
+  if (!isLoading && !data) {
+    return <ConnectWalletBody />;
+  }
+
+  if (isLoading) {
+    return <CheckingBody />;
+  }
+
+  if (data) {
+    return <ResultBody data={data} />;
+  }
+
+  // To be continued...
+};
+
 export const Body = ({
   errorMessage,
   isLoading,
+  data,
 }: {
   errorMessage?: string;
   isLoading: boolean;
+  data?: PassportScore;
 }) => {
   return (
     <BodyWrapper>
       {errorMessage ? (
         <div>Error: {errorMessage}</div>
       ) : (
-        <BodyRouter isLoading={isLoading} />
+        <BodyRouter isLoading={isLoading} data={data} />
       )}
     </BodyWrapper>
   );
