@@ -59,11 +59,16 @@ const Dashboard = () => {
       <h3>Check your Passport score</h3>
       <PassportScoreWidget
         {...passportEmbedParams}
-        address="0x85fF01cfF157199527528788ec4eA6336615C989"
+        // address="0x85fF01cfF157199527528788ec4eA6336615C989"
         // Generally you would not provide this, the widget has its own QueryClient.
         // But this can be used to override query parameters or to share a QueryClient
         // with the wider app and/or multiple widgets
         queryClient={appQueryClient}
+        connectWalletCallback={async () => {
+          // Should initiate a wallet connection using e.g. web3modal
+          window.alert("Connect, yo");
+          await new Promise((resolve) => setTimeout(resolve, 3000));
+        }}
         /*
         theme={{
           colors: {

@@ -5,11 +5,18 @@ import axios from "axios";
 export type PassportEmbedProps = {
   apiKey: string;
   scorerId: string;
-  address: string;
+  // Address required to check Passport score,
+  // but may be undefined if the wallet is not
+  // yet connected
+  address?: string;
   overrideIamUrl?: string;
   // Optional, allows you to share a queryClient between the
   // widget(s) and the wider app
   queryClient?: QueryClient;
+  // Optional, if provided the widget will prompt
+  // the user to connect their wallet if the
+  // `address` is undefined
+  connectWalletCallback?: () => Promise<void>;
 };
 
 type PassportProviderPoints = {
@@ -29,7 +36,7 @@ export type PassportScore = {
   stamps: Record<string, PassportProviderPoints>;
 };
 
-type PassportEmbedResult = {
+export type PassportEmbedResult = {
   data: PassportScore | undefined;
   isLoading: boolean;
   isError: boolean;
@@ -86,7 +93,6 @@ const fetchPassportScore = async ({
   );
 
   const scoreData = response.data;
-  console.log("geri scoreData", scoreData);
 
   const ret: PassportScore = {
     address: scoreData.address,

@@ -12,6 +12,11 @@
   border-radius: var(--widget-radius-c6dbf459);
 
   max-width: 320px;
+  height: 300px;
+}
+
+.body {
+  flex-grow: 1;
 }
 
 .container,

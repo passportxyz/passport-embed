@@ -31,6 +31,7 @@ export type PassportWidgetTheme = {
     family?: {
       body?: string;
       heading?: string;
+      alt?: string;
     };
   };
 };
@@ -92,6 +93,7 @@ const setTheme = (theme?: PassportWidgetTheme) => {
     ["transition-speed", theme.transition?.speed],
     ["font-family-body", theme.font?.family?.body],
     ["font-family-heading", theme.font?.family?.heading],
+    ["font-family-alt", theme.font?.family?.alt],
   ];
 
   propertyMap.forEach(([name, value]) => setCssProperty(name, value));

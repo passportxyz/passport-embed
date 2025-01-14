@@ -5,19 +5,20 @@ import {
 } from "./Widget";
 import {
   PassportEmbedProps,
+  PassportEmbedResult,
   usePassportScore,
 } from "../hooks/usePassportScore";
 import styles from "./PassportScoreWidget.module.css";
 import { Header } from "../components/Header";
 import { Body } from "../components/Body";
+import { StepContextProvider } from "../contexts/StepContext";
 
-const PassportScore = ({
-  apiKey,
-  address,
-  scorerId,
-  overrideIamUrl,
-  queryClient,
-}: PassportEmbedProps) => {
+export type PassportScoreWidgetProps = PassportEmbedProps &
+  GenericPassportWidgetProps;
+
+export const PassportScoreWidget = (props: PassportScoreWidgetProps) => {
+  const { apiKey, address, scorerId, overrideIamUrl, queryClient } = props;
+
   const { data, isLoading, isError, error } = usePassportScore({
     apiKey,
     address,
@@ -28,24 +29,30 @@ const PassportScore = ({
   });
 
   return (
-    <div className={styles.container}>
-      <Header score={data?.score} passingScore={data?.passingScore} />
-      <Body
-        errorMessage={isError ? error?.message : undefined}
-        isLoading={isLoading}
-        data={data}
-      />
-    </div>
+    <Widget {...props}>
+      <StepContextProvider data={data} isLoading={isLoading}>
+        <PassportScore {...props} data={data} isError={isError} error={error} />
+      </StepContextProvider>
+    </Widget>
   );
 };
 
-export type PassportScoreWidgetProps = PassportEmbedProps &
-  GenericPassportWidgetProps;
-
-export const PassportScoreWidget = (props: PassportScoreWidgetProps) => {
+const PassportScore = ({
+  data,
+  isError,
+  error,
+  connectWalletCallback,
+}: Omit<PassportEmbedResult, "isLoading"> &
+  Pick<PassportEmbedProps, "connectWalletCallback">) => {
   return (
-    <Widget {...props}>
-      <PassportScore {...props} />
-    </Widget>
+    <div className={styles.container}>
+      <Header score={data?.score} passingScore={data?.passingScore} />
+      <Body
+        className={styles.body}
+        errorMessage={isError ? error?.message : undefined}
+        data={data}
+        connectWalletCallback={connectWalletCallback}
+      />
+    </div>
   );
 };
