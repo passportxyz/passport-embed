@@ -1,0 +1,30 @@
+@keyframes hop {
+  0%,
+  28%,
+  100% {
+    transform: translateY(0);
+  }
+  14% {
+    transform: translateY(-6px);
+  }
+}
+
+.dot {
+  animation: hop 2.4s ease-in-out infinite;
+}
+
+.dot1 {
+  animation-delay: -1.6s;
+}
+
+.dot2 {
+  animation-delay: -0.8s;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}

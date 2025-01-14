@@ -3,6 +3,7 @@ import { PassportLogo } from "../assets/passportLogo";
 import { useStep } from "../contexts/StepContext";
 import { CheckmarkIcon } from "../assets/checkmarkIcon";
 import { XIcon } from "../assets/xIcon";
+import { Ellipsis } from "./Ellipsis";
 
 // Format to integer
 const displayNumber = (num?: number) =>
@@ -15,8 +16,15 @@ const ScoreDisplay = ({
   score?: number;
   passingScore?: boolean;
 }) => {
+  const { currentStep } = useStep();
+
   if (passingScore === undefined) {
-    return <PassportLogo />;
+    return (
+      <>
+        <PassportLogo />
+        {currentStep === "checking" && <Ellipsis />}
+      </>
+    );
   }
 
   return (
