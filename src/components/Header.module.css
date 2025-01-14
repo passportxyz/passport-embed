@@ -13,6 +13,7 @@
   border-style: solid;
   border-top-left-radius: var(--widget-radius-c6dbf459);
   border-top-right-radius: var(--widget-radius-c6dbf459);
+  border-color: rgba(var(--color-secondary-c6dbf459), 1);
 
   background-color: rgba(var(--color-background-c6dbf459), 1);
   background-image: linear-gradient(
@@ -44,18 +45,6 @@
 
 .failure {
   color: rgba(var(--color-failure-c6dbf459), 1);
-}
-
-.disabledBorder {
-  border-color: rgba(var(--color-secondary-c6dbf459), 1);
-}
-
-.successBorder {
-  border-color: rgba(var(--color-success-c6dbf459), 1);
-}
-
-.failureBorder {
-  border-color: rgba(var(--color-failure-c6dbf459), 1);
 }
 
 .logo {

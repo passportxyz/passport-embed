@@ -57,7 +57,8 @@ export const widgetQueryClient = new QueryClient({
       refetchOnMount: true,
       refetchOnReconnect: false,
       staleTime: 1000 * 60 * 1,
-      gcTime: Infinity,
+      // The query will be garbage collected after 24 hours
+      gcTime: 1000 * 60 * 60 * 24,
       retry: 2,
     },
   },

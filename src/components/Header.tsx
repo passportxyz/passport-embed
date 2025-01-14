@@ -1,6 +1,5 @@
 import styles from "./Header.module.css";
 import { PassportLogo } from "../assets/passportLogo";
-import { useStep } from "../contexts/StepContext";
 
 // Format to integer
 const displayNumber = (num?: number) =>
@@ -13,18 +12,8 @@ export const Header = ({
   passingScore?: boolean;
   score?: number;
 }) => {
-  const { currentStep } = useStep();
-
   return (
-    <div
-      className={`${styles.container} ${
-        currentStep === "initial"
-          ? styles.disabledBorder
-          : passingScore
-          ? styles.successBorder
-          : styles.failureBorder
-      }`}
-    >
+    <div className={styles.container}>
       <div className={styles.titleStack}>
         Passport XYZ Score
         <div className={styles.subtitle}>CONNECT WALLET</div>
