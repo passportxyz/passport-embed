@@ -4,6 +4,7 @@ import { PassportScoreWidget, usePassportScore } from "passport-widgets";
 import "./index.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
 
 const appQueryClient = new QueryClient({
   defaultOptions: {
@@ -25,13 +26,32 @@ const passportEmbedParams = {
   overrideIamUrl: "http://localhost:8004",
 };
 
-const DirectPassportDataAccess = ({ address }: { address: string }) => {
+const connectWallet = async () => {
+  // Check if MetaMask is installed
+  if (typeof window.ethereum === "undefined") {
+    alert("Please install MetaMask!");
+    return;
+  }
+
+  try {
+    // Request account access
+    const accounts = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
+
+    // Get the connected account
+    return accounts[0];
+  } catch (error) {
+    console.error(error);
+    alert("Failed to connect to wallet");
+  }
+};
+
+const DirectPassportDataAccess = ({ address }: { address?: string }) => {
   const { data, isError, error } = usePassportScore({
     ...passportEmbedParams,
     address,
   });
-
-  console.log("passportScore", data);
 
   return (
     <div>
@@ -51,7 +71,7 @@ const DirectPassportDataAccess = ({ address }: { address: string }) => {
 };
 
 const Dashboard = () => {
-  const address = "0x85fF01cfF157199527528788ec4eA6336615C989";
+  const [address, setAddress] = useState<string | undefined>();
 
   return (
     <div className="container">
@@ -59,15 +79,14 @@ const Dashboard = () => {
       <h3>Check your Passport score</h3>
       <PassportScoreWidget
         {...passportEmbedParams}
-        // address="0x85fF01cfF157199527528788ec4eA6336615C989"
+        address={address}
         // Generally you would not provide this, the widget has its own QueryClient.
         // But this can be used to override query parameters or to share a QueryClient
         // with the wider app and/or multiple widgets
         queryClient={appQueryClient}
         connectWalletCallback={async () => {
-          // Should initiate a wallet connection using e.g. web3modal
-          window.alert("Connect, yo");
-          await new Promise((resolve) => setTimeout(resolve, 3000));
+          const address = await connectWallet();
+          setAddress(address);
         }}
         /*
         theme={{
