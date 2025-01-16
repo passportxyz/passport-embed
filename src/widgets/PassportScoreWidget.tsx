@@ -89,9 +89,28 @@ const PassportScore = ({ address }: PassportEmbedProps) => {
 export type PassportScoreWidgetProps = PassportEmbedProps & PassportWidgetProps;
 
 export const PassportScoreWidget = (props: PassportScoreWidgetProps) => {
+  const handlePopUpButtonClick = () => {
+    const popup = window.open(
+      // "https://embed.review.passport.xyz/popup",
+      "http://localhost:3002", // passport-popup
+      "passportPopup",
+      "width=600,height=700"
+    );
+
+    if (popup) {
+      // Communicate with the popup (optional)
+      popup.onload = () => {
+        popup.postMessage({ msg: "Hello" }, "*");
+      };
+    }
+  };
+
   return (
     <Widget {...props}>
       <PassportScore {...props} />
+      <Button onClick={handlePopUpButtonClick} className={styles.visible}>
+        Open Passport Popup
+      </Button>
     </Widget>
   );
 };
