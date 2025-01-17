@@ -1,6 +1,7 @@
 import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 const DEFAULT_IAM_URL = "https://embed.passport.xyz";
 import axios from "axios";
+import { useQueryContext } from "../contexts/QueryContext";
 
 export type PassportEmbedProps = {
   apiKey: string;
@@ -43,13 +44,18 @@ export type PassportEmbedResult = {
   error: any;
 };
 
+export const useWidgetPassportScore = () => {
+  const queryProps = useQueryContext();
+  return usePassportScore(queryProps);
+};
+
 export const usePassportScore = ({
   apiKey,
   address,
   scorerId,
   overrideIamUrl,
   queryClient,
-}: PassportEmbedProps & { enabled?: boolean }): PassportEmbedResult => {
+}: PassportEmbedProps): PassportEmbedResult => {
   // If a queryClient is not provided, use the nearest one
   const nearestClient = useQueryClient();
 
@@ -71,13 +77,6 @@ const fetchPassportScore = async ({
   scorerId,
   overrideIamUrl,
 }: PassportEmbedProps): Promise<PassportScore> => {
-  /*
-  return {
-    score: "32.113512",
-    threshold: "20",
-    passingScore: true,
-  };
-  */
   const response = await axios.post(
     `${overrideIamUrl || DEFAULT_IAM_URL}/embed/verify`,
     {

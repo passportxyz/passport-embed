@@ -3,10 +3,13 @@ import utilStyles from "../../utilStyles.module.css";
 import { Button } from "../Button";
 import { useEffect, useState } from "react";
 import { useHeaderControls } from "../../contexts/HeaderContext";
+import { useWidgetPassportScore } from "../../hooks/usePassportScore";
 
 type VerifyStampsStep = "initialTooLow" | "KYC" | "biometric" | "finalTooLow";
 
-export const ScoreTooLowBody = ({ threshold }: { threshold?: number }) => {
+export const ScoreTooLowBody = () => {
+  const { data } = useWidgetPassportScore();
+
   const { setShowLoadingIcon, setSubtitle } = useHeaderControls();
   const [verifyStampsStep, setVerifyStampsStep] =
     useState<VerifyStampsStep>("initialTooLow");
@@ -27,8 +30,8 @@ export const ScoreTooLowBody = ({ threshold }: { threshold?: number }) => {
           Your score is too low to participate.
         </div>
         <div>
-          Increase your score to {threshold || 20}+ by verifying additional
-          Stamps.
+          Increase your score to {data?.threshold || 20}+ by verifying
+          additional Stamps.
         </div>
       </div>
       <Button
