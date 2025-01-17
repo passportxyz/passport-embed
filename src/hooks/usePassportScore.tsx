@@ -15,6 +15,8 @@ export type PassportEmbedApiProps = {
 export type PassportEmbedProps = {
   address: string;
   enabled: boolean;
+  generateSignature?: (message: string) => Promise<string>;
+  signature?: string | null;
 };
 
 type PassportProviderPoints = {

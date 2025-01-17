@@ -62,12 +62,12 @@
 .visible {
   transition: opacity var(--transition-speed-c6dbf459) ease;
 }
-
 .centerChildren {
-  display: grid;
-  place-items: center;
+  display: flex; 
+  flex-direction: column;
+  align-items: center; 
+  gap: 16px; 
 }
-
 .centerChildren > * {
   grid-row: 1;
   grid-column: 1;
