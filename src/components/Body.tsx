@@ -1,9 +1,10 @@
-import styles from "./Body.module.css";
-import utilStyles from "../utilStyles.module.css";
-import { Button } from "../components/Button";
+import styles from "./Body/Body.module.css";
 import { PassportEmbedProps, PassportScore } from "../hooks/usePassportScore";
-import { useStep } from "../contexts/StepContext";
-import { useState } from "react";
+import { CheckingBody } from "./Body/CheckingBody";
+import { CongratsBody } from "./Body/CongratsBody";
+import { ScoreTooLowBody } from "./Body/ScoreTooLowBody";
+import { ConnectWalletBody } from "./Body/ConnectWalletBody";
+import { ErrorBody } from "./Body/ErrorBody";
 
 const BodyWrapper = ({
   children,
@@ -13,151 +14,55 @@ const BodyWrapper = ({
   className?: string;
 }) => <div className={`${styles.container} ${className}`}>{children}</div>;
 
-const ConnectWalletBody = ({
-  connectWalletCallback,
-  threshold,
-}: Pick<PassportEmbedProps, "connectWalletCallback"> & {
-  threshold?: number;
-}) => {
-  const [isConnecting, setIsConnecting] = useState(false);
-
-  return (
-    <>
-      <div className={styles.textBlock}>
-        <div className={styles.heading}>Proof of Unique Humanity</div>
-        <div>
-          Your Passport XYZ score represents the likelihood that you’re a unique
-          human, rather than a bot or bad actor.
-        </div>
-        <div className={utilStyles.bold}>
-          {connectWalletCallback
-            ? "Connect your wallet"
-            : "Connect to the dapp"}{" "}
-          and build up a score of {threshold || 20} or more to participate.
-        </div>
-      </div>
-      {connectWalletCallback && (
-        <Button
-          className={utilStyles.wFull}
-          disabled={isConnecting}
-          onClick={async () => {
-            try {
-              setIsConnecting(true);
-              await connectWalletCallback();
-            } finally {
-              setIsConnecting(false);
-            }
-          }}
-        >
-          {isConnecting ? "Connecting..." : "Connect Wallet"}
-        </Button>
-      )}
-    </>
-  );
-};
-
-const CheckingBody = () => {
-  return (
-    <>
-      <div className={styles.textBlock}>
-        <div className={styles.heading}>Verifying onchain activity...</div>
-        <div>
-          Please wait a few seconds as we analyze your onchain activities and
-          verify relevant Stamps on your behalf.
-        </div>
-      </div>
-      <Button className={utilStyles.wFull} disabled={true}>
-        Verifying...
-      </Button>
-    </>
-  );
-};
-
-const CongratsBody = () => {
-  return (
-    <>
-      <div
-        className={`${styles.textBlock} ${styles.extraBottomMarginForBodyWithoutButton}`}
-      >
-        <div className={styles.heading}>Congratulations!</div>
-        <div>You have proven your unique humanity. Please proceed!</div>
-      </div>
-    </>
-  );
-};
-
-const ScoreTooLowBody = ({ threshold }: { threshold?: number }) => {
-  return (
-    <>
-      <div className={styles.textBlock}>
-        <div className={styles.heading}>
-          Your score is too low to participate.
-        </div>
-        <div>
-          Increase your score to {threshold || 20}+ by verifying additional
-          Stamps.
-        </div>
-      </div>
-      <Button
-        className={utilStyles.wFull}
-        onClick={() => {
-          alert("TODO: Implement this");
-        }}
-      >
-        Add Stamps
-      </Button>
-    </>
-  );
-};
-
 // Determines the current page based on the state of the widget
 const BodyRouter = ({
   data,
+  isLoading,
   connectWalletCallback,
-}: { data?: PassportScore } & Pick<
+  errorMessage,
+}: { data?: PassportScore; errorMessage?: string; isLoading: boolean } & Pick<
   PassportEmbedProps,
   "connectWalletCallback"
 >) => {
-  const { currentStep } = useStep();
-
-  switch (currentStep) {
-    case "initial":
-      return (
-        <ConnectWalletBody
-          connectWalletCallback={connectWalletCallback}
-          threshold={data?.threshold}
-        />
-      );
-    case "checking":
-      return <CheckingBody />;
-    case "congrats":
-      return <CongratsBody />;
-    case "scoreTooLow":
-      return <ScoreTooLowBody threshold={data?.threshold} />;
-    default:
-      throw new Error(`Invalid step: ${currentStep}`);
+  if (errorMessage) {
+    return <ErrorBody errorMessage={errorMessage} />;
   }
 
-  // To be continued...
+  if (data) {
+    return data.passingScore ? (
+      <CongratsBody />
+    ) : (
+      <ScoreTooLowBody threshold={data?.threshold} />
+    );
+  }
+
+  if (isLoading) {
+    return <CheckingBody />;
+  }
+
+  return <ConnectWalletBody connectWalletCallback={connectWalletCallback} />;
 };
 
 export const Body = ({
   className,
   errorMessage,
   data,
+  isLoading,
   connectWalletCallback,
 }: {
+  isLoading: boolean;
+  data?: PassportScore;
   className?: string;
   errorMessage?: string;
-  data?: PassportScore;
 } & Pick<PassportEmbedProps, "connectWalletCallback">) => {
   return (
     <BodyWrapper className={className}>
-      {errorMessage ? (
-        <div>Error: {errorMessage}</div>
-      ) : (
-        <BodyRouter data={data} connectWalletCallback={connectWalletCallback} />
-      )}
+      <BodyRouter
+        data={data}
+        isLoading={isLoading}
+        errorMessage={errorMessage}
+        connectWalletCallback={connectWalletCallback}
+      />
     </BodyWrapper>
   );
 };

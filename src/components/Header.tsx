@@ -1,9 +1,9 @@
 import styles from "./Header.module.css";
 import { PassportLogo } from "../assets/passportLogo";
-import { useStep } from "../contexts/StepContext";
 import { CheckmarkIcon } from "../assets/checkmarkIcon";
 import { XIcon } from "../assets/xIcon";
 import { Ellipsis } from "./Ellipsis";
+import { useHeaderControls } from "../contexts/HeaderContext";
 
 // Format to integer
 const displayNumber = (num?: number) =>
@@ -16,15 +16,8 @@ const ScoreDisplay = ({
   score?: number;
   passingScore?: boolean;
 }) => {
-  const { currentStep } = useStep();
-
   if (passingScore === undefined) {
-    return (
-      <>
-        <PassportLogo />
-        {currentStep === "checking" && <Ellipsis />}
-      </>
-    );
+    return <PassportLogo />;
   }
 
   return (
@@ -47,20 +40,7 @@ export const Header = ({
   passingScore?: boolean;
   score?: number;
 }) => {
-  const { currentStep } = useStep();
-
-  const subtitle = (() => {
-    switch (currentStep) {
-      case "checking":
-        return "VERIFYING...";
-      case "congrats":
-        return "CONGRATULATIONS";
-      case "scoreTooLow":
-        return "LOW SCORE";
-      default:
-        return "CONNECT WALLET";
-    }
-  })();
+  const { subtitle, showLoadingIcon } = useHeaderControls();
 
   return (
     <div className={styles.container}>
@@ -69,6 +49,7 @@ export const Header = ({
         <div className={styles.subtitle}>{subtitle}</div>
       </div>
       <ScoreDisplay score={score} passingScore={passingScore} />
+      {showLoadingIcon && <Ellipsis />}
     </div>
   );
 };

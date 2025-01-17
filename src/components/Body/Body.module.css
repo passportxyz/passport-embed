@@ -1,5 +1,3 @@
-@import "../theme.css";
-
 .container {
   width: 100%;
   padding: var(--widget-padding-y-c6dbf459) var(--widget-padding-x-c6dbf459)
@@ -23,6 +21,7 @@
 .textBlock {
   flex-grow: 1;
 
+  width: 100%;
   margin-bottom: 12px;
 
   display: flex;
