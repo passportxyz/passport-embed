@@ -1,14 +1,19 @@
 import { createContext, useContext, useMemo } from "react";
 import { PassportEmbedProps } from "../hooks/usePassportScore";
+import { QueryClient } from "@tanstack/react-query";
+import { widgetQueryClient } from "../widgets/Widget";
 
 type QueryContextValue = Pick<
   PassportEmbedProps,
-  "apiKey" | "address" | "scorerId" | "overrideIamUrl" | "queryClient"
->;
+  "apiKey" | "address" | "scorerId" | "overrideIamUrl"
+> & {
+  queryClient: QueryClient; // This makes queryClient required
+};
 
 export const QueryContext = createContext<QueryContextValue>({
   apiKey: "",
   scorerId: "",
+  queryClient: widgetQueryClient,
 });
 
 export const QueryContextProvider = ({
@@ -20,14 +25,15 @@ export const QueryContextProvider = ({
   queryClient,
 }: {
   children: React.ReactNode;
-} & QueryContextValue) => {
+} & PassportEmbedProps) => {
   const value = useMemo(
     () => ({
       apiKey,
       address,
       scorerId,
       overrideIamUrl,
-      queryClient,
+      // Use override if passed in, otherwise use the widget query client
+      queryClient: queryClient || widgetQueryClient,
     }),
     [apiKey, address, scorerId, overrideIamUrl, queryClient]
   );

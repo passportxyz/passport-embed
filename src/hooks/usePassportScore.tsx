@@ -2,6 +2,7 @@ import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
 const DEFAULT_IAM_URL = "https://embed.passport.xyz";
 import axios from "axios";
 import { useQueryContext } from "../contexts/QueryContext";
+import { useCallback } from "react";
 
 export type PassportEmbedProps = {
   apiKey: string;
@@ -49,6 +50,25 @@ export const useWidgetPassportScore = () => {
   return usePassportScore(queryProps);
 };
 
+const useQueryKey = ({
+  address,
+  scorerId,
+  overrideIamUrl,
+}: Pick<PassportEmbedProps, "address" | "scorerId" | "overrideIamUrl">) => {
+  return ["passportScore", address, scorerId, overrideIamUrl];
+};
+
+export const useResetPassportScore = () => {
+  const queryProps = useQueryContext();
+  const queryKey = useQueryKey(queryProps);
+
+  const resetPassportScore = useCallback(() => {
+    queryProps.queryClient.invalidateQueries({ queryKey });
+  }, [queryProps.queryClient, queryKey]);
+
+  return { resetPassportScore };
+};
+
 export const usePassportScore = ({
   apiKey,
   address,
@@ -59,10 +79,12 @@ export const usePassportScore = ({
   // If a queryClient is not provided, use the nearest one
   const nearestClient = useQueryClient();
 
+  const queryKey = useQueryKey({ address, scorerId, overrideIamUrl });
+
   return useQuery(
     {
+      queryKey,
       enabled: Boolean(address && apiKey && scorerId),
-      queryKey: ["passportScore", address, scorerId, overrideIamUrl],
       queryFn: () =>
         fetchPassportScore({ apiKey, address, scorerId, overrideIamUrl }),
     },
