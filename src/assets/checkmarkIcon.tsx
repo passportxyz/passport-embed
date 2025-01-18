@@ -14,9 +14,9 @@ export const CheckmarkIcon = ({ className }: { className?: string }) => (
     <path
       d="M10 16.6667L14.439 21L23 12"
       stroke="rgb(var(--color-background-c6dbf459))"
-      stroke-width="3"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );

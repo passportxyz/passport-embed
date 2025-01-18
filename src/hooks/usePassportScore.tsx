@@ -40,7 +40,14 @@ export type PassportScore = {
 
 export type PassportEmbedResult = {
   data: PassportScore | undefined;
+
+  // No data yet
+  isPending: boolean;
+  // Currently querying data
+  isFetching: boolean;
+  // isPending && isFetching
   isLoading: boolean;
+
   isError: boolean;
   error: any;
 };

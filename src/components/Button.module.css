@@ -18,6 +18,11 @@
     outline var(--transition-speed-c6dbf459) ease;
 }
 
+.invert {
+  background-color: rgba(var(--color-background-c6dbf459), 1);
+  color: rgba(var(--color-primary-c6dbf459), 1);
+}
+
 .button:hover {
   outline: 1px solid rgba(var(--color-secondary-c6dbf459), 0.8);
   filter: brightness(0.8);

@@ -1,0 +1,21 @@
+@import "../theme.css";
+
+.textButton {
+  padding: 4px 8px;
+  cursor: pointer;
+
+  background-color: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-weight: inherit;
+  font-size: inherit;
+  border: none;
+}
+
+.textButton:hover {
+  text-decoration: underline;
+}
+
+.textButton:disabled {
+  cursor: not-allowed;
+}

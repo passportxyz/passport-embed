@@ -1,0 +1,40 @@
+.scrollableDiv {
+  display: grid;
+  place-items: center;
+}
+
+.scrollableDiv:hover .scrollIndicator {
+  opacity: 0;
+}
+
+.scrollableDiv > * {
+  grid-row: 1;
+  grid-column: 1;
+}
+
+.scrollIndicator {
+  pointer-events: none;
+  transition: opacity 0.5s;
+}
+
+.scrollDownIndicator {
+  align-self: end;
+}
+
+.scrollUpIndicator {
+  align-self: start;
+  rotate: 180deg;
+}
+
+.visible {
+  opacity: 0.6;
+}
+
+.invisible {
+  opacity: 0;
+}
+
+/* Element must have fixed height */
+.scrollable {
+  overflow-y: scroll;
+}

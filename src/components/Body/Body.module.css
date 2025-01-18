@@ -16,13 +16,14 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  gap: 8px;
 }
 
 .textBlock {
   flex-grow: 1;
 
   width: 100%;
-  margin-bottom: 12px;
 
   display: flex;
   flex-direction: column;
@@ -37,4 +38,53 @@
 .heading {
   font-size: 18px;
   font-weight: 700;
+}
+
+.platformButton {
+  padding: 8px 20px;
+  width: 100%;
+
+  background-color: rgba(var(--color-background-c6dbf459), 1);
+  color: rgba(var(--color-primary-c6dbf459), 1);
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+
+  line-height: 1;
+
+  cursor: pointer;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--color-primary-c6dbf459), 1);
+  transition: outline var(--transition-speed-c6dbf459) ease;
+}
+
+.platformButton:hover {
+  outline: 1px solid rgba(var(--color-primary-c6dbf459), 1);
+}
+
+.platformButton:disabled {
+  cursor: not-allowed;
+}
+
+.platformButtonTitle {
+  line-height: 1;
+  flex-grow: 1;
+  font-weight: 500;
+  text-align: left;
+}
+
+.platformButtonWeight {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.platformButtonGroup {
+  height: 100px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 2px 0px;
 }

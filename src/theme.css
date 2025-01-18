@@ -1,9 +1,9 @@
 /*
  * Fetches these fonts
- * - Poppins at 400 and 700 weights
+ * - Poppins at 400, 500, and 700 weights
  * - DM Mono at 500 weight
  */
-@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@500&family=Poppins:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@500&family=Poppins:wght@400;500;700&display=swap");
 
 /*
  * c6dbf459 is the first 4 bytes of
