@@ -15,12 +15,14 @@
 
   cursor: pointer;
   transition: filter var(--transition-speed-c6dbf459) ease,
-    outline var(--transition-speed-c6dbf459) ease;
+    outline var(--transition-speed-c6dbf459) ease,
+    opacity var(--transition-speed-c6dbf459) ease;
 }
 
 .invert {
   background-color: rgba(var(--color-background-c6dbf459), 1);
   color: rgba(var(--color-primary-c6dbf459), 1);
+  opacity: 1;
 }
 
 .button:hover {
@@ -31,4 +33,12 @@
 .button:disabled {
   filter: brightness(0.8);
   cursor: not-allowed;
+}
+
+.invert:hover {
+  opacity: 0.75;
+}
+
+.invert:disabled {
+  opacity: 0.75;
 }

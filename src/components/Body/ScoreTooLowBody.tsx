@@ -8,6 +8,7 @@ import { TextButton } from "../TextButton";
 import { displayNumber } from "../../utils";
 import { RightArrow } from "../../assets/rightArrow";
 import { ScrollableDiv } from "../ScrollableDiv";
+import { PlatformVerification } from "./PlatformVerification";
 
 type VerifyStampsStep = "initialTooLow" | "addStamps" | "finalTooLow";
 
@@ -21,11 +22,12 @@ type Credential = {
   weight: string;
 };
 
-type Platform = {
+export type Platform = {
   name: string;
   description: JSX.Element;
   documentationLink: string;
   credentials: Credential[];
+  displayWeight: string; // calculated
 };
 
 type StampPage = {
@@ -102,7 +104,18 @@ const STAMP_PAGES: StampPage[] = [
       },
     ],
   },
-];
+].map((page) => ({
+  ...page,
+  platforms: page.platforms.map((platform) => ({
+    ...platform,
+    displayWeight: displayNumber(
+      platform.credentials.reduce(
+        (acc, credential) => acc + parseFloat(credential.weight),
+        0
+      )
+    ),
+  })),
+}));
 
 export const ScoreTooLowBody = () => {
   const [step, setStep] = useState<VerifyStampsStep>("initialTooLow");
@@ -130,18 +143,22 @@ const usePages = <T,>(pages: T[]) => {
   return { page, nextPage, prevPage, isFirstPage, isLastPage };
 };
 
-const PlatformButton = ({ platform }: { platform: Platform }) => {
-  const weight = displayNumber(
-    platform.credentials.reduce(
-      (acc, credential) => acc + parseFloat(credential.weight),
-      0
-    )
-  );
-
+const PlatformButton = ({
+  platform,
+  setOpenPlatform,
+}: {
+  platform: Platform;
+  setOpenPlatform: (platform: Platform) => void;
+}) => {
   return (
-    <button className={styles.platformButton}>
+    <button
+      className={styles.platformButton}
+      onClick={() => setOpenPlatform(platform)}
+    >
       <div className={styles.platformButtonTitle}>{platform.name}</div>
-      <div className={styles.platformButtonWeight}>{weight}</div>
+      <div className={styles.platformButtonWeight}>
+        {platform.displayWeight}
+      </div>
       <RightArrow />
     </button>
   );
@@ -152,6 +169,8 @@ const AddStamps = ({ onFail }: { onFail: () => void }) => {
   const { setSubtitle, setShowLoadingIcon } = useHeaderControls();
   const { page, nextPage, prevPage, isFirstPage, isLastPage } =
     usePages(STAMP_PAGES);
+
+  const [openPlatform, setOpenPlatform] = useState<Platform | null>(null);
 
   const { header, platforms } = page;
 
@@ -169,6 +188,15 @@ const AddStamps = ({ onFail }: { onFail: () => void }) => {
     setSubtitle("VERIFY STAMPS");
   });
 
+  if (openPlatform) {
+    return (
+      <PlatformVerification
+        platform={openPlatform}
+        onClose={() => setOpenPlatform(null)}
+      />
+    );
+  }
+
   return (
     <>
       <div className={styles.textBlock}>
@@ -177,7 +205,11 @@ const AddStamps = ({ onFail }: { onFail: () => void }) => {
       </div>
       <ScrollableDiv className={styles.platformButtonGroup}>
         {platforms.map((platform) => (
-          <PlatformButton key={platform.name} platform={platform} />
+          <PlatformButton
+            key={platform.name}
+            platform={platform}
+            setOpenPlatform={setOpenPlatform}
+          />
         ))}
       </ScrollableDiv>
       {isLastPage || (
