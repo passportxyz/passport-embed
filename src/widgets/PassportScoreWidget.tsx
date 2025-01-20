@@ -6,10 +6,11 @@ import {
 import styles from "./PassportScoreWidget.module.css";
 import { useState } from "react";
 import { Button } from "../components/Button";
+import { config } from "../config";
 
-// "https://embed.review.passport.xyz/popup",
-const embedPopUpUrl = "http://localhost:3002";
-
+// "https://embed.review.passport.xyz/popup",  // "http://localhost:3005";
+const DEFAULT_EMBED_POPUP_URL = "https://embed.review.passport.xyz/popup";
+const IAM_URL = "https://iam.staging.passport.xyz"; // TODO: this should be clarifyied after deployment
 // Format to max of 2 decimal places
 const displayNumber = (num?: string) =>
   String(+parseFloat(num || "0").toFixed(2));
@@ -54,11 +55,7 @@ const ScoreButton = ({
   </Button>
 );
 
-const PassportScore = ({
-  address,
-  generateSignature,
-  signature,
-}: PassportEmbedProps) => {
+const PassportScore = ({ address, generateSignature }: PassportEmbedProps) => {
   const [enabled, setEnabled] = useState(false);
 
   const { data, isLoading, isError, error } = usePassportScore({
@@ -72,33 +69,51 @@ const PassportScore = ({
       console.warn("generateSignature function is not provided");
       return;
     }
-    try {
-      const signedMessage = await generateSignature("Hello World!");
-      console.log(
-        "Generated signature for LinkedIn OAuth Stamp:",
-        signedMessage
-      );
-      // Additional logic to handle LinkedIn OAuth can go here
-      const _embedPopUpUrl = `${embedPopUpUrl}?address=${encodeURIComponent(
-        address
-      )}&signature=${encodeURIComponent(signedMessage)}`;
-      // Open Popup window for LinkedIn OAuth
-      const popup = window.open(
-        // The content of the popup will be deployed on AWS
-        _embedPopUpUrl,
-        "passportPopup",
-        "width=600,height=700"
-      );
+    // try {
+    // Get challenge from the IAM service
 
-      // if (popup) {
-      //   // Communicate with the popup (optional)
-      //   popup.onload = () => {
-      //     popup.postMessage({ msg: "Hello" }, "*");
-      //   };
-      // }
-    } catch (error) {
-      console.error("Error during LinkedIn OAuth:", error);
-    }
+    const payload = {
+      address: address,
+      signatureType: "EIP712",
+      type: "Linkedin",
+    };
+
+    // Make a POST request to get the challenge
+    // "http://localhost:8003/api/v0.0.0/challenge"
+    const response = await fetch(`${IAM_URL}/api/v0.0.0/challenge`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ payload }),
+    });
+
+    const challenge = await response.json();
+    const _challenge = challenge.credential.credentialSubject.challenge;
+
+    // Generate signature for the challenge
+    const signedMessage = await generateSignature(_challenge);
+    console.log("Generated signature for LinkedIn OAuth Stamp:", signedMessage);
+
+    const _embedPopUpUrl = `${
+      config.overrideEmbedPopUpUrl || DEFAULT_EMBED_POPUP_URL
+    }?address=${encodeURIComponent(address)}&signature=${encodeURIComponent(
+      signedMessage
+    )}&challenge=${encodeURIComponent(_challenge)}`;
+    const popup = window.open(
+      _embedPopUpUrl,
+      "passportPopup",
+      "width=600,height=700"
+    );
+
+    // if (popup) {
+    //   popup.onload = () => {
+    //     popup.postMessage({ msg: "Hello" }, "*");
+    //   };
+    // }
+    // } catch (error) {
+    //   console.error("Error during LinkedIn OAuth:", error);
+    // }
   };
 
   return (

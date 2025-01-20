@@ -18,6 +18,7 @@ setConfig({
   apiKey: API_KEY,
   scorerId: SCORER_ID,
   overrideIamUrl: "https://embed.staging.passport.xyz",
+  overrideEmbedPopUpUrl: "http://localhost:3005", // https://embed.review.passport.xyz/popup
 });
 
 // Initialize React Query's QueryClient
