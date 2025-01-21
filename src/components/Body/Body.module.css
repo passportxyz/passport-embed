@@ -1,7 +1,6 @@
 .container {
   width: 100%;
-  padding: var(--widget-padding-y-c6dbf459) var(--widget-padding-x-c6dbf459)
-    calc(2 * var(--widget-padding-y-c6dbf459));
+  padding: var(--widget-padding-y-c6dbf459) var(--widget-padding-x-c6dbf459);
 
   box-sizing: border-box;
 
@@ -68,6 +67,11 @@
   cursor: not-allowed;
 }
 
+.platformButtonClaimed {
+  background-color: rgba(var(--color-primary-c6dbf459), 1);
+  color: rgba(var(--color-background-c6dbf459), 1);
+}
+
 .platformButtonTitle {
   line-height: 1;
   flex-grow: 1;
@@ -81,10 +85,24 @@
 }
 
 .platformButtonGroup {
-  height: 100px;
+  height: 110px;
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 2px 0px;
+}
+
+.link {
+  color: inherit;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.navigationButtons {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+  width: 100%;
 }

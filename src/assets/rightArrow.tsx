@@ -1,4 +1,10 @@
-export const RightArrow = ({ className }: { className?: string }) => (
+export const RightArrow = ({
+  className,
+  invertColors,
+}: {
+  className?: string;
+  invertColors?: boolean;
+}) => (
   <svg
     className={className}
     width="8"
@@ -9,7 +15,11 @@ export const RightArrow = ({ className }: { className?: string }) => (
   >
     <path
       d="M1 11L7 6L1 1"
-      stroke="rgb(var(--color-primary-c6dbf459))"
+      stroke={
+        invertColors
+          ? "rgb(var(--color-background-c6dbf459))"
+          : "rgb(var(--color-primary-c6dbf459))"
+      }
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"

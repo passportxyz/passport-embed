@@ -1,9 +1,13 @@
 import styles from "./PlatformVerification.module.css";
 import utilStyles from "../../utilStyles.module.css";
-import { createRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../Button";
-import { Platform } from "./ScoreTooLowBody";
+import { Hyperlink, Platform, usePlatformStatus } from "./ScoreTooLowBody";
 import { ScrollableDiv } from "../ScrollableDiv";
+import {
+  useWidgetIsQuerying,
+  useWidgetVerifyCredentials,
+} from "../../hooks/usePassportScore";
 
 const CloseIcon = () => (
   <svg
@@ -37,11 +41,33 @@ export const PlatformVerification = ({
   platform: Platform;
   onClose: () => void;
 }) => {
+  const { claimed } = usePlatformStatus({ platform });
+  const [initiatedVerification, setInitiatedVerification] = useState(false);
+  const [failedVerification, setFailedVerification] = useState(false);
+
+  const { verifyCredentials } = useWidgetVerifyCredentials();
+  const platformCredentialIds = platform.credentials.map(({ id }) => id);
+  const isQuerying = useWidgetIsQuerying();
+
+  useEffect(() => {
+    if (initiatedVerification && !isQuerying) {
+      if (claimed) {
+        onClose();
+      } else {
+        setFailedVerification(true);
+      }
+    }
+  }, [initiatedVerification, isQuerying, claimed, onClose]);
+
   return (
     <div className={styles.container}>
       <div className={styles.headerContainer}>
         <div>{platform.name}</div>
-        <button onClick={onClose} className={styles.closeButton}>
+        <button
+          onClick={onClose}
+          className={styles.closeButton}
+          disabled={isQuerying}
+        >
           <CloseIcon />
         </button>
       </div>
@@ -49,10 +75,33 @@ export const PlatformVerification = ({
         className={styles.description}
         invertScrollIconColor={true}
       >
-        {platform.description}
+        {failedVerification ? (
+          <div>
+            Unable to claim this Stamp. Find{" "}
+            <Hyperlink href={platform.documentationLink}>
+              instructions here
+            </Hyperlink>{" "}
+            and come back after.
+          </div>
+        ) : (
+          platform.description
+        )}
       </ScrollableDiv>
-      <Button className={utilStyles.wFull} onClick={onClose} invert={true}>
-        Verify
+      <Button
+        className={utilStyles.wFull}
+        invert={true}
+        disabled={isQuerying || claimed}
+        onClick={() => {
+          verifyCredentials(platformCredentialIds);
+          setFailedVerification(false);
+          setInitiatedVerification(true);
+        }}
+      >
+        {failedVerification
+          ? "Try Again"
+          : claimed
+          ? "Already Verified"
+          : `Verify${isQuerying ? "ing..." : ""}`}
       </Button>
     </div>
   );

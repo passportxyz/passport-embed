@@ -1,7 +1,7 @@
 import styles from "./Body.module.css";
 import utilStyles from "../../utilStyles.module.css";
 import { Button } from "../Button";
-import { createRef, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useHeaderControls } from "../../contexts/HeaderContext";
 import { useWidgetPassportScore } from "../../hooks/usePassportScore";
 import { TextButton } from "../TextButton";
@@ -9,8 +9,6 @@ import { displayNumber } from "../../utils";
 import { RightArrow } from "../../assets/rightArrow";
 import { ScrollableDiv } from "../ScrollableDiv";
 import { PlatformVerification } from "./PlatformVerification";
-
-type VerifyStampsStep = "initialTooLow" | "addStamps" | "finalTooLow";
 
 // TODO should probably load this data from an API endpoint, so that
 // if we need to add/change/remove stamps, integrators don't need to
@@ -35,6 +33,27 @@ type StampPage = {
   platforms: Platform[];
 };
 
+export const Hyperlink = ({
+  href,
+  children,
+  className,
+}: {
+  href: string;
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    className={`${styles.link} ${className}`}
+  >
+    {children}
+  </a>
+);
+
+const VISIT_PASSPORT_HEADER = "More Options";
+
 const STAMP_PAGES: StampPage[] = [
   {
     header: "KYC verification",
@@ -44,31 +63,33 @@ const STAMP_PAGES: StampPage[] = [
         description: (
           <div>
             If you do not have the Binance Account Bound Token (BABT), obtain it{" "}
-            <a>here</a> by verifying your identity and logging into your Binance
-            account.
+            <a
+              href="http://google.com"
+              style={{
+                color: "inherit",
+                fontWeight: "700",
+                textDecoration: "none",
+              }}
+              rel="noopener noreferrer"
+              target="_blank"
+            >
+              here
+            </a>{" "}
+             by verifying your identity and logging into your Binance account.
+            Then return here and click Verify to claim this Stamp.
           </div>
         ),
         documentationLink: "https://google.com",
         credentials: [
           {
-            id: "BinanceBABT2",
+            // id: "BinanceBABT2",
+            id: "NFT",
             weight: "16",
           },
         ],
       },
       {
         name: "Holonym",
-        description: <div>TODO</div>,
-        documentationLink: "https://google.com",
-        credentials: [
-          {
-            id: "HolonymGovIdProvider",
-            weight: "16",
-          },
-        ],
-      },
-      {
-        name: "Shlolonym",
         description: <div>TODO</div>,
         documentationLink: "https://google.com",
         credentials: [
@@ -104,6 +125,10 @@ const STAMP_PAGES: StampPage[] = [
       },
     ],
   },
+  {
+    header: VISIT_PASSPORT_HEADER,
+    platforms: [],
+  },
 ].map((page) => ({
   ...page,
   platforms: page.platforms.map((platform) => ({
@@ -118,15 +143,13 @@ const STAMP_PAGES: StampPage[] = [
 }));
 
 export const ScoreTooLowBody = () => {
-  const [step, setStep] = useState<VerifyStampsStep>("initialTooLow");
+  const [addingStamps, setAddingStamps] = useState(false);
 
-  if (step === "initialTooLow") {
-    return <InitialTooLow onContinue={() => setStep("addStamps")} />;
-  } else if (step === "addStamps") {
-    return <AddStamps onFail={() => setStep("finalTooLow")} />;
-  } else {
-    return <FinalTooLow />;
-  }
+  return addingStamps ? (
+    <AddStamps />
+  ) : (
+    <InitialTooLow onContinue={() => setAddingStamps(true)} />
+  );
 };
 
 const usePages = <T,>(pages: T[]) => {
@@ -143,6 +166,23 @@ const usePages = <T,>(pages: T[]) => {
   return { page, nextPage, prevPage, isFirstPage, isLastPage };
 };
 
+const ClaimedIcon = () => (
+  <svg
+    width="16"
+    height="16"
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle cx="8" cy="8" r="8" fill="rgb(var(--color-background-c6dbf459)" />
+    <path
+      d="M4 7.5L7 10.5L11.5 6"
+      stroke="rgb(var(--color-primary-c6dbf459)"
+      strokeWidth="2"
+    />
+  </svg>
+);
+
 const PlatformButton = ({
   platform,
   setOpenPlatform,
@@ -150,39 +190,56 @@ const PlatformButton = ({
   platform: Platform;
   setOpenPlatform: (platform: Platform) => void;
 }) => {
+  const { claimed } = usePlatformStatus({ platform });
+
   return (
     <button
-      className={styles.platformButton}
+      className={`${styles.platformButton} ${
+        claimed ? styles.platformButtonClaimed : ""
+      }`}
       onClick={() => setOpenPlatform(platform)}
     >
       <div className={styles.platformButtonTitle}>{platform.name}</div>
-      <div className={styles.platformButtonWeight}>
-        {platform.displayWeight}
-      </div>
-      <RightArrow />
+      {claimed ? (
+        <ClaimedIcon />
+      ) : (
+        <div className={styles.platformButtonWeight}>
+          {platform.displayWeight}
+        </div>
+      )}
+      <RightArrow invertColors={claimed} />
     </button>
   );
 };
 
-const AddStamps = ({ onFail }: { onFail: () => void }) => {
-  const { data, isLoading, isPending, isFetching } = useWidgetPassportScore();
-  const { setSubtitle, setShowLoadingIcon } = useHeaderControls();
+export const usePlatformStatus = ({ platform }: { platform: Platform }) => {
+  const { data } = useWidgetPassportScore();
+
+  const claimedCredentialIds = Object.entries(data?.stamps || {}).reduce(
+    (claimedIds, [id, { score }]) => {
+      if (score > 0) {
+        claimedIds.push(id);
+      }
+      return claimedIds;
+    },
+    [] as string[]
+  );
+
+  const claimed = platform.credentials.some((credential) =>
+    claimedCredentialIds.includes(credential.id)
+  );
+
+  return useMemo(() => ({ claimed }), [claimed]);
+};
+
+const AddStamps = () => {
+  const { setSubtitle } = useHeaderControls();
   const { page, nextPage, prevPage, isFirstPage, isLastPage } =
     usePages(STAMP_PAGES);
 
   const [openPlatform, setOpenPlatform] = useState<Platform | null>(null);
 
   const { header, platforms } = page;
-
-  console.log("data", data);
-  console.log("isLoading", isLoading);
-  console.log("isPending", isPending);
-  console.log("isFetching", isFetching);
-
-  useEffect(() => {
-    setShowLoadingIcon(isFetching);
-    return () => setShowLoadingIcon(false);
-  }, [isFetching]);
 
   useEffect(() => {
     setSubtitle("VERIFY STAMPS");
@@ -197,37 +254,47 @@ const AddStamps = ({ onFail }: { onFail: () => void }) => {
     );
   }
 
+  const isVisitPassportPage = header === VISIT_PASSPORT_HEADER;
+
   return (
     <>
       <div className={styles.textBlock}>
         <div className={styles.heading}>{header}</div>
-        <div>Choose from below and verify</div>
+        {isVisitPassportPage ? (
+          <div>
+            Visit{" "}
+            <Hyperlink href="https://app.passport.xyz">Passport XYZ</Hyperlink>{" "}
+            for more Stamp options!
+          </div>
+        ) : (
+          <div>Choose from below and verify</div>
+        )}
       </div>
-      <ScrollableDiv className={styles.platformButtonGroup}>
-        {platforms.map((platform) => (
-          <PlatformButton
-            key={platform.name}
-            platform={platform}
-            setOpenPlatform={setOpenPlatform}
-          />
-        ))}
-      </ScrollableDiv>
-      {isLastPage || (
-        <TextButton onClick={nextPage}>Try another way</TextButton>
+      {isVisitPassportPage || (
+        <ScrollableDiv className={styles.platformButtonGroup}>
+          {platforms.map((platform) => (
+            <PlatformButton
+              key={platform.name}
+              platform={platform}
+              setOpenPlatform={setOpenPlatform}
+            />
+          ))}
+        </ScrollableDiv>
       )}
-      {isFirstPage || <TextButton onClick={prevPage}>Go back</TextButton>}
+      <div
+        className={`${styles.navigationButtons} ${
+          isFirstPage || isLastPage
+            ? utilStyles.justifyCenter
+            : utilStyles.justifyBetween
+        }`}
+      >
+        {isFirstPage || <TextButton onClick={prevPage}>Go back</TextButton>}
+        {isLastPage || (
+          <TextButton onClick={nextPage}>Try another way</TextButton>
+        )}
+      </div>
     </>
   );
-};
-
-const FinalTooLow = () => {
-  const { setSubtitle } = useHeaderControls();
-
-  useEffect(() => {
-    setSubtitle("LOW SCORE");
-  });
-
-  return <div>Still too low TODO</div>;
 };
 
 const InitialTooLow = ({ onContinue }: { onContinue: () => void }) => {

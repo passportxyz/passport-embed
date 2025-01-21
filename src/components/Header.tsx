@@ -4,7 +4,10 @@ import { CheckmarkIcon } from "../assets/checkmarkIcon";
 import { XIcon } from "../assets/xIcon";
 import { Ellipsis } from "./Ellipsis";
 import { useHeaderControls } from "../contexts/HeaderContext";
-import { useWidgetPassportScore } from "../hooks/usePassportScore";
+import {
+  useWidgetIsQuerying,
+  useWidgetPassportScore,
+} from "../hooks/usePassportScore";
 import { displayNumber } from "../utils";
 
 const ScoreDisplay = () => {
@@ -28,7 +31,8 @@ const ScoreDisplay = () => {
   );
 };
 export const Header = () => {
-  const { subtitle, showLoadingIcon } = useHeaderControls();
+  const { subtitle } = useHeaderControls();
+  const isQuerying = useWidgetIsQuerying();
 
   return (
     <div className={styles.container}>
@@ -37,7 +41,7 @@ export const Header = () => {
         <div className={styles.subtitle}>{subtitle}</div>
       </div>
       <ScoreDisplay />
-      {showLoadingIcon && <Ellipsis />}
+      {isQuerying && <Ellipsis />}
     </div>
   );
 };

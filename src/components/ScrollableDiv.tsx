@@ -102,7 +102,6 @@ const ScrollIndicator = ({
       >
         <defs>
           <filter id="f1">
-            {/* Smaller shadow matching the indicator, to help it pop */}
             <feDropShadow
               dx="0"
               dy="0"
@@ -116,23 +115,22 @@ const ScrollIndicator = ({
                 "), 1)"
               }
             />
-            {/* Larger shadow matching the background, so the indicator
-            stands out against the foreground */}
-            <feDropShadow
-              dx="0"
-              dy="0"
-              stdDeviation="2"
-              floodOpacity="1"
-              floodColor={
-                "rgba(var(" +
-                (invertScrollIconColor
-                  ? "--color-primary-c6dbf459"
-                  : "--color-background-c6dbf459") +
-                "), 1)"
-              }
-            />
           </filter>
         </defs>
+        {/* This is a slightly larger arrow matching the background,
+          so that the arrow stands out against foreground text */}
+        <path
+          d="M0 0.999999L8 7.5L16 1"
+          stroke={
+            invertScrollIconColor
+              ? "rgb(var(--color-primary-c6dbf459))"
+              : "rgb(var(--color-background-c6dbf459))"
+          }
+          strokeWidth="7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        {/* This is the main arrow */}
         <path
           d="M1 0.999999L8 7L15 1"
           stroke={

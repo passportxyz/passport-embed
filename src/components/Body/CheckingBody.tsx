@@ -5,15 +5,10 @@ import { useEffect } from "react";
 import { useHeaderControls } from "../../contexts/HeaderContext";
 
 export const CheckingBody = () => {
-  const { setShowLoadingIcon, setSubtitle } = useHeaderControls();
+  const { setSubtitle } = useHeaderControls();
 
   useEffect(() => {
-    setShowLoadingIcon(true);
     setSubtitle("VERIFYING...");
-
-    return () => {
-      setShowLoadingIcon(false);
-    };
   });
 
   return (

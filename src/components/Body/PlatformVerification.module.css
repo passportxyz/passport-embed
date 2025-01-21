@@ -42,3 +42,7 @@
   color: inherit;
   border: none;
 }
+
+.closeButton:disabled {
+  cursor: not-allowed;
+}
