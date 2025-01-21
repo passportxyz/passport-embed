@@ -10,7 +10,8 @@ import { config } from "../config";
 
 // "https://embed.review.passport.xyz/popup",  // "http://localhost:3005";
 const DEFAULT_EMBED_POPUP_URL = "https://embed.review.passport.xyz/popup";
-const IAM_URL = "https://iam.staging.passport.xyz"; // TODO: this should be clarifyied after deployment
+// const IAM_URL = "https://iam.staging.passport.xyz"; // TODO: this should be clarifyied after deployment
+const IAM_URL = "http://localhost:8003";
 // Format to max of 2 decimal places
 const displayNumber = (num?: string) =>
   String(+parseFloat(num || "0").toFixed(2));
@@ -100,12 +101,54 @@ const PassportScore = ({ address, generateSignature }: PassportEmbedProps) => {
     }?address=${encodeURIComponent(address)}&signature=${encodeURIComponent(
       signedMessage
     )}&challenge=${encodeURIComponent(_challenge)}`;
+
+    // const _embedPopUpUrl = `${
+    //   config.overrideEmbedPopUpUrl || DEFAULT_EMBED_POPUP_URL
+    // }?address=${encodeURIComponent(address)}&signature=${encodeURIComponent(
+    //   signedMessage
+    // )}&challenge=${encodeURIComponent(
+    //   JSON.stringify(challenge)
+    // )}&originUrl=${encodeURIComponent(window.location.href)} `;
+    console.log("Embed PopUp URL:", _embedPopUpUrl);
     const popup = window.open(
       _embedPopUpUrl,
       "passportPopup",
       "width=600,height=700"
     );
 
+    if (!popup) {
+      console.error("Failed to open pop-up");
+      return;
+    }
+
+    // Check if the pop-up is closed every 100ms
+    const checkPopupClosed = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(checkPopupClosed);
+        console.log("Pop-up closed");
+        alert("LinkedIn OAuth process completed or cancelled. Interval check");
+      }
+    }, 100);
+
+    // window.addEventListener("message", (event) => {
+    //   console.log("GOT POPUP MESSAGE", event);
+    //   // if (
+    //   //   event.origin !==
+    //   //   `${config.overrideEmbedPopUpUrl || DEFAULT_EMBED_POPUP_URL})`
+    //   // ) {
+    //   //   console.error("Invalid origin:", event.origin);
+    //   //   return;
+    //   // }
+    //   if (event.data?.step === "popup_closed") {
+    //     console.log("Popup has been closed.");
+    //     alert("The LinkedIn OAuth pop-up was closed.");
+    //   }
+    // });
+
+    // Alternativ to pass all data to the popup window
+    // But this is insecure , if we want this approach we should request
+    // form integrators the main link and verify the surce of the message in the popup window
+    // and consider it valid only if it comes from the a list of configured valid hosts.
     // if (popup) {
     //   popup.onload = () => {
     //     popup.postMessage({ msg: "Hello" }, "*");
