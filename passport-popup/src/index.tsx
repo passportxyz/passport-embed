@@ -85,16 +85,15 @@ function App() {
           };
 
           // Make the verify call
-          const response = "Mock response";
-          // await fetchVerifiableCredential(
-          //   verifyEndpoint,
-          //   payload
-          // );
+          const response = await fetchVerifiableCredential(
+            verifyEndpoint,
+            payload
+          );
           // Wait for 1 minute before proceeding
           // console.log("Origin URL:", _originUrl);
-          console.log("Waiting for 1 minute before proceeding...");
-          await new Promise((resolve) => setTimeout(resolve, 60000));
-          console.log("1 minute has passed. Proceeding ...");
+          // console.log("Waiting for 1 minute before proceeding...");
+          // await new Promise((resolve) => setTimeout(resolve, 60000));
+          // console.log("1 minute has passed. Proceeding ...");
 
           console.log("Verification response:", response);
           setStep("Verification successful!");
@@ -108,7 +107,7 @@ function App() {
           //     // window.location.origin // This is not working
           //   );
           // }
-          window.close(); // Close the pop-up after sending the message
+          // window.close(); // Close the pop-up after sending the message
         } catch (error) {
           console.error("Error during verification:", error);
           setStep(`Verification failed to ${verifyEndpoint}`);
@@ -125,7 +124,7 @@ function App() {
           //   );
           // }
 
-          window.close(); // Close the pop-up after sending the message
+          // window.close(); // Close the pop-up after sending the message
         }
       }
     };

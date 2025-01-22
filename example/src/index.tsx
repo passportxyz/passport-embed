@@ -94,7 +94,6 @@ const App = () => {
             address={address || ""}
             enabled={true}
             generateSignature={generateSignature}
-            signature={signature}
           />
           <div>
             <h3>Passport Details</h3>
