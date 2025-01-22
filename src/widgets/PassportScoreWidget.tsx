@@ -58,6 +58,7 @@ const ScoreButton = ({
 
 const PassportScore = ({ address, generateSignature }: PassportEmbedProps) => {
   const [enabled, setEnabled] = useState(false);
+  const [_, setRefresh] = useState(false);
 
   const { data, isLoading, isError, error } = usePassportScore({
     enabled,
@@ -127,6 +128,8 @@ const PassportScore = ({ address, generateSignature }: PassportEmbedProps) => {
         clearInterval(checkPopupClosed);
         console.log("Pop-up closed");
         alert("LinkedIn OAuth process completed or cancelled. Interval check");
+        // Refresh stamps
+        setRefresh(true);
       }
     }, 100);
 
