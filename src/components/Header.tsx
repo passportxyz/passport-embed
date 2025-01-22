@@ -9,6 +9,7 @@ import {
   useWidgetPassportScore,
 } from "../hooks/usePassportScore";
 import { displayNumber } from "../utils";
+import { Dispatch, SetStateAction } from "react";
 
 const ScoreDisplay = () => {
   const { data } = useWidgetPassportScore();
@@ -30,7 +31,13 @@ const ScoreDisplay = () => {
     </>
   );
 };
-export const Header = () => {
+export const Header = ({
+  bodyIsOpen,
+  setBodyIsOpen,
+}: {
+  bodyIsOpen: boolean;
+  setBodyIsOpen: Dispatch<SetStateAction<boolean>>;
+}) => {
   const { subtitle } = useHeaderControls();
   const isQuerying = useWidgetIsQuerying();
 
@@ -40,6 +47,9 @@ export const Header = () => {
         Passport XYZ Score
         <div className={styles.subtitle}>{subtitle}</div>
       </div>
+      <button onClick={() => setBodyIsOpen((isOpen) => !isOpen)}>
+        {bodyIsOpen ? "Hide" : "Show"}
+      </button>
       <ScoreDisplay />
       {isQuerying && <Ellipsis />}
     </div>
