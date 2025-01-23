@@ -2,7 +2,7 @@
   "name": "passport-embed",
   "version": "0.0.1",
   "description": "Passport XYZ Embeddable Widgets",
-  "repository": "https://github.com/passportxyz/passport-widgets/widgets",
+  "repository": "https://github.com/passportxyz/passport-embed",
   "license": "AGPL-3.0-or-later",
   "author": "PassportXYZ",
   "type": "module",
