@@ -1,9 +1,12 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 
+export type CollapseMode = "shift" | "overlay" | "off";
+
 export type GenericPassportWidgetProps = {
   children?: React.ReactNode;
   theme?: PassportWidgetTheme;
+  collapseMode?: CollapseMode;
 };
 
 export type PassportWidgetTheme = {
@@ -33,6 +36,9 @@ export type PassportWidgetTheme = {
       heading?: string;
       alt?: string;
     };
+  };
+  position?: {
+    overlayZIndex?: string;
   };
 };
 
@@ -78,7 +84,7 @@ const setCssProperty = (name: string, value?: string) => {
 const setTheme = (theme?: PassportWidgetTheme) => {
   if (!theme) return;
 
-  const { colors, padding, radius } = theme;
+  const { colors, padding, radius, transition, font, position } = theme;
 
   const propertyMap: [string, string | undefined][] = [
     ["color-primary", colors?.primary],
@@ -90,10 +96,11 @@ const setTheme = (theme?: PassportWidgetTheme) => {
     ["widget-padding-y", padding?.widget?.y],
     ["widget-radius", radius?.widget],
     ["button-radius", radius?.button],
-    ["transition-speed", theme.transition?.speed],
-    ["font-family-body", theme.font?.family?.body],
-    ["font-family-heading", theme.font?.family?.heading],
-    ["font-family-alt", theme.font?.family?.alt],
+    ["transition-speed", transition?.speed],
+    ["font-family-body", font?.family?.body],
+    ["font-family-heading", font?.family?.heading],
+    ["font-family-alt", font?.family?.alt],
+    ["overlay-z-index", position?.overlayZIndex],
   ];
 
   propertyMap.forEach(([name, value]) => setCssProperty(name, value));

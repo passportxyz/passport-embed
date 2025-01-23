@@ -35,5 +35,6 @@
 }
 
 .scrollable {
-  overflow-y: scroll;
+  overflow-y: auto;
+  scrollbar-width: thin;
 }

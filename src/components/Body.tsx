@@ -8,14 +8,37 @@ import { CongratsBody } from "./Body/CongratsBody";
 import { ScoreTooLowBody } from "./Body/ScoreTooLowBody";
 import { ConnectWalletBody } from "./Body/ConnectWalletBody";
 import { ErrorBody } from "./Body/ErrorBody";
+import { useRef } from "react";
+import { CollapseMode } from "../widgets/Widget";
 
 const BodyWrapper = ({
   children,
   className,
+  collapseMode,
+  isOpen,
 }: {
   children: React.ReactNode;
+  collapseMode?: CollapseMode;
+  isOpen: boolean;
   className?: string;
-}) => <div className={`${styles.container} ${className}`}>{children}</div>;
+}) => {
+  const collapsibleRef = useRef<HTMLDivElement>(null);
+
+  const bodyWrapperClasses = [
+    styles.container,
+    collapseMode === "overlay" && styles.overlay,
+    isOpen || collapseMode === "off" ? styles.expanded : styles.collapsed,
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  return (
+    <div ref={collapsibleRef} className={bodyWrapperClasses}>
+      {children}
+    </div>
+  );
+};
 
 // Determines the current page based on the state of the widget
 const BodyRouter = ({
@@ -44,12 +67,20 @@ const BodyRouter = ({
 
 export const Body = ({
   className,
+  isOpen,
+  collapseMode,
   connectWalletCallback,
 }: {
   className?: string;
+  isOpen: boolean;
+  collapseMode: CollapseMode;
 } & Pick<PassportEmbedProps, "connectWalletCallback">) => {
   return (
-    <BodyWrapper className={className}>
+    <BodyWrapper
+      className={className}
+      isOpen={isOpen}
+      collapseMode={collapseMode}
+    >
       <BodyRouter connectWalletCallback={connectWalletCallback} />
     </BodyWrapper>
   );
