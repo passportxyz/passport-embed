@@ -101,7 +101,7 @@ const PassportScore = ({ address, generateSignature }: PassportEmbedProps) => {
       config.overrideEmbedPopUpUrl || DEFAULT_EMBED_POPUP_URL
     }?address=${encodeURIComponent(address)}&signature=${encodeURIComponent(
       signedMessage
-    )}&challenge=${encodeURIComponent(JSON.stringify(challenge))}`;
+    )}&challenge=${encodeURIComponent(JSON.stringify(challenge.credential))}`;
 
     // const _embedPopUpUrl = `${
     //   config.overrideEmbedPopUpUrl || DEFAULT_EMBED_POPUP_URL

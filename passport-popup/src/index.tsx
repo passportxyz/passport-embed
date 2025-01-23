@@ -77,11 +77,11 @@ function App() {
               proofs: {
                 code,
                 sessionKey: state || "default_state",
+                signature: _signature,
               },
               signatureType: "EIP712",
             },
             challenge: _challenge,
-            signedChallenge: _signature, // for this the embed endpoint will just use ethers.recoverAddress to verify that signature is valid
           };
 
           // Make the verify call
@@ -165,7 +165,6 @@ function App() {
         proofs: { code: string; sessionKey: string };
       };
       challenge: string | null;
-      signedChallenge: string | null;
     }
   ): Promise<any> => {
     // try {
@@ -187,7 +186,6 @@ function App() {
       body: JSON.stringify({
         payload: { ...data.payload },
         challenge: parsedChallenge,
-        signedChallenge: data.signedChallenge,
       }),
     });
 
