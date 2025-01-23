@@ -20,6 +20,8 @@ export type PassportEmbedProps = {
   // yet connected
   address?: string;
   overrideIamUrl?: string;
+  challengeSignatureUrl?: string;
+  oAuthPopUpUrl?: string;
   // Optional, allows you to share a queryClient between the
   // widget(s) and the wider app
   queryClient?: QueryClient;
@@ -27,6 +29,7 @@ export type PassportEmbedProps = {
   // the user to connect their wallet if the
   // `address` is undefined
   connectWalletCallback?: () => Promise<void>;
+  generateSignatureCallback?: (message: string) => Promise<string | undefined>;
 };
 
 type PassportProviderPoints = {
