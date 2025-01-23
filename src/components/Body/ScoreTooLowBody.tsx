@@ -1,7 +1,7 @@
 import styles from "./Body.module.css";
 import utilStyles from "../../utilStyles.module.css";
 import { Button } from "../Button";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useHeaderControls } from "../../contexts/HeaderContext";
 import { useWidgetPassportScore } from "../../hooks/usePassportScore";
 import { TextButton } from "../TextButton";

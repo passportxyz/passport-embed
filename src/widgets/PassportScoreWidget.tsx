@@ -5,12 +5,25 @@ import { Header } from "../components/Header";
 import { Body } from "../components/Body";
 import { HeaderContextProvider } from "../contexts/HeaderContext";
 import { QueryContextProvider } from "../contexts/QueryContext";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export type PassportScoreWidgetProps = PassportEmbedProps &
   GenericPassportWidgetProps;
 
 export const PassportScoreWidget = (props: PassportScoreWidgetProps) => {
+  useEffect(() => {
+    if (props.apiKey === undefined) {
+      console.error(
+        'apiKey is required but has not been provided. You will not be able to get past the "Connect" screen of the Passport Embed widget.'
+      );
+    }
+    if (props.scorerId === undefined) {
+      console.error(
+        'scorerId is required but has not been provided. You will not be able to get past the "Connect" screen of the Passport Embed widget.'
+      );
+    }
+  }, [props.apiKey, props.scorerId]);
+
   return (
     <Widget {...props}>
       <QueryContextProvider {...props}>
@@ -35,7 +48,7 @@ const PassportScore = ({
       <Header
         bodyIsOpen={bodyIsOpen}
         setBodyIsOpen={setBodyIsOpen}
-        collapsible={collapseMode !== "off"}
+        collapsible={Boolean(collapseMode && collapseMode !== "off")}
       />
       <Body
         isOpen={bodyIsOpen}
