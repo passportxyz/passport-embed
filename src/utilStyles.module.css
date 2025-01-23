@@ -5,3 +5,11 @@
 .bold {
   font-weight: 700;
 }
+
+.justifyCenter {
+  justify-content: center;
+}
+
+.justifyBetween {
+  justify-content: space-between;
+}
