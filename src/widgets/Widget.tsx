@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 
-export type PassportWidgetProps = {
+export type GenericPassportWidgetProps = {
   children?: React.ReactNode;
   theme?: PassportWidgetTheme;
 };
@@ -31,24 +31,35 @@ export type PassportWidgetTheme = {
     family?: {
       body?: string;
       heading?: string;
+      alt?: string;
     };
   };
 };
 
-export const Widget = ({ children, theme }: PassportWidgetProps) => {
+export const Widget = ({ children, theme }: GenericPassportWidgetProps) => {
   useEffect(() => {
     setTheme(theme);
   }, [theme]);
 
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={widgetQueryClient}>
+      {children}
+    </QueryClientProvider>
   );
 };
 
-const queryClient = new QueryClient({
+export const widgetQueryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false,
+      // With this config, the query will be re-fetched when this tab/window
+      // is refocused or after the component is mounted, and the data has
+      // not been fetched for at least 1 minute
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+      refetchOnReconnect: false,
+      staleTime: 1000 * 60 * 1,
+      // The query will be garbage collected after 24 hours
+      gcTime: 1000 * 60 * 60 * 24,
       retry: 2,
     },
   },
@@ -82,6 +93,7 @@ const setTheme = (theme?: PassportWidgetTheme) => {
     ["transition-speed", theme.transition?.speed],
     ["font-family-body", theme.font?.family?.body],
     ["font-family-heading", theme.font?.family?.heading],
+    ["font-family-alt", theme.font?.family?.alt],
   ];
 
   propertyMap.forEach(([name, value]) => setCssProperty(name, value));

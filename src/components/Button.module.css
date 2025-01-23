@@ -1,8 +1,12 @@
 @import "../theme.css";
 
 .button {
-  background-color: rgba(var(--color-secondary-c6dbf459), 1);
-  color: rgba(var(--color-primary-c6dbf459), 1);
+  background-color: rgba(var(--color-primary-c6dbf459), 1);
+  color: rgba(var(--color-background-c6dbf459), 1);
+
+  font-family: var(--font-family-alt-c6dbf459);
+  font-weight: 500;
+  font-size: 16px;
 
   border: none;
   border-radius: var(--button-radius-c6dbf459);
@@ -10,11 +14,13 @@
   padding: 8px 16px;
 
   cursor: pointer;
-  transition: outline var(--transition-speed-c6dbf459) ease;
+  transition: filter var(--transition-speed-c6dbf459) ease,
+    outline var(--transition-speed-c6dbf459) ease;
 }
 
 .button:hover {
-  outline: 1px solid rgba(var(--color-primary-c6dbf459), 1);
+  outline: 1px solid rgba(var(--color-secondary-c6dbf459), 0.8);
+  filter: brightness(0.8);
 }
 
 .button:disabled {

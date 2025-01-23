@@ -1,0 +1,53 @@
+.container {
+  font-family: var(--font-family-heading-c6dbf459);
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+
+  width: 100%;
+  padding: var(--widget-padding-y-c6dbf459) var(--widget-padding-x-c6dbf459);
+  box-sizing: border-box;
+
+  border-width: 1px;
+  border-style: solid;
+  border-top-left-radius: var(--widget-radius-c6dbf459);
+  border-top-right-radius: var(--widget-radius-c6dbf459);
+  border-color: rgba(var(--color-secondary-c6dbf459), 1);
+
+  background-color: rgba(var(--color-background-c6dbf459), 1);
+  background-image: linear-gradient(
+    to bottom,
+    rgba(var(--color-background-c6dbf459), 1),
+    rgba(var(--color-secondary-c6dbf459), 0.2)
+  );
+}
+
+.titleStack {
+  flex-grow: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+
+  line-height: 1.1;
+}
+
+.subtitle {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.success {
+  color: rgba(var(--color-success-c6dbf459), 1);
+}
+
+.failure {
+  color: rgba(var(--color-failure-c6dbf459), 1);
+}
+
+.score {
+  font-size: 20px;
+  font-weight: 700;
+}

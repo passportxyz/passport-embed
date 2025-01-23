@@ -1,30 +1,93 @@
 import { createRoot } from "react-dom/client";
 import { PassportScoreWidget, usePassportScore } from "passport-widgets";
-import { setConfig } from "passport-widgets/config";
 
 import "./index.css";
 
-const API_KEY = import.meta.env.VITE_API_KEY;
-const SCORER_ID = import.meta.env.VITE_SCORER_ID;
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState } from "react";
 
-setConfig({
-  apiKey: API_KEY,
-  scorerId: SCORER_ID,
-  // overrideIamUrl: "http://localhost:80",
-  overrideIamUrl: "https://embed.review.passport.xyz"
+const appQueryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // With this config, the query will be re-fetched when this tab/window
+      // is refocused and the data has not been fetched for at least 1 minute
+      refetchOnWindowFocus: true,
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+      staleTime: 1000 * 60 * 1,
+      gcTime: Infinity,
+    },
+  },
 });
 
-const App = () => {
-  const address = "0x85fF01cfF157199527528788ec4eA6336615C989";
-  const passportScore = usePassportScore({ enabled: true, address });
-  console.log("passportScore", passportScore);
+const passportEmbedParams = {
+  apiKey: import.meta.env.VITE_API_KEY,
+  scorerId: import.meta.env.VITE_SCORER_ID,
+  overrideIamUrl: "http://localhost:8004",
+};
+
+const connectWallet = async () => {
+  // Check if MetaMask is installed
+  if (typeof window.ethereum === "undefined") {
+    alert("Please install MetaMask!");
+    return;
+  }
+
+  try {
+    // Request account access
+    const accounts = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
+
+    // Get the connected account
+    return accounts[0];
+  } catch (error) {
+    console.error(error);
+    alert("Failed to connect to wallet");
+  }
+};
+
+const DirectPassportDataAccess = ({ address }: { address?: string }) => {
+  const { data, isError, error } = usePassportScore({
+    ...passportEmbedParams,
+    address,
+  });
+
+  return (
+    <div>
+      <h1>This is an app element!</h1>
+      <ul>
+        <li>Passport Score: {data?.score}</li>
+        <li>Passport Threshold: {data?.threshold}</li>
+        <li>Is passing threshold: {data?.passingScore ? "True" : "False"}</li>
+        <li>
+          What stamps?
+          <pre>{JSON.stringify(data?.stamps, undefined, 2)}</pre>
+        </li>
+        {isError && <li>Error: {error?.message}</li>}
+      </ul>
+    </div>
+  );
+};
+
+const Dashboard = () => {
+  const [address, setAddress] = useState<string | undefined>();
+
   return (
     <div className="container">
       <h1>Passport Widgets Example</h1>
       <h3>Check your Passport score</h3>
       <PassportScoreWidget
-        address="0x85fF01cfF157199527528788ec4eA6336615C989"
-        enabled={true}
+        {...passportEmbedParams}
+        address={address}
+        // Generally you would not provide this, the widget has its own QueryClient.
+        // But this can be used to override query parameters or to share a QueryClient
+        // with the wider app and/or multiple widgets
+        queryClient={appQueryClient}
+        connectWalletCallback={async () => {
+          const address = await connectWallet();
+          setAddress(address);
+        }}
         /*
         theme={{
           colors: {
@@ -33,23 +96,16 @@ const App = () => {
         }}
         */
       />
-      <div>
-        <h1>This is an app element!</h1>
-        <ul>
-          <li>Passport Score: {passportScore.data?.score}</li>
-          <li>Passport Threshold: {passportScore.data?.threshold}</li>
-          <li>Is passing threshold: {passportScore.data?.passing_score?"True":"False"}</li>
-          <li>
-            What stamps?
-            <pre>
-              {JSON.stringify(passportScore.data?.stamps, undefined, 2)}
-            </pre>
-          </li>
-        </ul>
-      </div>
+      <DirectPassportDataAccess address={address} />
     </div>
   );
 };
+
+const App = () => (
+  <QueryClientProvider client={appQueryClient}>
+    <Dashboard />
+  </QueryClientProvider>
+);
 
 const rootElement = document.getElementById("root");
 if (rootElement) {

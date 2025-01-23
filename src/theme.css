@@ -1,4 +1,9 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins&family=Unbounded&display=swap");
+/*
+ * Fetches these fonts
+ * - Poppins at 400 and 700 weights
+ * - DM Mono at 500 weight
+ */
+@import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@500&family=Poppins:wght@400;700&display=swap");
 
 /*
  * c6dbf459 is the first 4 bytes of
@@ -9,15 +14,16 @@
 
 :root {
   --color-primary-c6dbf459: 255, 255, 255;
-  --color-secondary-c6dbf459: 108, 182, 173;
+  --color-secondary-c6dbf459: 109, 109, 109;
   --color-background-c6dbf459: 0, 0, 0;
-  --color-success-c6dbf459: 0, 255, 0;
-  --color-failure-c6dbf459: 255, 0, 0;
-  --widget-padding-x-c6dbf459: 24px;
-  --widget-padding-y-c6dbf459: 16px;
-  --widget-radius-c6dbf459: 10px;
-  --button-radius-c6dbf459: 5px;
-  --transition-speed-c6dbf459: 100ms;
+  --color-success-c6dbf459: 164, 255, 169;
+  --color-failure-c6dbf459: 203, 203, 203;
+  --widget-padding-x-c6dbf459: 20px;
+  --widget-padding-y-c6dbf459: 12px;
+  --widget-radius-c6dbf459: 16px;
+  --button-radius-c6dbf459: 8px;
+  --transition-speed-c6dbf459: 50ms;
   --font-family-body-c6dbf459: "Poppins", sans-serif;
-  --font-family-heading-c6dbf459: "Unbounded", sans-serif;
+  --font-family-heading-c6dbf459: "Poppins", sans-serif;
+  --font-family-alt-c6dbf459: "DM Mono", sans-serif;
 }
