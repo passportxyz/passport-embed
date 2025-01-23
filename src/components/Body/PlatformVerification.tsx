@@ -1,6 +1,7 @@
 import styles from "./PlatformVerification.module.css";
 import utilStyles from "../../utilStyles.module.css";
 import { useEffect, useState } from "react";
+import { Buffer } from "buffer";
 import { Button } from "../Button";
 import { Hyperlink, Platform, usePlatformStatus } from "./ScoreTooLowBody";
 import { ScrollableDiv } from "../ScrollableDiv";
@@ -8,6 +9,12 @@ import {
   useWidgetIsQuerying,
   useWidgetVerifyCredentials,
 } from "../../hooks/usePassportScore";
+import { useQueryContext } from "../../contexts/QueryContext";
+
+const DEFAULT_CHALLENGE_URL =
+  "https://iam.review.passport.xyz/api/v0.0.0/challenge";
+
+const DEFAULT_OAUTH_POPUP = "https://embed-popup.passport.xyz";
 
 const CloseIcon = () => (
   <svg
@@ -37,9 +44,11 @@ const CloseIcon = () => (
 export const PlatformVerification = ({
   platform,
   onClose,
+  generateSignatureCallback,
 }: {
   platform: Platform;
   onClose: () => void;
+  generateSignatureCallback: (message: string) => Promise<string | undefined>;
 }) => {
   const { claimed } = usePlatformStatus({ platform });
   const [initiatedVerification, setInitiatedVerification] = useState(false);
@@ -48,6 +57,7 @@ export const PlatformVerification = ({
   const { verifyCredentials } = useWidgetVerifyCredentials();
   const platformCredentialIds = platform.credentials.map(({ id }) => id);
   const isQuerying = useWidgetIsQuerying();
+  const queryProps = useQueryContext();
 
   useEffect(() => {
     if (initiatedVerification && !isQuerying) {
@@ -58,6 +68,28 @@ export const PlatformVerification = ({
       }
     }
   }, [initiatedVerification, isQuerying, claimed, onClose]);
+
+  const getChallenge = async (
+    challengeUrl: string,
+    address: string,
+    providerType: string
+  ) => {
+    const payload = {
+      address: address,
+      signatureType: "EIP712",
+      type: providerType,
+    };
+
+    const response = await fetch(challengeUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ payload }),
+    });
+
+    return response.json();
+  };
 
   return (
     <div className={styles.container}>
@@ -91,10 +123,83 @@ export const PlatformVerification = ({
         className={utilStyles.wFull}
         invert={true}
         disabled={isQuerying || claimed}
-        onClick={() => {
-          verifyCredentials(platformCredentialIds);
-          setFailedVerification(false);
-          setInitiatedVerification(true);
+        onClick={async () => {
+          //
+
+          console.log("DEBUG  THIS ON CLICK VERIFY CREDENTIALS platform");
+          let signature, credential;
+          if (platform.requireSignature) {
+            // get the challenge and  sign it
+            if (!queryProps.address) {
+              console.error("No address found");
+              // TODO: manage error state
+              setFailedVerification(true);
+              return;
+            }
+
+            // TODO: fix this URL
+            const challengeEndpoint = `${
+              queryProps.challengeSignatureUrl || DEFAULT_CHALLENGE_URL
+            }`;
+            const challenge = await getChallenge(
+              challengeEndpoint,
+              queryProps.address,
+              // platform.name
+              "Linkedin"
+            );
+            credential = challenge.credential;
+            const _challenge = challenge.credential.credentialSubject.challenge;
+
+            const challengeToSign = `0x${Buffer.from(
+              _challenge,
+              "utf8"
+            ).toString("hex")}`;
+
+            signature = await generateSignatureCallback(challengeToSign);
+          }
+
+          if (platform.oAuthPopup) {
+            // open the popup
+            const oAuthPopUpUrl = `${
+              queryProps.oAuthPopUpUrl || DEFAULT_OAUTH_POPUP
+            }?address=${encodeURIComponent(
+              queryProps.address || ""
+            )}&platform=${encodeURIComponent(
+              "Linkedin" // platform.name ?
+            )}&signature=${encodeURIComponent(
+              signature || ""
+            )}&credential=${encodeURIComponent(JSON.stringify(credential))}`;
+
+            console.log("THIS IS OAUTH POPUP URL", oAuthPopUpUrl);
+
+            const popup = window.open(
+              oAuthPopUpUrl,
+              "passportPopup",
+              "width=600,height=700"
+            );
+
+            if (!popup) {
+              console.error("Failed to open pop-up");
+              return;
+            }
+
+            // Check if the pop-up is closed every 100ms
+            const checkPopupClosed = setInterval(() => {
+              if (popup.closed) {
+                clearInterval(checkPopupClosed);
+                console.log("Pop-up closed");
+                alert(
+                  "LinkedIn OAuth process completed or cancelled. Interval check"
+                );
+                // Refresh stamps
+                verifyCredentials(platformCredentialIds);
+              }
+            }, 100);
+          } else {
+            verifyCredentials(platformCredentialIds);
+            setFailedVerification(false);
+            setInitiatedVerification(true);
+          }
         }}
       >
         {failedVerification

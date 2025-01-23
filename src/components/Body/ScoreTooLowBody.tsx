@@ -26,6 +26,8 @@ export type Platform = {
   documentationLink: string;
   credentials: Credential[];
   displayWeight: string; // calculated
+  requireSignature?: boolean;
+  oAuthPopup?: boolean;
 };
 
 type StampPage = {
@@ -126,6 +128,63 @@ const STAMP_PAGES: StampPage[] = [
     ],
   },
   {
+    header: "Social & Professional Platforms",
+    platforms: [
+      {
+        name: "LinkedIn",
+        description: <div>Claim Linkedin stamp</div>,
+        documentationLink: "https://google.com",
+        requireSignature: true,
+        oAuthPopup: true,
+        credentials: [
+          {
+            id: "LinkedIn",
+            weight: "1",
+          },
+        ],
+      },
+      {
+        name: "Discord",
+        description: <div>Coming soon</div>,
+        documentationLink: "https://google.com",
+        requireSignature: true,
+        oAuthPopup: true,
+        credentials: [
+          {
+            id: "Discord",
+            weight: "1",
+          },
+        ],
+      },
+      // {
+      //   name: "Github",
+      //   description: <div>Coming soon</div>,
+      //   documentationLink: "https://google.com",
+      //   requireSignature: true,
+      //   oAuthPopup: true,
+      //   credentials: [
+      //     {
+      //       id: "Github",
+      //       weight: "1",
+      //     },
+      //   ],
+      // },
+      {
+        name: "Google",
+        description: <div>Coming soon</div>,
+        documentationLink: "https://google.com",
+        requireSignature: true,
+        oAuthPopup: true,
+        credentials: [
+          {
+            id: "Google",
+            weight: "1",
+          },
+        ],
+      },
+    ],
+  },
+  {
     header: VISIT_PASSPORT_HEADER,
     platforms: [],
   },
@@ -142,11 +201,15 @@ const STAMP_PAGES: StampPage[] = [
   })),
 }));
 
-export const ScoreTooLowBody = () => {
+export const ScoreTooLowBody = ({
+  generateSignatureCallback,
+}: {
+  generateSignatureCallback: (message: string) => Promise<string | undefined>;
+}) => {
   const [addingStamps, setAddingStamps] = useState(false);
 
   return addingStamps ? (
-    <AddStamps />
+    <AddStamps generateSignatureCallback={generateSignatureCallback} />
   ) : (
     <InitialTooLow onContinue={() => setAddingStamps(true)} />
   );
@@ -191,7 +254,6 @@ const PlatformButton = ({
   setOpenPlatform: (platform: Platform) => void;
 }) => {
   const { claimed } = usePlatformStatus({ platform });
-
   return (
     <button
       className={`${styles.platformButton} ${
@@ -232,7 +294,11 @@ export const usePlatformStatus = ({ platform }: { platform: Platform }) => {
   return useMemo(() => ({ claimed }), [claimed]);
 };
 
-const AddStamps = () => {
+const AddStamps = ({
+  generateSignatureCallback,
+}: {
+  generateSignatureCallback: (message: string) => Promise<string | undefined>;
+}) => {
   const { setSubtitle } = useHeaderControls();
   const { page, nextPage, prevPage, isFirstPage, isLastPage } =
     usePages(STAMP_PAGES);
@@ -246,10 +312,12 @@ const AddStamps = () => {
   });
 
   if (openPlatform) {
+    console.log("LARISA HELLO openPlatform", openPlatform);
     return (
       <PlatformVerification
         platform={openPlatform}
         onClose={() => setOpenPlatform(null)}
+        generateSignatureCallback={generateSignatureCallback}
       />
     );
   }
