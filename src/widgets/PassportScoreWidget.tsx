@@ -42,7 +42,7 @@ const PassportScore = ({
   PassportScoreWidgetProps,
   "connectWalletCallback" | "collapseMode"
 >) => {
-  const [bodyIsOpen, setBodyIsOpen] = useState(true);
+  const [bodyIsOpen, setBodyIsOpen] = useState(false);
   return (
     <div className={styles.container}>
       <Header
