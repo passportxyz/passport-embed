@@ -14,16 +14,16 @@ export const XIcon = ({ className }: { className?: string }) => (
     <path
       d="M11 21L20.9998 11.0002"
       stroke="rgb(var(--color-background-c6dbf459))"
-      stroke-width="3"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
     <path
       d="M11 11L20.9998 20.9998"
       stroke="rgb(var(--color-background-c6dbf459))"
-      stroke-width="3"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="3"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );

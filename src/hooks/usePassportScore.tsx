@@ -1,6 +1,16 @@
-import { QueryClient, useQuery, useQueryClient } from "@tanstack/react-query";
-const DEFAULT_IAM_URL = "https://embed.passport.xyz";
+import {
+  QueryClient,
+  useIsFetching,
+  useIsMutating,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import axios from "axios";
+import { useQueryContext } from "../contexts/QueryContext";
+import { useCallback } from "react";
+
+const DEFAULT_IAM_URL = "https://embed.passport.xyz";
 
 export type PassportEmbedProps = {
   apiKey: string;
@@ -25,7 +35,6 @@ type PassportProviderPoints = {
   expirationDate: Date;
 };
 
-// TODO: define proper value types
 export type PassportScore = {
   address: String;
   score: number;
@@ -38,9 +47,74 @@ export type PassportScore = {
 
 export type PassportEmbedResult = {
   data: PassportScore | undefined;
+
+  // No data yet
+  isPending: boolean;
+  // Currently querying data
+  isFetching: boolean;
+  // isPending && isFetching
   isLoading: boolean;
+
   isError: boolean;
   error: any;
+};
+
+export const useWidgetPassportScore = () => {
+  const queryProps = useQueryContext();
+  return usePassportScore(queryProps);
+};
+
+export const useWidgetVerifyCredentials = () => {
+  const queryProps = useQueryContext();
+  const queryKey = useQueryKey(queryProps);
+
+  const verifyCredentialsMutation = useMutation(
+    {
+      mutationFn: (credentialIds: string[]) =>
+        fetchPassportScore({ ...queryProps, credentialIds }),
+      onSuccess: (data) => {
+        console.log("Setting data from mutation", data);
+        queryProps.queryClient.setQueryData(queryKey, data);
+      },
+    },
+    queryProps.queryClient
+  );
+
+  const verifyCredentials = useCallback(
+    (credentialIds: string[]) =>
+      verifyCredentialsMutation.mutate(credentialIds),
+    [verifyCredentialsMutation]
+  );
+
+  return { verifyCredentials };
+};
+
+// Returns true if any queries are currently in progress
+export const useWidgetIsQuerying = () => {
+  const { queryClient } = useQueryContext();
+  const isFetching = useIsFetching(undefined, queryClient);
+  const isMutating = useIsMutating(undefined, queryClient);
+
+  return Boolean(isFetching || isMutating);
+};
+
+const useQueryKey = ({
+  address,
+  scorerId,
+  overrideIamUrl,
+}: Pick<PassportEmbedProps, "address" | "scorerId" | "overrideIamUrl">) => {
+  return ["passportScore", address, scorerId, overrideIamUrl];
+};
+
+export const useResetPassportScore = () => {
+  const queryProps = useQueryContext();
+  const queryKey = useQueryKey(queryProps);
+
+  const resetPassportScore = useCallback(() => {
+    queryProps.queryClient.invalidateQueries({ queryKey });
+  }, [queryProps.queryClient, queryKey]);
+
+  return { resetPassportScore };
 };
 
 export const usePassportScore = ({
@@ -49,19 +123,37 @@ export const usePassportScore = ({
   scorerId,
   overrideIamUrl,
   queryClient,
-}: PassportEmbedProps & { enabled?: boolean }): PassportEmbedResult => {
+}: PassportEmbedProps): PassportEmbedResult => {
   // If a queryClient is not provided, use the nearest one
   const nearestClient = useQueryClient();
 
+  const queryKey = useQueryKey({ address, scorerId, overrideIamUrl });
+
   return useQuery(
     {
+      queryKey,
       enabled: Boolean(address && apiKey && scorerId),
-      queryKey: ["passportScore", address, scorerId, overrideIamUrl],
       queryFn: () =>
         fetchPassportScore({ apiKey, address, scorerId, overrideIamUrl }),
     },
     queryClient || nearestClient
   );
+};
+
+type EmbedVerifyResponse = {
+  address: string;
+  score: string;
+  passing_score: boolean;
+  last_score_timestamp: string;
+  expiration_timestamp: string;
+  threshold: string;
+  stamps: {
+    [key: string]: {
+      score: string;
+      expiration_date: string;
+      dedup: boolean;
+    };
+  };
 };
 
 // Any errors are automatically propagated into the react-query hook response (i.e. isError, error)
@@ -70,19 +162,16 @@ const fetchPassportScore = async ({
   address,
   scorerId,
   overrideIamUrl,
-}: PassportEmbedProps): Promise<PassportScore> => {
-  /*
-  return {
-    score: "32.113512",
-    threshold: "20",
-    passingScore: true,
-  };
-  */
-  const response = await axios.post(
+  credentialIds,
+}: PassportEmbedProps & {
+  credentialIds?: string[];
+}): Promise<PassportScore> => {
+  const response = await axios.post<EmbedVerifyResponse>(
     `${overrideIamUrl || DEFAULT_IAM_URL}/embed/verify`,
     {
       address,
       scorerId,
+      credentialIds,
     },
     {
       headers: {
@@ -101,20 +190,17 @@ const fetchPassportScore = async ({
     lastScoreTimestamp: new Date(scoreData.last_score_timestamp),
     expirationTimestamp: new Date(scoreData.expiration_timestamp),
     threshold: parseFloat(scoreData.threshold),
-    stamps: ((stamps: Record<string, any>) => {
-      const ret: Record<string, PassportProviderPoints> = {};
-      for (const key in stamps) {
-        if (stamps.hasOwnProperty(key)) {
-          const stamp = stamps[key];
-          ret[key] = {
-            score: parseFloat(stamp.score),
-            dedup: stamp.dedup,
-            expirationDate: new Date(stamp.expiration_date),
-          };
-        }
-      }
-      return ret;
-    })(scoreData.stamps),
+    stamps: Object.entries(scoreData.stamps).reduce(
+      (stamps, [credentialId, { score, expiration_date, dedup }]) => {
+        stamps[credentialId] = {
+          score: parseFloat(score),
+          dedup,
+          expirationDate: new Date(expiration_date),
+        };
+        return stamps;
+      },
+      {} as Record<string, PassportProviderPoints>
+    ),
   };
 
   return ret;
