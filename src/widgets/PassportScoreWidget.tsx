@@ -1,97 +1,58 @@
-import { PassportWidgetProps, Widget } from "./Widget";
+import {
+  GenericPassportWidgetProps,
+  Widget,
+  widgetQueryClient,
+} from "./Widget";
 import {
   PassportEmbedProps,
+  PassportEmbedResult,
   usePassportScore,
 } from "../hooks/usePassportScore";
 import styles from "./PassportScoreWidget.module.css";
-import { useState } from "react";
-import { Button } from "../components/Button";
+import { Header } from "../components/Header";
+import { Body } from "../components/Body";
+import { StepContextProvider } from "../contexts/StepContext";
 
-// Format to max of 2 decimal places
-const displayNumber = (num?: string) =>
-  String(+parseFloat(num || "0").toFixed(2));
+export type PassportScoreWidgetProps = PassportEmbedProps &
+  GenericPassportWidgetProps;
 
-const ScoreDisplay = ({
-  className,
-  passingScore,
-  score,
-}: {
-  className?: string;
-  passingScore?: boolean;
-  score?: string;
-}) => (
-  <div className={`${styles.flexCol} ${className}`}>
-    <div className={passingScore ? styles.success : styles.failure}>
-      {passingScore ? "Success!" : "Low Score"}
-    </div>
-    <div>Score: {displayNumber(score)}</div>
-  </div>
-);
-
-const ScoreButton = ({
-  onClick,
-  className,
-  disabled,
-  isLoading,
-}: {
-  onClick: () => void;
-  className: string;
-  disabled: boolean;
-  isLoading: boolean;
-}) => (
-  <Button onClick={onClick} className={className} disabled={disabled}>
-    <div className={styles.centerChildren}>
-      <div className={isLoading ? styles.visible : styles.invisible}>
-        Checking...
-      </div>
-      <div className={isLoading ? styles.invisible : styles.visible}>
-        Check your Passport score
-      </div>
-    </div>
-  </Button>
-);
-
-const PassportScore = ({ address }: PassportEmbedProps) => {
-  const [enabled, setEnabled] = useState(false);
+export const PassportScoreWidget = (props: PassportScoreWidgetProps) => {
+  const { apiKey, address, scorerId, overrideIamUrl, queryClient } = props;
 
   const { data, isLoading, isError, error } = usePassportScore({
-    enabled,
+    apiKey,
     address,
+    scorerId,
+    overrideIamUrl,
+    // Pass the override if provided, otherwise use the widget's queryClient
+    queryClient: queryClient || widgetQueryClient,
   });
 
   return (
-    <div className={styles.container}>
-      <div className={styles.title}>Passport Score</div>
-      <div className={styles.text}>
-        Bla bla stuff about scoring and Passports and such
-      </div>
-      {isError ? (
-        <div>Error: {error.message}</div>
-      ) : (
-        <div className={styles.centerChildren}>
-          <ScoreDisplay
-            className={data ? styles.visible : styles.invisible}
-            passingScore={data?.passing_score}
-            score={data && data.score ? data.score.toString() : ""}
-          />
-          <ScoreButton
-            className={data ? styles.invisible : styles.visible}
-            onClick={() => setEnabled(true)}
-            disabled={enabled}
-            isLoading={isLoading}
-          />
-        </div>
-      )}
-    </div>
+    <Widget {...props}>
+      <StepContextProvider data={data} isLoading={isLoading}>
+        <PassportScore {...props} data={data} isError={isError} error={error} />
+      </StepContextProvider>
+    </Widget>
   );
 };
 
-export type PassportScoreWidgetProps = PassportEmbedProps & PassportWidgetProps;
-
-export const PassportScoreWidget = (props: PassportScoreWidgetProps) => {
+const PassportScore = ({
+  data,
+  isError,
+  error,
+  connectWalletCallback,
+}: Omit<PassportEmbedResult, "isLoading"> &
+  Pick<PassportEmbedProps, "connectWalletCallback">) => {
   return (
-    <Widget {...props}>
-      <PassportScore {...props} />
-    </Widget>
+    <div className={styles.container}>
+      <Header score={data?.score} passingScore={data?.passingScore} />
+      <Body
+        className={styles.body}
+        errorMessage={isError ? error?.message : undefined}
+        data={data}
+        connectWalletCallback={connectWalletCallback}
+      />
+    </div>
   );
 };
