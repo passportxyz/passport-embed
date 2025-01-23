@@ -43,7 +43,11 @@ const BodyWrapper = ({
 // Determines the current page based on the state of the widget
 const BodyRouter = ({
   connectWalletCallback,
-}: Pick<PassportEmbedProps, "connectWalletCallback">) => {
+  generateSignatureCallback,
+}: Pick<
+  PassportEmbedProps,
+  "connectWalletCallback" | "generateSignatureCallback"
+>) => {
   const { isError, isLoading, error, data } = useWidgetPassportScore();
 
   if (isError) {
@@ -55,7 +59,15 @@ const BodyRouter = ({
   }
 
   if (data) {
-    return data.passingScore ? <CongratsBody /> : <ScoreTooLowBody />;
+    return data.passingScore ? (
+      <CongratsBody />
+    ) : (
+      <ScoreTooLowBody
+        generateSignatureCallback={
+          generateSignatureCallback || (async () => undefined)
+        }
+      />
+    );
   }
 
   if (isLoading) {
@@ -70,18 +82,25 @@ export const Body = ({
   isOpen,
   collapseMode,
   connectWalletCallback,
+  generateSignatureCallback,
 }: {
   className?: string;
   isOpen: boolean;
   collapseMode: CollapseMode;
-} & Pick<PassportEmbedProps, "connectWalletCallback">) => {
+} & Pick<
+  PassportEmbedProps,
+  "connectWalletCallback" | "generateSignatureCallback"
+>) => {
   return (
     <BodyWrapper
       className={className}
       isOpen={isOpen}
       collapseMode={collapseMode}
     >
-      <BodyRouter connectWalletCallback={connectWalletCallback} />
+      <BodyRouter
+        connectWalletCallback={connectWalletCallback}
+        generateSignatureCallback={generateSignatureCallback}
+      />
     </BodyWrapper>
   );
 };
