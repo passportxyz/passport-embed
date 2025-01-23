@@ -17,8 +17,8 @@
    * width) and taller */
   width: 100%;
   max-width: 320px;
-  min-height: 300px;
-  height: auto;
+
+  position: relative;
 }
 
 .body {

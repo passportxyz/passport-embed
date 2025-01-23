@@ -5,6 +5,7 @@ import "./index.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
+import { CollapseMode } from "passport-widgets/widgets/Widget";
 
 const appQueryClient = new QueryClient({
   defaultOptions: {
@@ -72,14 +73,29 @@ const DirectPassportDataAccess = ({ address }: { address?: string }) => {
 
 const Dashboard = () => {
   const [address, setAddress] = useState<string | undefined>();
+  const [collapseMode, setCollapseMode] = useState<CollapseMode>("shift");
 
   return (
     <div className="container">
       <h1>Passport Widgets Example</h1>
       <h3>Check your Passport score</h3>
+      <div style={{ marginBottom: "1rem" }}>
+        <label style={{ marginRight: "0.5rem" }}>Collapse Mode:</label>
+        <select
+          value={collapseMode}
+          onChange={(e) =>
+            setCollapseMode(e.target.value as "shift" | "overlay" | "off")
+          }
+        >
+          <option value="shift">Shift</option>
+          <option value="overlay">Overlay</option>
+          <option value="off">Off</option>
+        </select>
+      </div>
       <PassportScoreWidget
         {...passportEmbedParams}
         address={address}
+        collapseMode={collapseMode}
         // Generally you would not provide this, the widget has its own QueryClient.
         // But this can be used to override query parameters or to share a QueryClient
         // with the wider app and/or multiple widgets

@@ -34,22 +34,30 @@ const ScoreDisplay = () => {
 export const Header = ({
   bodyIsOpen,
   setBodyIsOpen,
+  collapsible,
 }: {
   bodyIsOpen: boolean;
   setBodyIsOpen: Dispatch<SetStateAction<boolean>>;
+  collapsible: boolean;
 }) => {
   const { subtitle } = useHeaderControls();
   const isQuerying = useWidgetIsQuerying();
 
   return (
-    <div className={styles.container}>
+    <div
+      className={`${styles.container} ${
+        bodyIsOpen || !collapsible ? styles.bodyExpanded : styles.bodyCollapsed
+      }`}
+    >
       <div className={styles.titleStack}>
         Passport XYZ Score
         <div className={styles.subtitle}>{subtitle}</div>
       </div>
-      <button onClick={() => setBodyIsOpen((isOpen) => !isOpen)}>
-        {bodyIsOpen ? "Hide" : "Show"}
-      </button>
+      {collapsible && (
+        <button onClick={() => setBodyIsOpen((isOpen) => !isOpen)}>
+          {bodyIsOpen ? "Hide" : "Show"}
+        </button>
+      )}
       <ScoreDisplay />
       {isQuerying && <Ellipsis />}
     </div>
