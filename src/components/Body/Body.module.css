@@ -1,6 +1,5 @@
 .container {
   width: 100%;
-  padding: var(--widget-padding-y-c6dbf459) var(--widget-padding-x-c6dbf459);
 
   box-sizing: border-box;
 
@@ -17,6 +16,37 @@
   align-items: center;
 
   gap: 8px;
+
+  transition: opacity calc(6 * var(--transition-speed-c6dbf459)) ease-in-out;
+}
+
+.collapsed {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  padding: 0;
+  border: none;
+}
+
+.expanded {
+  opacity: 1;
+  max-width: 320px;
+  min-height: 240px;
+  height: auto;
+  padding: var(--widget-padding-y-c6dbf459) var(--widget-padding-x-c6dbf459);
+}
+
+.overlay {
+  position: absolute;
+
+  /* Top at bottom (100% height) of the closest relative parent */
+  top: 100%;
+  left: 0;
+
+  z-index: var(--position-overlay-z-index-c6dbf459);
+
+  box-shadow: 0 4px 8px rgba(var(--color-primary-c6dbf459), 0.3);
 }
 
 .textBlock {
