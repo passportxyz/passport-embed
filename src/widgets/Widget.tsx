@@ -1,3 +1,4 @@
+import styles from "./Widget.module.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 
@@ -48,9 +49,11 @@ export const Widget = ({ children, theme }: GenericPassportWidgetProps) => {
   }, [theme]);
 
   return (
-    <QueryClientProvider client={widgetQueryClient}>
-      {children}
-    </QueryClientProvider>
+    <div className={styles.widget}>
+      <QueryClientProvider client={widgetQueryClient}>
+        {children}
+      </QueryClientProvider>
+    </div>
   );
 };
 
