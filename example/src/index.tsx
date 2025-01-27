@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { PassportScoreWidget, usePassportScore } from "passport-widgets";
+import { PassportScoreWidget, usePassportScore } from "@passportxyz/passport-embed";
 
 import "./index.css";
 
