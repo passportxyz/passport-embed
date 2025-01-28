@@ -9,13 +9,6 @@
   color: rgba(var(--color-primary-c6dbf459), 1);
   border-radius: var(--widget-radius-c6dbf459);
 
-  /* Will be 320 x 300 unless screen
-   * is too narrow, in which case it
-   * will get narrower (match screen
-   * width) and taller */
-  width: 100%;
-  max-width: 320px;
-
   position: relative;
 }
 
@@ -47,14 +40,4 @@
 .invisible,
 .visible {
   transition: opacity var(--transition-speed-c6dbf459) ease;
-}
-
-.centerChildren {
-  display: grid;
-  place-items: center;
-}
-
-.centerChildren > * {
-  grid-row: 1;
-  grid-column: 1;
 }
