@@ -1,11 +1,14 @@
 import { createRoot } from "react-dom/client";
-import { PassportScoreWidget, usePassportScore } from "@passportxyz/passport-embed";
+import {
+  PassportScoreWidget,
+  usePassportScore,
+  CollapseMode,
+} from "@passportxyz/passport-embed";
 
 import "./index.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
-import { CollapseMode } from "passport-widgets/widgets/Widget";
 
 const appQueryClient = new QueryClient({
   defaultOptions: {
