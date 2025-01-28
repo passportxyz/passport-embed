@@ -27,4 +27,11 @@
   --font-family-heading-c6dbf459: "Poppins", sans-serif;
   --font-family-alt-c6dbf459: "DM Mono", sans-serif;
   --position-overlay-z-index-c6dbf459: 10;
+
+  /* Width will be 320 unless screen
+   * is too narrow, in which case it
+   * will get narrower (match screen
+   * width) and taller */
+  width: 100%;
+  max-width: 320px;
 }
