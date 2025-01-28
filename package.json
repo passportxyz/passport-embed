@@ -36,7 +36,9 @@
     "build:esm": "tsc --module ESNext --outDir dist/esm && postcss 'src/**/*.css' -d dist/esm/ --base src",
     "build:cjs": "tsc --module CommonJS --outDir dist/cjs && postcss 'src/**/*.css' -d dist/cjs/ --base src",
     "build:types": "tsc --declaration --declarationDir dist --emitDeclarationOnly",
-    "dev": "cd example && yarn dev"
+    "dev": "cd example && yarn dev",
+    "watch:css": "postcss 'src/**/*.css' -d dist/esm/ --base src --watch",
+    "watch:esm": "tsc --module ESNext --outDir dist/esm --watch"
   },
   "peerDependencies": {
     "react": "^18.0.0",
