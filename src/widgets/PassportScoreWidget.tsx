@@ -38,9 +38,10 @@ export const PassportScoreWidget = (props: PassportScoreWidgetProps) => {
 const PassportScore = ({
   connectWalletCallback,
   collapseMode,
+  generateSignatureCallback,
 }: Pick<
   PassportScoreWidgetProps,
-  "connectWalletCallback" | "collapseMode"
+  "connectWalletCallback" | "collapseMode" | "generateSignatureCallback"
 >) => {
   const [bodyIsOpen, setBodyIsOpen] = useState(false);
   return (
@@ -55,6 +56,7 @@ const PassportScore = ({
         collapseMode={collapseMode || "off"}
         className={styles.body}
         connectWalletCallback={connectWalletCallback}
+        generateSignatureCallback={generateSignatureCallback}
       />
     </div>
   );

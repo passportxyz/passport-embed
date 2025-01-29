@@ -27,7 +27,12 @@ const appQueryClient = new QueryClient({
 const passportEmbedParams = {
   apiKey: import.meta.env.VITE_API_KEY,
   scorerId: import.meta.env.VITE_SCORER_ID,
-  overrideIamUrl: "http://localhost:8004",
+  overrideIamUrl: "https://embed.review.passport.xyz",
+  challengeSignatureUrl: "https://iam.review.passport.xyz/api/v0.0.0/challenge",
+  // challengeSignatureUrl: "http://localhost:8003/api/v0.0.0/challenge",
+  // oAuthPopUpUrl: "http://localhost:3010",
+  oAuthPopUpUrl:
+    "http://passport-embed-popup-review.s3-website-us-west-2.amazonaws.com",
 };
 
 const connectWallet = async () => {
@@ -51,6 +56,34 @@ const connectWallet = async () => {
   }
 };
 
+const generateSignature = async (message: string) => {
+  try {
+    // Check if MetaMask is installed
+    if (typeof window.ethereum === "undefined") {
+      alert("Please install MetaMask!");
+      return;
+    }
+
+    // Request account access if not already connected
+    const accounts = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
+
+    const signerAddress = accounts[0];
+
+    // Sign the message
+    const signature = await window.ethereum.request({
+      method: "personal_sign",
+      params: [message, signerAddress],
+    });
+
+    return signature ? signature : "";
+  } catch (error) {
+    console.error("Error signing message:", error);
+    alert("Failed to sign message");
+    throw error;
+  }
+};
 const DirectPassportDataAccess = ({ address }: { address?: string }) => {
   const { data, isError, error } = usePassportScore({
     ...passportEmbedParams,
@@ -107,6 +140,7 @@ const Dashboard = () => {
           const address = await connectWallet();
           setAddress(address);
         }}
+        generateSignatureCallback={generateSignature}
         /*
         theme={{
           colors: {
