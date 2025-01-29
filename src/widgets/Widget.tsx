@@ -8,6 +8,7 @@ export type GenericPassportWidgetProps = {
   children?: React.ReactNode;
   theme?: PassportWidgetTheme;
   collapseMode?: CollapseMode;
+  className?: string;
 };
 
 export type PassportWidgetTheme = {
@@ -43,13 +44,17 @@ export type PassportWidgetTheme = {
   };
 };
 
-export const Widget = ({ children, theme }: GenericPassportWidgetProps) => {
+export const Widget = ({
+  children,
+  theme,
+  className,
+}: GenericPassportWidgetProps) => {
   useEffect(() => {
     setTheme(theme);
   }, [theme]);
 
   return (
-    <div className={styles.widget}>
+    <div className={`${styles.widget} ${className}`}>
       <QueryClientProvider client={widgetQueryClient}>
         {children}
       </QueryClientProvider>
