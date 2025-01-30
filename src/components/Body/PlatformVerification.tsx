@@ -15,8 +15,6 @@ import { useQueryContext } from "../../contexts/QueryContext";
 const DEFAULT_CHALLENGE_URL =
   "https://iam.review.passport.xyz/api/v0.0.0/challenge";
 
-const DEFAULT_OAUTH_POPUP = "https://embed-popup.passport.xyz";
-
 const CloseIcon = () => (
   <svg
     width="12"
@@ -117,7 +115,7 @@ export const PlatformVerification = ({
             and come back after.
           </div>
         ) : (
-          platform.description
+          <div dangerouslySetInnerHTML={{ __html: platform.description}} />
         )}
       </ScrollableDiv>
       <Button
@@ -159,10 +157,10 @@ export const PlatformVerification = ({
             signature = await generateSignatureCallback(challengeToSign);
           }
 
-          if (platform.oAuthPopup) {
+          if (platform.requiresPopup && platform.popUpUrl) {
             // open the popup
             const oAuthPopUpUrl = `${
-              queryProps.oAuthPopUpUrl || DEFAULT_OAUTH_POPUP
+              platform.popUpUrl
             }?address=${encodeURIComponent(
               queryProps.address || ""
             )}&platform=${encodeURIComponent(

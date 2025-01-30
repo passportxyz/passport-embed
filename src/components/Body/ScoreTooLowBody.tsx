@@ -150,7 +150,6 @@ const AddStamps = ({
   const { header, platforms } = page;
 
   if (openPlatform) {
-    console.log("LARISA HELLO openPlatform", openPlatform);
     return (
       <PlatformVerification
         platform={openPlatform}

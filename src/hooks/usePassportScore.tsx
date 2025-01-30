@@ -21,7 +21,6 @@ export type PassportEmbedProps = {
   address?: string;
   overrideIamUrl?: string;
   challengeSignatureUrl?: string;
-  oAuthPopUpUrl?: string;
   // Optional, allows you to share a queryClient between the
   // widget(s) and the wider app
   queryClient?: QueryClient;
