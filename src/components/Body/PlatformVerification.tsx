@@ -3,7 +3,8 @@ import utilStyles from "../../utilStyles.module.css";
 import { useEffect, useState } from "react";
 import { Buffer } from "buffer";
 import { Button } from "../Button";
-import { Hyperlink, Platform, usePlatformStatus } from "./ScoreTooLowBody";
+import { Hyperlink, usePlatformStatus } from "./ScoreTooLowBody";
+import { Platform } from "../../hooks/useStampPages";
 import { ScrollableDiv } from "../ScrollableDiv";
 import {
   useWidgetIsQuerying,
