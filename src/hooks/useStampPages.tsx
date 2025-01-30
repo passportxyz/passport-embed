@@ -11,6 +11,9 @@ export type Platform = {
   name: string;
   description: string;
   documentationLink: string;
+  requireSignature?: boolean;
+  requiresPopup?: boolean;
+  popUpUrl?: string;
   credentials: Credential[];
   displayWeight: string;
 };
