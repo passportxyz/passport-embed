@@ -10,7 +10,7 @@ import axios from "axios";
 import { useQueryContext } from "../contexts/QueryContext";
 import { useCallback } from "react";
 
-const DEFAULT_IAM_URL = "https://embed.passport.xyz";
+export const DEFAULT_IAM_URL = "https://embed.passport.xyz";
 
 export type PassportEmbedProps = {
   apiKey: string;

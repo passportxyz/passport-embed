@@ -1,33 +1,20 @@
+import { QueryClient } from "@tanstack/react-query";
 import styles from "./Body.module.css";
 import utilStyles from "../../utilStyles.module.css";
 import { Button } from "../Button";
 import { useEffect, useMemo, useState } from "react";
 import { useHeaderControls } from "../../contexts/HeaderContext";
 import { useWidgetPassportScore } from "../../hooks/usePassportScore";
+import { usePaginatedStampPages, Platform } from "../../hooks/useStampPages";
 import { TextButton } from "../TextButton";
-import { displayNumber } from "../../utils";
 import { RightArrow } from "../../assets/rightArrow";
 import { ScrollableDiv } from "../ScrollableDiv";
 import { PlatformVerification } from "./PlatformVerification";
-
-// TODO should probably load this data from an API endpoint, so that
-// if we need to add/change/remove stamps, integrators don't need to
-// update the package and re-release their apps
-// Also at least weights could be scorer-specific
+import { useQueryContext } from "../../contexts/QueryContext";
 
 type Credential = {
   id: string;
   weight: string;
-};
-
-export type Platform = {
-  name: string;
-  description: JSX.Element;
-  documentationLink: string;
-  credentials: Credential[];
-  displayWeight: string; // calculated
-  requireSignature?: boolean;
-  oAuthPopup?: boolean;
 };
 
 type StampPage = {
@@ -56,151 +43,6 @@ export const Hyperlink = ({
 
 const VISIT_PASSPORT_HEADER = "More Options";
 
-const STAMP_PAGES: StampPage[] = [
-  {
-    header: "KYC verification",
-    platforms: [
-      {
-        name: "Binance",
-        description: (
-          <div>
-            If you do not have the Binance Account Bound Token (BABT), obtain it{" "}
-            <a
-              href="http://google.com"
-              style={{
-                color: "inherit",
-                fontWeight: "700",
-                textDecoration: "none",
-              }}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              here
-            </a>{" "}
-             by verifying your identity and logging into your Binance account.
-            Then return here and click Verify to claim this Stamp.
-          </div>
-        ),
-        documentationLink: "https://google.com",
-        credentials: [
-          {
-            // id: "BinanceBABT2",
-            id: "NFT",
-            weight: "16",
-          },
-        ],
-      },
-      {
-        name: "Holonym",
-        description: <div>TODO</div>,
-        documentationLink: "https://google.com",
-        credentials: [
-          {
-            id: "HolonymGovIdProvider",
-            weight: "16",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    header: "Biometrics verification",
-    platforms: [
-      {
-        name: "Civic",
-        description: <div>TODO</div>,
-        documentationLink: "https://google.com",
-        credentials: [
-          {
-            id: "CivicCaptchaPass",
-            weight: "1",
-          },
-          {
-            id: "CivicUniquenessPass",
-            weight: "2",
-          },
-          {
-            id: "CivicLivenessPass",
-            weight: "3",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    header: "Social & Professional Platforms",
-    platforms: [
-      {
-        name: "LinkedIn",
-        description: <div>Claim Linkedin stamp</div>,
-        documentationLink: "https://google.com",
-        requireSignature: true,
-        oAuthPopup: true,
-        credentials: [
-          {
-            id: "LinkedIn",
-            weight: "1",
-          },
-        ],
-      },
-      {
-        name: "Discord",
-        description: <div>Coming soon</div>,
-        documentationLink: "https://google.com",
-        requireSignature: true,
-        oAuthPopup: true,
-        credentials: [
-          {
-            id: "Discord",
-            weight: "1",
-          },
-        ],
-      },
-      // {
-      //   name: "Github",
-      //   description: <div>Coming soon</div>,
-      //   documentationLink: "https://google.com",
-      //   requireSignature: true,
-      //   oAuthPopup: true,
-      //   credentials: [
-      //     {
-      //       id: "Github",
-      //       weight: "1",
-      //     },
-      //   ],
-      // },
-      {
-        name: "Google",
-        description: <div>Coming soon</div>,
-        documentationLink: "https://google.com",
-        requireSignature: true,
-        oAuthPopup: true,
-        credentials: [
-          {
-            id: "Google",
-            weight: "1",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    header: VISIT_PASSPORT_HEADER,
-    platforms: [],
-  },
-].map((page) => ({
-  ...page,
-  platforms: page.platforms.map((platform) => ({
-    ...platform,
-    displayWeight: displayNumber(
-      platform.credentials.reduce(
-        (acc, credential) => acc + parseFloat(credential.weight),
-        0
-      )
-    ),
-  })),
-}));
-
 export const ScoreTooLowBody = ({
   generateSignatureCallback,
 }: {
@@ -213,20 +55,6 @@ export const ScoreTooLowBody = ({
   ) : (
     <InitialTooLow onContinue={() => setAddingStamps(true)} />
   );
-};
-
-const usePages = <T,>(pages: T[]) => {
-  const [idx, setIdx] = useState(0);
-
-  const nextPage = () => setIdx((prev) => Math.min(prev + 1, pages.length - 1));
-  const prevPage = () => setIdx((prev) => Math.max(prev - 1, 0));
-
-  const isFirstPage = idx === 0;
-  const isLastPage = idx === pages.length - 1;
-
-  const page = pages[idx];
-
-  return { page, nextPage, prevPage, isFirstPage, isLastPage };
 };
 
 const ClaimedIcon = () => (
@@ -300,16 +128,26 @@ const AddStamps = ({
   generateSignatureCallback: (message: string) => Promise<string | undefined>;
 }) => {
   const { setSubtitle } = useHeaderControls();
-  const { page, nextPage, prevPage, isFirstPage, isLastPage } =
-    usePages(STAMP_PAGES);
-
+  const queryProps = useQueryContext();
+  const { scorerId, apiKey, queryClient, overrideIamUrl } = queryProps;
+  const { page, nextPage, prevPage, isFirstPage, isLastPage, loading, error } =
+    usePaginatedStampPages({
+      apiKey: apiKey,
+      scorerId: scorerId,
+      overrideIamUrl: overrideIamUrl,
+      queryClient: queryClient,
+    });
   const [openPlatform, setOpenPlatform] = useState<Platform | null>(null);
-
-  const { header, platforms } = page;
 
   useEffect(() => {
     setSubtitle("VERIFY STAMPS");
-  });
+  }, [setSubtitle]);
+
+  if (loading) return <div>Loading Stamps Metadata...</div>;
+  if (error) return <div>{error}</div>;
+  if (!page) return <div>No stamp metadata available</div>;
+
+  const { header, platforms } = page;
 
   if (openPlatform) {
     console.log("LARISA HELLO openPlatform", openPlatform);
