@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const createConfig = (target) => ({
-  entry: "./src/index.tsx",
+  entry: "./src/index.ts",
   mode: "production",
   target: ["web", "es2018"],
   devtool: "source-map",
@@ -71,14 +71,16 @@ const createConfig = (target) => ({
       {
         test: /\.css$/,
         use: [
-          "style-loader",
+          {
+            loader: "style-loader",
+          },
           {
             loader: "css-loader",
             options: {
               importLoaders: 1,
               modules: {
                 namedExport: false,
-                localIdentName: "[name]__[local]--[hash:base64:5]",
+                localIdentName: "[name]__[local]--[hash:base64:5]_c6dbf459",
               },
               sourceMap: true, // Enable CSS source maps
             },
