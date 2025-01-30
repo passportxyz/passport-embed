@@ -80,11 +80,11 @@ export const DarkTheme: PassportWidgetTheme = {
 export const LightTheme: PassportWidgetTheme = {
   ...DarkTheme,
   colors: {
-    primary: "0, 0, 0",
-    secondary: "109, 109, 109",
+    primary: "55, 55, 55",
+    secondary: "201, 201, 201",
     background: "255, 255, 255",
-    success: "164, 255, 169",
-    failure: "203, 203, 203",
+    success: "36, 212, 83",
+    failure: "55, 55, 55",
   },
 };
 
