@@ -1,15 +1,9 @@
 import { createRoot } from "react-dom/client";
-// import {
-//   PassportScoreWidget,
-//   usePassportScore,
-//   CollapseMode,
-// } from "@passportxyz/passport-embed";
-
 import {
   PassportScoreWidget,
   usePassportScore,
   CollapseMode,
-} from "../../src";
+} from "@passportxyz/passport-embed";
 
 import "./index.css";
 
