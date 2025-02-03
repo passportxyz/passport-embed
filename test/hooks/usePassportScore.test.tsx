@@ -1,7 +1,5 @@
-/** @jsxImportSource react */
-
 import React from "react";
-import { renderHook, act } from "@testing-library/react";
+import { renderHook, act, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import axios from "axios";
 import {
@@ -68,7 +66,10 @@ describe("Passport Hooks", () => {
 
   describe("usePassportScore", () => {
     it("should fetch and transform passport score data", async () => {
-      mockedAxios.post.mockResolvedValueOnce({ data: mockScoreData });
+      mockedAxios.post.mockImplementationOnce(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        return { data: mockScoreData };
+      });
 
       const { result } = renderHook(
         () =>
@@ -89,7 +90,7 @@ describe("Passport Hooks", () => {
 
       // Wait for the query to complete
       await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 150));
       });
 
       // Verify transformed data
@@ -156,14 +157,36 @@ describe("Passport Hooks", () => {
 
   describe("useWidgetVerifyCredentials", () => {
     it("should verify credentials and update query cache", async () => {
-      mockedAxios.post.mockResolvedValueOnce({ data: mockScoreData });
+      const updatedScore = "80";
+      const updatedScoreData = {
+        ...mockScoreData,
+        score: updatedScore,
+      };
 
-      const { result } = renderHook(() => useWidgetVerifyCredentials(), {
-        wrapper: createWrapper(queryClient),
-      });
+      mockedAxios.post.mockResolvedValueOnce({ data: mockScoreData });
+      mockedAxios.post.mockResolvedValueOnce({ data: updatedScoreData });
+
+      const { result } = renderHook(
+        () => ({
+          verify: useWidgetVerifyCredentials(),
+          score: usePassportScore({
+            apiKey: "test-api-key",
+            address: "0x123",
+            scorerId: "test-scorer",
+            queryClient,
+          }),
+        }),
+        {
+          wrapper: createWrapper(queryClient),
+        }
+      );
+
+      await waitFor(() => expect(result.current.score.isLoading).toBe(false));
+
+      expect(result.current.score.data?.score).toEqual(75.5);
 
       await act(async () => {
-        result.current.verifyCredentials(["credential1"]);
+        result.current.verify.verifyCredentials(["credential1"]);
       });
 
       expect(mockedAxios.post).toHaveBeenCalledWith(
@@ -173,6 +196,12 @@ describe("Passport Hooks", () => {
         }),
         expect.any(Object)
       );
+
+      await waitFor(() => expect(result.current.score.isFetching).toBe(false));
+
+      expect(result.current.score.data?.score).toEqual(80);
+
+      expect(mockedAxios.post).toHaveBeenCalledTimes(2);
     });
   });
 

@@ -75,7 +75,6 @@ export const useWidgetVerifyCredentials = () => {
       mutationFn: (credentialIds: string[]) =>
         fetchPassportScore({ ...queryProps, credentialIds }),
       onSuccess: (data) => {
-        console.log("Setting data from mutation", data);
         queryProps.queryClient.setQueryData(queryKey, data);
       },
     },
