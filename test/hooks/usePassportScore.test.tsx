@@ -1,14 +1,16 @@
 import React from "react";
 import { renderHook, act, waitFor } from "@testing-library/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import axios from "axios";
 import {
   usePassportScore,
   useWidgetVerifyCredentials,
   useWidgetIsQuerying,
-  useResetPassportScore,
+  useWidgetPassportScore,
+  useResetWidgetPassportScore,
 } from "../../src/hooks/usePassportScore";
 import { QueryContext } from "../../src/contexts/QueryContext";
+import { setupTestQueryClient } from "../testUtils";
+import { usePassportQueryClient } from "../../src/hooks/usePassportQueryClient";
 
 // Mock axios
 jest.mock("axios");
@@ -31,35 +33,25 @@ const mockScoreData = {
   },
 };
 
+const mockQueryContextValue = {
+  apiKey: "test-api-key",
+  address: "0x123",
+  scorerId: "test-scorer",
+};
+
 // Test wrapper setup
-const createWrapper = (queryClient: QueryClient) => {
+const createWidgetWrapper = () => {
   return ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      <QueryContext.Provider
-        value={{
-          apiKey: "test-api-key",
-          address: "0x123",
-          scorerId: "test-scorer",
-          queryClient,
-        }}
-      >
-        {children}
-      </QueryContext.Provider>
-    </QueryClientProvider>
+    <QueryContext.Provider value={mockQueryContextValue}>
+      {children}
+    </QueryContext.Provider>
   );
 };
 
-describe("Passport Hooks", () => {
-  let queryClient: QueryClient;
+describe("Passport Score Hooks", () => {
+  setupTestQueryClient();
 
   beforeEach(() => {
-    queryClient = new QueryClient({
-      defaultOptions: {
-        queries: {
-          retry: false,
-        },
-      },
-    });
     // Clear all mocks before each test
     jest.clearAllMocks();
   });
@@ -71,17 +63,12 @@ describe("Passport Hooks", () => {
         return { data: mockScoreData };
       });
 
-      const { result } = renderHook(
-        () =>
-          usePassportScore({
-            apiKey: "test-api-key",
-            address: "0x123",
-            scorerId: "test-scorer",
-            queryClient,
-          }),
-        {
-          wrapper: createWrapper(queryClient),
-        }
+      const { result } = renderHook(() =>
+        usePassportScore({
+          apiKey: "test-api-key",
+          address: "0x123",
+          scorerId: "test-scorer",
+        })
       );
 
       // Initial state should be loading
@@ -112,17 +99,12 @@ describe("Passport Hooks", () => {
     });
 
     it("should not fetch when address is undefined", () => {
-      const { result } = renderHook(
-        () =>
-          usePassportScore({
-            apiKey: "test-api-key",
-            address: undefined,
-            scorerId: "test-scorer",
-            queryClient,
-          }),
-        {
-          wrapper: createWrapper(queryClient),
-        }
+      const { result } = renderHook(() =>
+        usePassportScore({
+          apiKey: "test-api-key",
+          address: undefined,
+          scorerId: "test-scorer",
+        })
       );
 
       expect(result.current.isLoading).toBe(false);
@@ -133,24 +115,15 @@ describe("Passport Hooks", () => {
       const errorMessage = "API Error";
       mockedAxios.post.mockRejectedValueOnce(new Error(errorMessage));
 
-      const { result } = renderHook(
-        () =>
-          usePassportScore({
-            apiKey: "test-api-key",
-            address: "0x123",
-            scorerId: "test-scorer",
-            queryClient,
-          }),
-        {
-          wrapper: createWrapper(queryClient),
-        }
+      const { result } = renderHook(() =>
+        usePassportScore({
+          apiKey: "test-api-key",
+          address: "0x123",
+          scorerId: "test-scorer",
+        })
       );
 
-      await act(async () => {
-        await new Promise((resolve) => setTimeout(resolve, 0));
-      });
-
-      expect(result.current.isError).toBe(true);
+      await waitFor(() => expect(result.current.isError).toBe(true));
       expect(result.current.error).toBeDefined();
     });
   });
@@ -168,25 +141,26 @@ describe("Passport Hooks", () => {
 
       const { result } = renderHook(
         () => ({
-          verify: useWidgetVerifyCredentials(),
-          score: usePassportScore({
+          useVerify: useWidgetVerifyCredentials(),
+          useScore: usePassportScore({
             apiKey: "test-api-key",
             address: "0x123",
             scorerId: "test-scorer",
-            queryClient,
           }),
         }),
         {
-          wrapper: createWrapper(queryClient),
+          wrapper: createWidgetWrapper(),
         }
       );
 
-      await waitFor(() => expect(result.current.score.isLoading).toBe(false));
+      await waitFor(() =>
+        expect(result.current.useScore.isLoading).toBe(false)
+      );
 
-      expect(result.current.score.data?.score).toEqual(75.5);
+      expect(result.current.useScore.data?.score).toEqual(75.5);
 
       await act(async () => {
-        result.current.verify.verifyCredentials(["credential1"]);
+        result.current.useVerify.verifyCredentials(["credential1"]);
       });
 
       expect(mockedAxios.post).toHaveBeenCalledWith(
@@ -197,9 +171,11 @@ describe("Passport Hooks", () => {
         expect.any(Object)
       );
 
-      await waitFor(() => expect(result.current.score.isFetching).toBe(false));
+      await waitFor(() =>
+        expect(result.current.useScore.isFetching).toBe(false)
+      );
 
-      expect(result.current.score.data?.score).toEqual(80);
+      expect(result.current.useScore.data?.score).toEqual(80);
 
       expect(mockedAxios.post).toHaveBeenCalledTimes(2);
     });
@@ -214,46 +190,69 @@ describe("Passport Hooks", () => {
           )
       );
 
-      const { result } = renderHook(
-        () => ({
-          score: usePassportScore({
-            apiKey: "test-api-key",
-            address: "0x123",
-            scorerId: "test-scorer",
-            queryClient,
-          }),
-          isQuerying: useWidgetIsQuerying(),
+      const { result } = renderHook(() => ({
+        useScore: usePassportScore({
+          apiKey: "test-api-key",
+          address: "0x123",
+          scorerId: "test-scorer",
         }),
-        {
-          wrapper: createWrapper(queryClient),
-        }
-      );
+        useIsQuerying: useWidgetIsQuerying(),
+      }));
 
-      expect(result.current.isQuerying).toBe(true);
+      expect(result.current.useIsQuerying).toBe(true);
 
       await act(async () => {
         await new Promise((resolve) => setTimeout(resolve, 150));
       });
 
-      expect(result.current.isQuerying).toBe(false);
+      expect(result.current.useIsQuerying).toBe(false);
     });
   });
 
-  describe("useResetPassportScore", () => {
+  describe("useResetWidgetPassportScore", () => {
     it("should invalidate passport score query", async () => {
-      const { result } = renderHook(() => useResetPassportScore(), {
-        wrapper: createWrapper(queryClient),
-      });
+      const { result } = renderHook(
+        () => ({
+          useClient: usePassportQueryClient(),
+          useReset: useResetWidgetPassportScore(),
+        }),
+        {
+          wrapper: createWidgetWrapper(),
+        }
+      );
 
-      const spy = jest.spyOn(queryClient, "invalidateQueries");
+      const spy = jest.spyOn(result.current.useClient, "invalidateQueries");
 
       act(() => {
-        result.current.resetPassportScore();
+        result.current.useReset.resetPassportScore();
       });
 
       expect(spy).toHaveBeenCalledWith({
         queryKey: ["passportScore", "0x123", "test-scorer", undefined],
       });
     });
+  });
+
+  it("should share a client between the widget and non-widget hook", async () => {
+    const { result } = renderHook(
+      () => ({
+        useScore: usePassportScore(mockQueryContextValue),
+        useWidgetScore: useWidgetPassportScore(),
+      }),
+      {
+        wrapper: createWidgetWrapper(),
+      }
+    );
+
+    await waitFor(() => expect(result.current.useScore.isLoading).toBe(false));
+    await waitFor(() =>
+      expect(result.current.useWidgetScore.isLoading).toBe(false)
+    );
+
+    expect(result.current.useScore.data).toEqual(
+      result.current.useWidgetScore.data
+    );
+
+    expect(mockedAxios.post).toHaveBeenCalledTimes(1);
   });
 });

@@ -3,11 +3,11 @@ import styles from "./Body.module.css";
 import utilStyles from "../../utilStyles.module.css";
 import { useHeaderControls } from "../../contexts/HeaderContext";
 import { Button } from "../Button";
-import { useResetPassportScore } from "../../hooks/usePassportScore";
+import { useResetWidgetPassportScore } from "../../hooks/usePassportScore";
 
 export const ErrorBody = ({ errorMessage }: { errorMessage: string }) => {
   const { setSubtitle } = useHeaderControls();
-  const { resetPassportScore } = useResetPassportScore();
+  const { resetPassportScore } = useResetWidgetPassportScore();
 
   useEffect(() => {
     setSubtitle("ERROR");

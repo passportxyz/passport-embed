@@ -1,6 +1,7 @@
 import styles from "./Widget.module.css";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { RefObject, useEffect, useRef } from "react";
+import { usePassportQueryClient } from "../hooks/usePassportQueryClient";
 
 export type CollapseMode = "shift" | "overlay" | "off";
 
@@ -93,6 +94,7 @@ export const Widget = ({
   theme,
   className,
 }: GenericPassportWidgetProps) => {
+  const queryClient = usePassportQueryClient();
   const widgetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -101,29 +103,10 @@ export const Widget = ({
 
   return (
     <div className={`${styles.widget} ${className}`} ref={widgetRef}>
-      <QueryClientProvider client={widgetQueryClient}>
-        {children}
-      </QueryClientProvider>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     </div>
   );
 };
-
-export const widgetQueryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      // With this config, the query will be re-fetched when this tab/window
-      // is refocused or after the component is mounted, and the data has
-      // not been fetched for at least 1 minute
-      refetchOnWindowFocus: true,
-      refetchOnMount: true,
-      refetchOnReconnect: false,
-      staleTime: 1000 * 60 * 1,
-      // The query will be garbage collected after 24 hours
-      gcTime: 1000 * 60 * 60 * 24,
-      retry: 2,
-    },
-  },
-});
 
 const CSS_VARIABLE_POSTFIX = "-c6dbf459";
 

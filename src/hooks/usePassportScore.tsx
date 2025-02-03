@@ -1,14 +1,13 @@
 import {
-  QueryClient,
   useIsFetching,
   useIsMutating,
   useMutation,
   useQuery,
-  useQueryClient,
 } from "@tanstack/react-query";
 import axios from "axios";
 import { useQueryContext } from "../contexts/QueryContext";
 import { useCallback } from "react";
+import { usePassportQueryClient } from "./usePassportQueryClient";
 
 export const DEFAULT_IAM_URL = "https://embed.passport.xyz";
 
@@ -21,9 +20,7 @@ export type PassportEmbedProps = {
   address?: string;
   overrideIamUrl?: string;
   challengeSignatureUrl?: string;
-  // Optional, allows you to share a queryClient between the
-  // widget(s) and the wider app
-  queryClient?: QueryClient;
+  oAuthPopUpUrl?: string;
   // Optional, if provided the widget will prompt
   // the user to connect their wallet if the
   // `address` is undefined
@@ -68,6 +65,7 @@ export const useWidgetPassportScore = () => {
 
 export const useWidgetVerifyCredentials = () => {
   const queryProps = useQueryContext();
+  const queryClient = usePassportQueryClient();
   const queryKey = useQueryKey(queryProps);
 
   const verifyCredentialsMutation = useMutation(
@@ -75,10 +73,10 @@ export const useWidgetVerifyCredentials = () => {
       mutationFn: (credentialIds: string[]) =>
         fetchPassportScore({ ...queryProps, credentialIds }),
       onSuccess: (data) => {
-        queryProps.queryClient.setQueryData(queryKey, data);
+        queryClient.setQueryData(queryKey, data);
       },
     },
-    queryProps.queryClient
+    queryClient
   );
 
   const verifyCredentials = useCallback(
@@ -92,7 +90,7 @@ export const useWidgetVerifyCredentials = () => {
 
 // Returns true if any queries are currently in progress
 export const useWidgetIsQuerying = () => {
-  const { queryClient } = useQueryContext();
+  const queryClient = usePassportQueryClient();
   const isFetching = useIsFetching(undefined, queryClient);
   const isMutating = useIsMutating(undefined, queryClient);
 
@@ -107,13 +105,14 @@ const useQueryKey = ({
   return ["passportScore", address, scorerId, overrideIamUrl];
 };
 
-export const useResetPassportScore = () => {
+export const useResetWidgetPassportScore = () => {
+  const queryClient = usePassportQueryClient();
   const queryProps = useQueryContext();
   const queryKey = useQueryKey(queryProps);
 
   const resetPassportScore = useCallback(() => {
-    queryProps.queryClient.invalidateQueries({ queryKey });
-  }, [queryProps.queryClient, queryKey]);
+    queryClient.invalidateQueries({ queryKey });
+  }, [queryClient, queryKey]);
 
   return { resetPassportScore };
 };
@@ -123,10 +122,8 @@ export const usePassportScore = ({
   address,
   scorerId,
   overrideIamUrl,
-  queryClient,
 }: PassportEmbedProps): PassportEmbedResult => {
-  // If a queryClient is not provided, use the nearest one
-  const nearestClient = useQueryClient();
+  const queryClient = usePassportQueryClient();
 
   const queryKey = useQueryKey({ address, scorerId, overrideIamUrl });
 
@@ -137,7 +134,7 @@ export const usePassportScore = ({
       queryFn: () =>
         fetchPassportScore({ apiKey, address, scorerId, overrideIamUrl }),
     },
-    queryClient || nearestClient
+    queryClient
   );
 };
 
