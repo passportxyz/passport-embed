@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { DEFAULT_IAM_URL } from "./usePassportScore";
-import { QueryClient } from "@tanstack/react-query";
 export type Credential = {
   id: string;
   weight: string;
@@ -29,12 +28,10 @@ export const usePaginatedStampPages = ({
   apiKey,
   scorerId,
   overrideIamUrl,
-  queryClient,
 }: {
   apiKey: string;
   scorerId: string;
   overrideIamUrl?: string;
-  queryClient?: QueryClient;
 }) => {
   const [stampPages, setStampPages] = useState<StampPage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,9 +41,11 @@ export const usePaginatedStampPages = ({
   useEffect(() => {
     const fetchStampPages = async () => {
       try {
-        // TODO: fix this to use propr url encoding 
+        // TODO: fix this to use propr url encoding
         const response = await axios.get<StampsMetadataResponse>(
-          `${overrideIamUrl || DEFAULT_IAM_URL}/embed/stamps/metadata?scorerId=${scorerId}`,
+          `${
+            overrideIamUrl || DEFAULT_IAM_URL
+          }/embed/stamps/metadata?scorerId=${scorerId}`,
           {
             headers: {
               "X-API-KEY": apiKey,

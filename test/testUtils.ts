@@ -1,11 +1,11 @@
-import {
-  __test_initializePassportQueryClient,
-  usePassportQueryClient,
-} from "../src/hooks/usePassportQueryClient";
+import { usePassportQueryClient } from "../src/hooks/usePassportQueryClient";
+
+import { renderHook } from "@testing-library/react";
 
 export const setupTestQueryClient = () => {
   beforeEach(() => {
-    __test_initializePassportQueryClient({
+    const { result } = renderHook(() => usePassportQueryClient());
+    result.current.setDefaultOptions({
       queries: {
         retry: false,
       },

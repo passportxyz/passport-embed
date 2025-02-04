@@ -1,6 +1,5 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import "@testing-library/jest-dom";
 import { Body } from "../../src/components/Body";
 import {
   useResetWidgetPassportScore,

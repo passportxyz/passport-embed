@@ -3,14 +3,15 @@ import utilStyles from "../../utilStyles.module.css";
 import { useEffect, useState } from "react";
 import { Buffer } from "buffer";
 import { Button } from "../Button";
-import { Hyperlink, usePlatformStatus } from "./ScoreTooLowBody";
-import { Platform } from "../../hooks/useStampPages";
+import { Hyperlink } from "./ScoreTooLowBody";
 import { ScrollableDiv } from "../ScrollableDiv";
 import {
   useWidgetIsQuerying,
   useWidgetVerifyCredentials,
 } from "../../hooks/usePassportScore";
 import { useQueryContext } from "../../contexts/QueryContext";
+import { usePlatformStatus } from "../../hooks/usePlatformStatus";
+import { Platform } from "../../hooks/useStampPages";
 
 const DEFAULT_CHALLENGE_URL =
   "https://iam.review.passport.xyz/api/v0.0.0/challenge";
@@ -98,6 +99,7 @@ export const PlatformVerification = ({
           onClick={onClose}
           className={styles.closeButton}
           disabled={isQuerying}
+          data-testid="close-platform-button"
         >
           <CloseIcon />
         </button>

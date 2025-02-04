@@ -1,8 +1,7 @@
-import { QueryClient } from "@tanstack/react-query";
 import styles from "./Body.module.css";
 import utilStyles from "../../utilStyles.module.css";
 import { Button } from "../Button";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useHeaderControls } from "../../contexts/HeaderContext";
 import { useWidgetPassportScore } from "../../hooks/usePassportScore";
 import { usePaginatedStampPages, Platform } from "../../hooks/useStampPages";
@@ -11,16 +10,7 @@ import { RightArrow } from "../../assets/rightArrow";
 import { ScrollableDiv } from "../ScrollableDiv";
 import { PlatformVerification } from "./PlatformVerification";
 import { useQueryContext } from "../../contexts/QueryContext";
-
-type Credential = {
-  id: string;
-  weight: string;
-};
-
-type StampPage = {
-  header: string;
-  platforms: Platform[];
-};
+import { usePlatformStatus } from "../../hooks/usePlatformStatus";
 
 export const Hyperlink = ({
   href,
@@ -102,40 +92,19 @@ const PlatformButton = ({
   );
 };
 
-export const usePlatformStatus = ({ platform }: { platform: Platform }) => {
-  const { data } = useWidgetPassportScore();
-
-  const claimedCredentialIds = Object.entries(data?.stamps || {}).reduce(
-    (claimedIds, [id, { score }]) => {
-      if (score > 0) {
-        claimedIds.push(id);
-      }
-      return claimedIds;
-    },
-    [] as string[]
-  );
-
-  const claimed = platform.credentials.some((credential) =>
-    claimedCredentialIds.includes(credential.id)
-  );
-
-  return useMemo(() => ({ claimed }), [claimed]);
-};
-
-const AddStamps = ({
+export const AddStamps = ({
   generateSignatureCallback,
 }: {
   generateSignatureCallback: (message: string) => Promise<string | undefined>;
 }) => {
   const { setSubtitle } = useHeaderControls();
   const queryProps = useQueryContext();
-  const { scorerId, apiKey, queryClient, overrideIamUrl } = queryProps;
+  const { scorerId, apiKey, overrideIamUrl } = queryProps;
   const { page, nextPage, prevPage, isFirstPage, isLastPage, loading, error } =
     usePaginatedStampPages({
-      apiKey: apiKey,
-      scorerId: scorerId,
-      overrideIamUrl: overrideIamUrl,
-      queryClient: queryClient,
+      apiKey,
+      scorerId,
+      overrideIamUrl,
     });
   const [openPlatform, setOpenPlatform] = useState<Platform | null>(null);
 
