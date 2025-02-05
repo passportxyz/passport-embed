@@ -10,7 +10,6 @@ type QueryContextValue = Pick<
   | "scorerId"
   | "overrideIamUrl"
   | "challengeSignatureUrl"
-  | "oAuthPopUpUrl"
 > & {
   queryClient: QueryClient; // This makes queryClient required
 };
@@ -28,7 +27,6 @@ export const QueryContextProvider = ({
   scorerId,
   overrideIamUrl,
   challengeSignatureUrl,
-  oAuthPopUpUrl,
   queryClient,
 }: {
   children: React.ReactNode;
@@ -40,7 +38,6 @@ export const QueryContextProvider = ({
       scorerId,
       overrideIamUrl,
       challengeSignatureUrl,
-      oAuthPopUpUrl,
       // Use override if passed in, otherwise use the widget query client
       queryClient: queryClient || widgetQueryClient,
     }),
@@ -50,7 +47,6 @@ export const QueryContextProvider = ({
       scorerId,
       overrideIamUrl,
       challengeSignatureUrl,
-      oAuthPopUpUrl,
       queryClient,
     ]
   );

@@ -206,6 +206,7 @@
   dependencies:
     "@tanstack/react-query" "^5.62.11"
     axios "^1.7.7"
+    buffer "^6.0.3"
 
 "@rollup/rollup-darwin-arm64@4.24.0":
   version "4.24.0"

@@ -27,12 +27,10 @@ const appQueryClient = new QueryClient({
 const passportEmbedParams = {
   apiKey: import.meta.env.VITE_API_KEY,
   scorerId: import.meta.env.VITE_SCORER_ID,
-  overrideIamUrl: "https://embed.review.passport.xyz",
-  challengeSignatureUrl: "https://iam.review.passport.xyz/api/v0.0.0/challenge",
-  // challengeSignatureUrl: "http://localhost:8003/api/v0.0.0/challenge",
-  // oAuthPopUpUrl: "http://localhost:3010",
-  oAuthPopUpUrl:
-    "http://passport-embed-popup-review.s3-website-us-west-2.amazonaws.com",
+  // overrideIamUrl: "https://embed.review.passport.xyz",
+  overrideIamUrl: "http://localhost:8004",
+  // challengeSignatureUrl: "https://iam.review.passport.xyz/api/v0.0.0/challenge",
+  challengeSignatureUrl: "http://localhost:8003/api/v0.0.0/challenge",
 };
 
 const connectWallet = async () => {
