@@ -117,7 +117,7 @@ export const PlatformVerification = ({
             and come back after.
           </div>
         ) : (
-          <div dangerouslySetInnerHTML={{ __html: platform.description }} />
+          <div>{platform.description}</div>
         )}
       </ScrollableDiv>
       <Button

@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, ReactNode } from "react";
 import axios from "axios";
 import { DEFAULT_IAM_URL } from "./usePassportScore";
+import { SanitizedHTMLComponent } from "../components/SanitizedHTMLComponent";
+
 export type Credential = {
   id: string;
   weight: string;
@@ -8,7 +10,7 @@ export type Credential = {
 
 export type Platform = {
   name: string;
-  description: string;
+  description: ReactNode;
   documentationLink: string;
   requireSignature?: boolean;
   requiresPopup?: boolean;
@@ -17,12 +19,20 @@ export type Platform = {
   displayWeight: string;
 };
 
+type RawPlatformData = Omit<Platform, "description"> & {
+  description: string;
+};
+
 export type StampPage = {
   header: string;
   platforms: Platform[];
 };
 
-type StampsMetadataResponse = StampPage[];
+type RawStampPageData = Omit<StampPage, "platforms"> & {
+  platforms: RawPlatformData[];
+};
+
+type StampsMetadataResponse = RawStampPageData[];
 
 export const usePaginatedStampPages = ({
   apiKey,
@@ -57,14 +67,18 @@ export const usePaginatedStampPages = ({
         const data = response.data;
 
         // Convert description from HTML string to JSX
-        const formattedData = data.map((page: StampPage) => ({
-          ...page,
-          platforms: page.platforms.map((platform) => ({
-            ...platform,
-            description: platform.description,
-            displayWeight: platform.displayWeight,
-          })),
-        }));
+        const formattedData: StampPage[] = data.map(
+          (page: RawStampPageData) => ({
+            ...page,
+            platforms: page.platforms.map((platform) => ({
+              ...platform,
+              description: (
+                <SanitizedHTMLComponent html={platform.description || ""} />
+              ),
+              displayWeight: platform.displayWeight,
+            })),
+          })
+        );
 
         setStampPages(formattedData);
       } catch (err) {

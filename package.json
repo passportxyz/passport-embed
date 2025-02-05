@@ -1,6 +1,6 @@
 {
   "name": "@passportxyz/passport-embed",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Passport XYZ Embeddable Widgets",
   "repository": "https://github.com/passportxyz/passport-embed",
   "license": "AGPL-3.0-or-later",
@@ -83,6 +83,8 @@
   "dependencies": {
     "@tanstack/react-query": "^5.62.11",
     "axios": "^1.7.7",
-    "buffer": "^6.0.3"
+    "buffer": "^6.0.3",
+    "dompurify": "^3.2.4",
+    "html-react-parser": "^5.2.2"
   }
 }

@@ -7,22 +7,7 @@ import {
 
 import "./index.css";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
-
-const appQueryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      // With this config, the query will be re-fetched when this tab/window
-      // is refocused and the data has not been fetched for at least 1 minute
-      refetchOnWindowFocus: true,
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-      staleTime: 1000 * 60 * 1,
-      gcTime: Infinity,
-    },
-  },
-});
 
 const passportEmbedParams = {
   apiKey: import.meta.env.VITE_API_KEY,
@@ -130,10 +115,6 @@ const Dashboard = () => {
         {...passportEmbedParams}
         address={address}
         collapseMode={collapseMode}
-        // Generally you would not provide this, the widget has its own QueryClient.
-        // But this can be used to override query parameters or to share a QueryClient
-        // with the wider app and/or multiple widgets
-        queryClient={appQueryClient}
         connectWalletCallback={async () => {
           const address = await connectWallet();
           setAddress(address);
@@ -152,11 +133,7 @@ const Dashboard = () => {
   );
 };
 
-const App = () => (
-  <QueryClientProvider client={appQueryClient}>
-    <Dashboard />
-  </QueryClientProvider>
-);
+const App = () => <Dashboard />;
 
 const rootElement = document.getElementById("root");
 if (rootElement) {
