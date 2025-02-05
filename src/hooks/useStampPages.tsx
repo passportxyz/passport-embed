@@ -44,7 +44,6 @@ export const usePaginatedStampPages = ({
   useEffect(() => {
     const fetchStampPages = async () => {
       try {
-        console.log("LARISA DEBUG : fetchStampPages .... ");
         // TODO: fix this to use propr url encoding 
         const response = await axios.get<StampsMetadataResponse>(
           `${overrideIamUrl || DEFAULT_IAM_URL}/embed/stamps/metadata?scorerId=${scorerId}`,
