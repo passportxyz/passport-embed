@@ -3,7 +3,8 @@ import utilStyles from "../../utilStyles.module.css";
 import { useEffect, useState } from "react";
 import { Buffer } from "buffer";
 import { Button } from "../Button";
-import { Hyperlink, Platform, usePlatformStatus } from "./ScoreTooLowBody";
+import { Hyperlink, usePlatformStatus } from "./ScoreTooLowBody";
+import { Platform } from "../../hooks/useStampPages";
 import { ScrollableDiv } from "../ScrollableDiv";
 import {
   useWidgetIsQuerying,
@@ -13,8 +14,6 @@ import { useQueryContext } from "../../contexts/QueryContext";
 
 const DEFAULT_CHALLENGE_URL =
   "https://iam.review.passport.xyz/api/v0.0.0/challenge";
-
-const DEFAULT_OAUTH_POPUP = "https://embed-popup.passport.xyz";
 
 const CloseIcon = () => (
   <svg
@@ -116,7 +115,7 @@ export const PlatformVerification = ({
             and come back after.
           </div>
         ) : (
-          platform.description
+          <div dangerouslySetInnerHTML={{ __html: platform.description}} />
         )}
       </ScrollableDiv>
       <Button
@@ -158,10 +157,10 @@ export const PlatformVerification = ({
             signature = await generateSignatureCallback(challengeToSign);
           }
 
-          if (platform.oAuthPopup) {
+          if (platform.requiresPopup && platform.popUpUrl) {
             // open the popup
             const oAuthPopUpUrl = `${
-              queryProps.oAuthPopUpUrl || DEFAULT_OAUTH_POPUP
+              platform.popUpUrl
             }?address=${encodeURIComponent(
               queryProps.address || ""
             )}&platform=${encodeURIComponent(
