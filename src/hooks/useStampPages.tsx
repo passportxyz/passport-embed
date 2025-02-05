@@ -1,7 +1,6 @@
 import { useEffect, useState, ReactNode } from "react";
-import axios from "axios";
-import { DEFAULT_IAM_URL } from "./usePassportScore";
 import { SanitizedHTMLComponent } from "../components/SanitizedHTMLComponent";
+import { fetchStampPages } from "../utils/stampDataApi";
 
 export type Credential = {
   id: string;
@@ -12,9 +11,9 @@ export type Platform = {
   name: string;
   description: ReactNode;
   documentationLink: string;
-  requireSignature?: boolean;
+  requiresSignature?: boolean;
   requiresPopup?: boolean;
-  popUpUrl?: string;
+  popupUrl?: string;
   credentials: Credential[];
   displayWeight: string;
 };
@@ -32,13 +31,9 @@ type RawStampPageData = Omit<StampPage, "platforms"> & {
   platforms: RawPlatformData[];
 };
 
-type StampsMetadataResponse = RawStampPageData[];
+export type StampsMetadataResponse = RawStampPageData[];
 
-export const usePaginatedStampPages = ({
-  apiKey,
-  scorerId,
-  overrideIamUrl,
-}: {
+export const usePaginatedStampPages = (props: {
   apiKey: string;
   scorerId: string;
   overrideIamUrl?: string;
@@ -49,24 +44,10 @@ export const usePaginatedStampPages = ({
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
-    const fetchStampPages = async () => {
+    (async () => {
       try {
-        // TODO: fix this to use propr url encoding
-        const response = await axios.get<StampsMetadataResponse>(
-          `${
-            overrideIamUrl || DEFAULT_IAM_URL
-          }/embed/stamps/metadata?scorerId=${scorerId}`,
-          {
-            headers: {
-              "X-API-KEY": apiKey,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        const data = await fetchStampPages(props);
 
-        const data = response.data;
-
-        // Convert description from HTML string to JSX
         const formattedData: StampPage[] = data.map(
           (page: RawStampPageData) => ({
             ...page,
@@ -87,9 +68,7 @@ export const usePaginatedStampPages = ({
       } finally {
         setLoading(false);
       }
-    };
-
-    fetchStampPages();
+    })();
   }, []);
 
   // Pagination controls

@@ -5,7 +5,11 @@ import { PlatformVerification } from "../../src/components/Body/PlatformVerifica
 import * as usePassportScore from "../../src/hooks/usePassportScore";
 import * as usePlatformStatus from "../../src/hooks/usePlatformStatus";
 import * as QueryContext from "../../src/contexts/QueryContext";
-import { setupTestQueryClient } from "../testUtils";
+import {
+  mockExpectedConsoleErrorLog,
+  setupTestQueryClient,
+} from "../testUtils";
+import { Platform } from "../../src/hooks/useStampPages";
 
 // Mock the hooks
 jest.mock("../../src/hooks/usePassportScore");
@@ -19,12 +23,13 @@ describe("PlatformVerification", () => {
   setupTestQueryClient();
 
   // Common test props
-  const mockPlatform = {
+  const mockPlatform: Platform = {
     name: "LinkedIn",
     description: <div>Verify your LinkedIn account</div>,
     credentials: [{ id: "linkedin", weight: "1" }],
-    requireSignature: true,
-    oAuthPopup: true,
+    requiresSignature: true,
+    requiresPopup: true,
+    popupUrl: "https://test.com/oauth",
     documentationLink: "https://docs.example.com",
     displayWeight: "1",
   };
@@ -168,8 +173,8 @@ describe("PlatformVerification", () => {
       <PlatformVerification
         platform={{
           ...mockPlatform,
-          oAuthPopup: false,
-          requireSignature: false,
+          requiresSignature: false,
+          requiresPopup: false,
         }}
         onClose={mockOnClose}
         generateSignatureCallback={mockGenerateSignature}
@@ -187,39 +192,40 @@ describe("PlatformVerification", () => {
     });
   });
 
-  it("handles missing address error", async () => {
-    const consoleSpy = jest.spyOn(console, "error").mockImplementation();
+  describe("Errors", () => {
+    mockExpectedConsoleErrorLog();
 
-    // Mock missing address in context
-    (QueryContext.useQueryContext as jest.Mock).mockReturnValue({
-      address: null,
+    it("handles missing address error", async () => {
+      // Mock missing address in context
+      (QueryContext.useQueryContext as jest.Mock).mockReturnValue({
+        address: null,
+      });
+
+      const mockVerifyCredentials = jest.fn();
+      (
+        usePassportScore.useWidgetVerifyCredentials as jest.Mock
+      ).mockReturnValue({
+        verifyCredentials: mockVerifyCredentials,
+      });
+
+      render(
+        <PlatformVerification
+          platform={mockPlatform}
+          onClose={mockOnClose}
+          generateSignatureCallback={mockGenerateSignature}
+        />
+      );
+
+      // Click verify button
+      fireEvent.click(screen.getByRole("button", { name: /verify/i }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/Unable to claim this Stamp/i)
+        ).toBeInTheDocument();
+      });
+
+      expect(mockVerifyCredentials).not.toHaveBeenCalled();
     });
-
-    const mockVerifyCredentials = jest.fn();
-    (usePassportScore.useWidgetVerifyCredentials as jest.Mock).mockReturnValue({
-      verifyCredentials: mockVerifyCredentials,
-    });
-
-    render(
-      <PlatformVerification
-        platform={mockPlatform}
-        onClose={mockOnClose}
-        generateSignatureCallback={mockGenerateSignature}
-      />
-    );
-
-    // Click verify button
-    fireEvent.click(screen.getByRole("button", { name: /verify/i }));
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(/Unable to claim this Stamp/i)
-      ).toBeInTheDocument();
-    });
-
-    expect(mockVerifyCredentials).not.toHaveBeenCalled();
-
-    expect(consoleSpy).toHaveBeenCalled();
-    consoleSpy.mockRestore();
   });
 });

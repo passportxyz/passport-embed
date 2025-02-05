@@ -1,14 +1,7 @@
 import React from "react";
-import {
-  renderHook,
-  act,
-  render,
-  screen,
-  fireEvent,
-} from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
 import {
-  usePages,
   ScoreTooLowBody,
   AddStamps,
 } from "../../src/components/Body/ScoreTooLowBody";
@@ -22,48 +15,51 @@ import { useHeaderControls } from "../../src/contexts/HeaderContext";
 jest.mock("../../src/hooks/usePassportScore");
 jest.mock("../../src/contexts/HeaderContext");
 
+jest.mock("../../src/utils/stampDataApi", () => ({
+  fetchStampPages: jest.fn().mockResolvedValue([
+    {
+      header: "Page 1 Header",
+      platforms: [
+        {
+          name: "Platform 1",
+          description: '<p style="font-weight:700;">Test description 1</p>',
+          documentationLink: "http://test1.com",
+          credentials: [{ id: "cred1", weight: "10" }],
+          displayWeight: "10",
+        },
+        {
+          name: "Platform 2",
+          description: "<p>Test description 2</p>",
+          documentationLink: "http://test2.com",
+          credentials: [
+            { id: "cred2", weight: "20" },
+            { id: "anotherCred", weight: "40" },
+          ],
+          displayWeight: "20",
+        },
+      ],
+    },
+    {
+      header: "Page 2 Header",
+      platforms: [
+        {
+          name: "Platform 3",
+          description: "<p>Test description 3</p>",
+          documentationLink: "http://test3.com",
+          credentials: [{ id: "cred3", weight: "30" }],
+          displayWeight: "30",
+        },
+      ],
+    },
+  ]),
+}));
+
 const mockUseWidgetPassportScore = useWidgetPassportScore as jest.Mock;
 const mockUseHeaderControls = useHeaderControls as jest.Mock;
 
 (useWidgetIsQuerying as jest.Mock).mockReturnValue(false);
 (useWidgetVerifyCredentials as jest.Mock).mockReturnValue({
   verifyCredentials: jest.fn(),
-});
-
-describe("usePages Hook", () => {
-  const testPages = ["page1", "page2", "page3"];
-
-  it("should initialize with first page", () => {
-    const { result } = renderHook(() => usePages(testPages));
-    expect(result.current.page).toBe("page1");
-    expect(result.current.isFirstPage).toBe(true);
-    expect(result.current.isLastPage).toBe(false);
-  });
-
-  it("should navigate between pages correctly", () => {
-    const { result } = renderHook(() => usePages(testPages));
-
-    act(() => {
-      result.current.nextPage();
-    });
-
-    expect(result.current.page).toBe("page2");
-    expect(result.current.isFirstPage).toBe(false);
-    expect(result.current.isLastPage).toBe(false);
-
-    act(() => {
-      result.current.nextPage();
-    });
-
-    expect(result.current.page).toBe("page3");
-    expect(result.current.isLastPage).toBe(true);
-
-    act(() => {
-      result.current.prevPage();
-    });
-
-    expect(result.current.page).toBe("page2");
-  });
 });
 
 describe("ScoreTooLowBody Component", () => {
@@ -93,7 +89,7 @@ describe("ScoreTooLowBody Component", () => {
     expect(screen.getByText("Add Stamps")).toBeInTheDocument();
   });
 
-  it("should transition to AddStamps when continuing", () => {
+  it("should transition to AddStamps when continuing", async () => {
     mockUseWidgetPassportScore.mockReturnValue({
       data: { threshold: 25 },
     });
@@ -103,9 +99,12 @@ describe("ScoreTooLowBody Component", () => {
     );
 
     fireEvent.click(screen.getByText("Add Stamps"));
-    expect(
-      screen.getByText("Choose from below and verify")
-    ).toBeInTheDocument();
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("Choose from below and verify")
+      ).toBeInTheDocument()
+    );
   });
 });
 
@@ -125,51 +124,72 @@ describe("AddStamps Component", () => {
       });
     });
 
-    it("should render platform buttons correctly", () => {
+    it("should render platform buttons correctly", async () => {
       render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
+
+      await waitFor(() =>
+        expect(
+          screen.queryByText("Loading Stamps Metadata...")
+        ).not.toBeInTheDocument()
+      );
 
       // Check for KYC verification section
-      expect(screen.getByText("KYC verification")).toBeInTheDocument();
-      expect(screen.getByText("Binance")).toBeInTheDocument();
-      expect(screen.getByText("Holonym")).toBeInTheDocument();
+      expect(screen.getByText("Page 1 Header")).toBeInTheDocument();
+      expect(screen.getByText("Platform 1")).toBeInTheDocument();
+      expect(screen.getByText("Platform 2")).toBeInTheDocument();
     });
 
-    it("should handle platform selection", () => {
+    it("should handle platform selection", async () => {
       render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-      fireEvent.click(screen.getByText("Binance"));
+      await waitFor(() =>
+        expect(
+          screen.queryByText("Loading Stamps Metadata...")
+        ).not.toBeInTheDocument()
+      );
+
+      fireEvent.click(screen.getByText("Platform 1"));
+
       // Verify that platform verification view is shown
-      expect(
-        screen.getByText(/If you do not have the Binance Account/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/Test description 1/i)).toBeInTheDocument();
     });
 
-    it("should navigate between pages", () => {
+    it("should navigate between pages", async () => {
       render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
+
+      await waitFor(() =>
+        expect(
+          screen.queryByText("Loading Stamps Metadata...")
+        ).not.toBeInTheDocument()
+      );
 
       fireEvent.click(screen.getByText("Try another way"));
-      expect(screen.getByText("Biometrics verification")).toBeInTheDocument();
+      expect(screen.getByText("Page 2 Header")).toBeInTheDocument();
     });
   });
 
-  it("should add claimed class to verified platforms", () => {
+  it("should add claimed class to verified platforms", async () => {
     // Mock a verified Binance platform
     mockUseWidgetPassportScore.mockReturnValue({
       data: {
         stamps: {
-          HolonymGovIdProvider: { score: 16 },
+          cred2: { score: 16 },
         },
       },
     });
 
     render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-    // Get the Binance platform button
-    const holonymButton = screen.getByText("Holonym").closest("button");
-    expect(holonymButton).toHaveClass("platformButtonClaimed");
+    await waitFor(() =>
+      expect(
+        screen.queryByText("Loading Stamps Metadata...")
+      ).not.toBeInTheDocument()
+    );
 
-    // Verify unclaimed platform doesn't have the class
-    const binanceButton = screen.getByText("Binance").closest("button");
-    expect(binanceButton).not.toHaveClass("platformButtonClaimed");
+    const p2Button = screen.getByText("Platform 2").closest("button");
+    expect(p2Button).toHaveClass("platformButtonClaimed");
+
+    const p1Button = screen.getByText("Platform 1").closest("button");
+    expect(p1Button).not.toHaveClass("platformButtonClaimed");
   });
 });

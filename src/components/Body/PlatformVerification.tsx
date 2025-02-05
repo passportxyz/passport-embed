@@ -129,7 +129,7 @@ export const PlatformVerification = ({
 
           console.log("DEBUG  THIS ON CLICK VERIFY CREDENTIALS platform");
           let signature, credential;
-          if (platform.requireSignature) {
+          if (platform.requiresSignature) {
             // get the challenge and  sign it
             if (!queryProps.address) {
               console.error("No address found");
@@ -158,10 +158,10 @@ export const PlatformVerification = ({
             signature = await generateSignatureCallback(challengeToSign);
           }
 
-          if (platform.requiresPopup && platform.popUpUrl) {
+          if (platform.requiresPopup && platform.popupUrl) {
             // open the popup
             const oAuthPopUpUrl = `${
-              platform.popUpUrl
+              platform.popupUrl
             }?address=${encodeURIComponent(
               queryProps.address || ""
             )}&scorerId=${encodeURIComponent(
