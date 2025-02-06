@@ -9,7 +9,7 @@ const config: JestConfigWithTsJest = {
   moduleNameMapper: {
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
   },
-  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
+  setupFilesAfterEnv: ["<rootDir>/src/jest.setup.ts"],
 };
 
 export default config;
