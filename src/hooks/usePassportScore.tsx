@@ -169,7 +169,7 @@ const fetchPassportScore = async ({
   credentialIds?: string[];
 }): Promise<PassportScore> => {
   const response = await axios.post<EmbedVerifyResponse>(
-    `${overrideIamUrl || DEFAULT_IAM_URL}/embed/verify`,
+    `${overrideIamUrl || DEFAULT_IAM_URL}/embed/auto-verify`,
     {
       address,
       scorerId,
