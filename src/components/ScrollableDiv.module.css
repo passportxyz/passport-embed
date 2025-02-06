@@ -1,6 +1,9 @@
 .scrollableDiv {
   display: grid;
-  place-items: center;
+}
+
+.scrollableDiv > * {
+  place-self: center;
 }
 
 .scrollableDiv:hover .scrollIndicator {

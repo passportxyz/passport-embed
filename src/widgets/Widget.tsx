@@ -1,5 +1,6 @@
+import styles from "./Widget.module.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { RefObject, useEffect, useRef } from "react";
 
 export type CollapseMode = "shift" | "overlay" | "off";
 
@@ -7,6 +8,7 @@ export type GenericPassportWidgetProps = {
   children?: React.ReactNode;
   theme?: PassportWidgetTheme;
   collapseMode?: CollapseMode;
+  className?: string;
 };
 
 export type PassportWidgetTheme = {
@@ -42,15 +44,67 @@ export type PassportWidgetTheme = {
   };
 };
 
-export const Widget = ({ children, theme }: GenericPassportWidgetProps) => {
+export const DarkTheme: PassportWidgetTheme = {
+  colors: {
+    primary: "255, 255, 255",
+    secondary: "109, 109, 109",
+    background: "0, 0, 0",
+    success: "164, 255, 169",
+    failure: "203, 203, 203",
+  },
+  padding: {
+    widget: {
+      x: "20px",
+      y: "12px",
+    },
+  },
+  radius: {
+    widget: "16px",
+    button: "8px",
+  },
+  transition: {
+    speed: "50ms",
+  },
+  font: {
+    family: {
+      body: '"Poppins", sans-serif',
+      heading: '"Poppins", sans-serif',
+      alt: '"DM Mono", sans-serif',
+    },
+  },
+  position: {
+    overlayZIndex: "10",
+  },
+};
+
+export const LightTheme: PassportWidgetTheme = {
+  ...DarkTheme,
+  colors: {
+    primary: "55, 55, 55",
+    secondary: "201, 201, 201",
+    background: "255, 255, 255",
+    success: "36, 212, 83",
+    failure: "55, 55, 55",
+  },
+};
+
+export const Widget = ({
+  children,
+  theme,
+  className,
+}: GenericPassportWidgetProps) => {
+  const widgetRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    setTheme(theme);
+    setTheme({ theme, ref: widgetRef });
   }, [theme]);
 
   return (
-    <QueryClientProvider client={widgetQueryClient}>
-      {children}
-    </QueryClientProvider>
+    <div className={`${styles.widget} ${className}`} ref={widgetRef}>
+      <QueryClientProvider client={widgetQueryClient}>
+        {children}
+      </QueryClientProvider>
+    </div>
   );
 };
 
@@ -73,15 +127,27 @@ export const widgetQueryClient = new QueryClient({
 
 const CSS_VARIABLE_POSTFIX = "-c6dbf459";
 
-const setCssProperty = (name: string, value?: string) => {
+const setCssProperty = ({
+  ref,
+  name,
+  value,
+}: {
+  ref: RefObject<HTMLElement>;
+  name: string;
+  value?: string;
+}) => {
   value &&
-    document.documentElement.style.setProperty(
-      `--${name}${CSS_VARIABLE_POSTFIX}`,
-      value
-    );
+    ref.current &&
+    ref.current.style.setProperty(`--${name}${CSS_VARIABLE_POSTFIX}`, value);
 };
 
-const setTheme = (theme?: PassportWidgetTheme) => {
+const setTheme = ({
+  theme,
+  ref,
+}: {
+  theme?: PassportWidgetTheme;
+  ref: RefObject<HTMLElement>;
+}) => {
   if (!theme) return;
 
   const { colors, padding, radius, transition, font, position } = theme;
@@ -103,5 +169,5 @@ const setTheme = (theme?: PassportWidgetTheme) => {
     ["overlay-z-index", position?.overlayZIndex],
   ];
 
-  propertyMap.forEach(([name, value]) => setCssProperty(name, value));
+  propertyMap.forEach(([name, value]) => setCssProperty({ ref, name, value }));
 };
