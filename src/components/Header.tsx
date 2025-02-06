@@ -67,7 +67,11 @@ export const Header = ({
     <button
       className={`${styles.container} ${
         bodyIsOpen || !collapsible ? styles.bodyExpanded : styles.bodyCollapsed
-      } ${collapsible ? styles.containerCollapseButton : ""}`}
+      } ${
+        collapsible
+          ? styles.containerCollapseButton
+          : styles.containerNoCollapseButton
+      }`}
       onClick={() => {
         if (collapsible) {
           setBodyIsOpen((prev) => !prev);
