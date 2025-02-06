@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { DEFAULT_IAM_URL } from "./usePassportScore";
-import { QueryClient } from "@tanstack/react-query";
+import { useEffect, useState, ReactNode } from "react";
+import { SanitizedHTMLComponent } from "../components/SanitizedHTMLComponent";
+import { fetchStampPages } from "../utils/stampDataApi";
+
 export type Credential = {
   id: string;
   weight: string;
@@ -9,13 +9,17 @@ export type Credential = {
 
 export type Platform = {
   name: string;
-  description: string;
+  description: ReactNode;
   documentationLink: string;
-  requireSignature?: boolean;
+  requiresSignature?: boolean;
   requiresPopup?: boolean;
-  popUpUrl?: string;
+  popupUrl?: string;
   credentials: Credential[];
   displayWeight: string;
+};
+
+type RawPlatformData = Omit<Platform, "description"> & {
+  description: string;
 };
 
 export type StampPage = {
@@ -23,18 +27,16 @@ export type StampPage = {
   platforms: Platform[];
 };
 
-type StampsMetadataResponse = StampPage[];
+type RawStampPageData = Omit<StampPage, "platforms"> & {
+  platforms: RawPlatformData[];
+};
 
-export const usePaginatedStampPages = ({
-  apiKey,
-  scorerId,
-  overrideIamUrl,
-  queryClient,
-}: {
+export type StampsMetadataResponse = RawStampPageData[];
+
+export const usePaginatedStampPages = (props: {
   apiKey: string;
   scorerId: string;
   overrideIamUrl?: string;
-  queryClient?: QueryClient;
 }) => {
   const [stampPages, setStampPages] = useState<StampPage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,30 +44,22 @@ export const usePaginatedStampPages = ({
   const [idx, setIdx] = useState(0);
 
   useEffect(() => {
-    const fetchStampPages = async () => {
+    (async () => {
       try {
-        // TODO: fix this to use propr url encoding 
-        const response = await axios.get<StampsMetadataResponse>(
-          `${overrideIamUrl || DEFAULT_IAM_URL}/embed/stamps/metadata?scorerId=${scorerId}`,
-          {
-            headers: {
-              "X-API-KEY": apiKey,
-              "Content-Type": "application/json",
-            },
-          }
+        const data = await fetchStampPages(props);
+
+        const formattedData: StampPage[] = data.map(
+          (page: RawStampPageData) => ({
+            ...page,
+            platforms: page.platforms.map((platform) => ({
+              ...platform,
+              description: (
+                <SanitizedHTMLComponent html={platform.description || ""} />
+              ),
+              displayWeight: platform.displayWeight,
+            })),
+          })
         );
-
-        const data = response.data;
-
-        // Convert description from HTML string to JSX
-        const formattedData = data.map((page: StampPage) => ({
-          ...page,
-          platforms: page.platforms.map((platform) => ({
-            ...platform,
-            description: platform.description,
-            displayWeight: platform.displayWeight,
-          })),
-        }));
 
         setStampPages(formattedData);
       } catch (err) {
@@ -74,9 +68,7 @@ export const usePaginatedStampPages = ({
       } finally {
         setLoading(false);
       }
-    };
-
-    fetchStampPages();
+    })();
   }, []);
 
   // Pagination controls

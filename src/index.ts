@@ -7,3 +7,4 @@ export type {
 } from "./widgets/Widget";
 export { DarkTheme, LightTheme } from "./widgets/Widget";
 export { usePassportScore } from "./hooks/usePassportScore";
+export { usePassportQueryClient } from "./hooks/usePassportQueryClient";

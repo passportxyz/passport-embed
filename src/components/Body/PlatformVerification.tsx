@@ -3,14 +3,15 @@ import utilStyles from "../../utilStyles.module.css";
 import { useEffect, useState } from "react";
 import { Buffer } from "buffer";
 import { Button } from "../Button";
-import { Hyperlink, usePlatformStatus } from "./ScoreTooLowBody";
-import { Platform } from "../../hooks/useStampPages";
+import { Hyperlink } from "./ScoreTooLowBody";
 import { ScrollableDiv } from "../ScrollableDiv";
 import {
   useWidgetIsQuerying,
   useWidgetVerifyCredentials,
 } from "../../hooks/usePassportScore";
 import { useQueryContext } from "../../contexts/QueryContext";
+import { usePlatformStatus } from "../../hooks/usePlatformStatus";
+import { Platform } from "../../hooks/useStampPages";
 
 const DEFAULT_CHALLENGE_URL =
   "https://iam.review.passport.xyz/api/v0.0.0/challenge";
@@ -98,6 +99,7 @@ export const PlatformVerification = ({
           onClick={onClose}
           className={styles.closeButton}
           disabled={isQuerying}
+          data-testid="close-platform-button"
         >
           <CloseIcon />
         </button>
@@ -115,7 +117,7 @@ export const PlatformVerification = ({
             and come back after.
           </div>
         ) : (
-          <div dangerouslySetInnerHTML={{ __html: platform.description }} />
+          <div>{platform.description}</div>
         )}
       </ScrollableDiv>
       <Button
@@ -127,7 +129,7 @@ export const PlatformVerification = ({
 
           console.log("DEBUG  THIS ON CLICK VERIFY CREDENTIALS platform");
           let signature, credential;
-          if (platform.requireSignature) {
+          if (platform.requiresSignature) {
             // get the challenge and  sign it
             if (!queryProps.address) {
               console.error("No address found");
@@ -156,10 +158,10 @@ export const PlatformVerification = ({
             signature = await generateSignatureCallback(challengeToSign);
           }
 
-          if (platform.requiresPopup && platform.popUpUrl) {
+          if (platform.requiresPopup && platform.popupUrl) {
             // open the popup
             const oAuthPopUpUrl = `${
-              platform.popUpUrl
+              platform.popupUrl
             }?address=${encodeURIComponent(
               queryProps.address || ""
             )}&scorerId=${encodeURIComponent(
