@@ -115,7 +115,7 @@ export const PlatformVerification = ({
             and come back after.
           </div>
         ) : (
-          <div dangerouslySetInnerHTML={{ __html: platform.description}} />
+          <div dangerouslySetInnerHTML={{ __html: platform.description }} />
         )}
       </ScrollableDiv>
       <Button
@@ -143,8 +143,7 @@ export const PlatformVerification = ({
             const challenge = await getChallenge(
               challengeEndpoint,
               queryProps.address,
-              // platform.name
-              "Linkedin"
+              platform.name
             );
             credential = challenge.credential;
             const _challenge = challenge.credential.credentialSubject.challenge;
@@ -163,8 +162,10 @@ export const PlatformVerification = ({
               platform.popUpUrl
             }?address=${encodeURIComponent(
               queryProps.address || ""
+            )}&scorerId=${encodeURIComponent(
+              queryProps.scorerId || ""
             )}&platform=${encodeURIComponent(
-              "Linkedin" // platform.name ?
+              platform.name
             )}&signature=${encodeURIComponent(
               signature || ""
             )}&credential=${encodeURIComponent(JSON.stringify(credential))}`;

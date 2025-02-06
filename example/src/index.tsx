@@ -30,7 +30,7 @@ const passportEmbedParams = {
   // overrideIamUrl: "https://embed.review.passport.xyz",
   overrideIamUrl: "http://localhost:8004",
   // challengeSignatureUrl: "https://iam.review.passport.xyz/api/v0.0.0/challenge",
-  challengeSignatureUrl: "http://localhost:8003/api/v0.0.0/challenge",
+  challengeSignatureUrl: "http://localhost:8004/embed/challenge",
 };
 
 const connectWallet = async () => {
