@@ -3,7 +3,7 @@ import utilStyles from "../../utilStyles.module.css";
 import { Button } from "../Button";
 import { useEffect, useState } from "react";
 import { PassportEmbedProps } from "../../hooks/usePassportScore";
-import { useHeaderControls } from "../../contexts/HeaderContext";
+import { useHeaderControls } from "../../hooks/useHeaderControls";
 
 // TODO technically this might not have a threshold of 20, but
 // how would we know at this point before we've made a request

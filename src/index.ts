@@ -5,6 +5,6 @@ export type {
   PassportWidgetTheme,
   CollapseMode,
 } from "./widgets/Widget";
-export { DarkTheme, LightTheme } from "./widgets/Widget";
+export { DarkTheme, LightTheme } from "./utils/themes";
 export { usePassportScore } from "./hooks/usePassportScore";
 export { usePassportQueryClient } from "./hooks/usePassportQueryClient";
