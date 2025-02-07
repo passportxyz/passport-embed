@@ -3,8 +3,8 @@ import { PassportEmbedProps } from "../hooks/usePassportScore";
 import styles from "./PassportScoreWidget.module.css";
 import { Header } from "../components/Header";
 import { Body } from "../components/Body";
-import { HeaderContextProvider } from "../contexts/HeaderContext";
-import { QueryContextProvider } from "../contexts/QueryContext";
+import { HeaderContextProvider } from "../components/HeaderContextProvider";
+import { QueryContextProvider } from "../components/QueryContextProvider";
 import { useEffect, useState } from "react";
 
 export type PassportScoreWidgetProps = PassportEmbedProps &

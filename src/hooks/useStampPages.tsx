@@ -1,6 +1,7 @@
 import { useEffect, useState, ReactNode } from "react";
 import { SanitizedHTMLComponent } from "../components/SanitizedHTMLComponent";
 import { fetchStampPages } from "../utils/stampDataApi";
+import { PassportQueryProps } from "./usePassportScore";
 
 export type Credential = {
   id: string;
@@ -33,11 +34,11 @@ type RawStampPageData = Omit<StampPage, "platforms"> & {
 
 export type StampsMetadataResponse = RawStampPageData[];
 
-export const usePaginatedStampPages = (props: {
-  apiKey: string;
-  scorerId: string;
-  overrideIamUrl?: string;
-}) => {
+export const usePaginatedStampPages = ({
+  apiKey,
+  scorerId,
+  embedServiceUrl,
+}: PassportQueryProps) => {
   const [stampPages, setStampPages] = useState<StampPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +47,11 @@ export const usePaginatedStampPages = (props: {
   useEffect(() => {
     (async () => {
       try {
-        const data = await fetchStampPages(props);
+        const data = await fetchStampPages({
+          apiKey,
+          scorerId,
+          embedServiceUrl,
+        });
 
         const formattedData: StampPage[] = data.map(
           (page: RawStampPageData) => ({
@@ -69,7 +74,7 @@ export const usePaginatedStampPages = (props: {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [apiKey, scorerId, embedServiceUrl]);
 
   // Pagination controls
   const nextPage = () =>

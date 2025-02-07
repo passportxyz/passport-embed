@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import styles from "./Body.module.css";
 import utilStyles from "../../utilStyles.module.css";
-import { useHeaderControls } from "../../contexts/HeaderContext";
+import { useHeaderControls } from "../../hooks/useHeaderControls";
 import { Button } from "../Button";
 import { useResetWidgetPassportScore } from "../../hooks/usePassportScore";
 

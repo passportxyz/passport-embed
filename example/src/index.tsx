@@ -12,10 +12,7 @@ import { useState } from "react";
 const passportEmbedParams = {
   apiKey: import.meta.env.VITE_API_KEY,
   scorerId: import.meta.env.VITE_SCORER_ID,
-  // overrideIamUrl: "https://embed.review.passport.xyz",
-  overrideIamUrl: "http://localhost:8004",
-  // challengeSignatureUrl: "https://iam.review.passport.xyz/api/v0.0.0/challenge",
-  challengeSignatureUrl: "http://localhost:8004/embed/challenge",
+  overrideEmbedServiceUrl: "http://localhost:8004",
 };
 
 const connectWallet = async () => {
@@ -70,6 +67,7 @@ const generateSignature = async (message: string) => {
 const DirectPassportDataAccess = ({ address }: { address?: string }) => {
   const { data, isError, error } = usePassportScore({
     ...passportEmbedParams,
+    embedServiceUrl: passportEmbedParams.overrideEmbedServiceUrl,
     address,
   });
 
@@ -84,7 +82,7 @@ const DirectPassportDataAccess = ({ address }: { address?: string }) => {
           What stamps?
           <pre>{JSON.stringify(data?.stamps, undefined, 2)}</pre>
         </li>
-        {isError && <li>Error: {error?.message}</li>}
+        {isError && <li>Error: {(error as Error)?.message}</li>}
       </ul>
     </div>
   );
@@ -133,7 +131,7 @@ const Dashboard = () => {
   );
 };
 
-const App = () => <Dashboard />;
+export const App = () => <Dashboard />;
 
 const rootElement = document.getElementById("root");
 if (rootElement) {

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useHeaderControls } from "../../contexts/HeaderContext";
+import { useHeaderControls } from "../../hooks/useHeaderControls";
 import styles from "./Body.module.css";
 
 export const CongratsBody = () => {

@@ -5,11 +5,9 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import axios from "axios";
-import { useQueryContext } from "../contexts/QueryContext";
+import { useQueryContext } from "../hooks/useQueryContext";
 import { useCallback } from "react";
 import { usePassportQueryClient } from "./usePassportQueryClient";
-
-export const DEFAULT_IAM_URL = "https://embed.passport.xyz";
 
 export type PassportEmbedProps = {
   apiKey: string;
@@ -18,14 +16,19 @@ export type PassportEmbedProps = {
   // but may be undefined if the wallet is not
   // yet connected
   address?: string;
-  overrideIamUrl?: string;
-  challengeSignatureUrl?: string;
-  oAuthPopUpUrl?: string;
   // Optional, if provided the widget will prompt
   // the user to connect their wallet if the
   // `address` is undefined
   connectWalletCallback?: () => Promise<void>;
   generateSignatureCallback?: (message: string) => Promise<string | undefined>;
+  overrideEmbedServiceUrl?: string;
+};
+
+export type PassportQueryProps = Pick<
+  PassportEmbedProps,
+  "apiKey" | "address" | "scorerId"
+> & {
+  embedServiceUrl: PassportEmbedProps["overrideEmbedServiceUrl"];
 };
 
 type PassportProviderPoints = {
@@ -35,7 +38,7 @@ type PassportProviderPoints = {
 };
 
 export type PassportScore = {
-  address: String;
+  address: string;
   score: number;
   passingScore: boolean;
   lastScoreTimestamp: Date;
@@ -55,7 +58,7 @@ export type PassportEmbedResult = {
   isLoading: boolean;
 
   isError: boolean;
-  error: any;
+  error: unknown;
 };
 
 export const useWidgetPassportScore = () => {
@@ -100,9 +103,9 @@ export const useWidgetIsQuerying = () => {
 const useQueryKey = ({
   address,
   scorerId,
-  overrideIamUrl,
-}: Pick<PassportEmbedProps, "address" | "scorerId" | "overrideIamUrl">) => {
-  return ["passportScore", address, scorerId, overrideIamUrl];
+  embedServiceUrl,
+}: Pick<PassportQueryProps, "address" | "scorerId" | "embedServiceUrl">) => {
+  return ["passportScore", address, scorerId, embedServiceUrl];
 };
 
 export const useResetWidgetPassportScore = () => {
@@ -121,18 +124,23 @@ export const usePassportScore = ({
   apiKey,
   address,
   scorerId,
-  overrideIamUrl,
-}: PassportEmbedProps): PassportEmbedResult => {
+  embedServiceUrl,
+}: PassportQueryProps): PassportEmbedResult => {
   const queryClient = usePassportQueryClient();
 
-  const queryKey = useQueryKey({ address, scorerId, overrideIamUrl });
+  const queryKey = useQueryKey({ address, scorerId, embedServiceUrl });
 
   return useQuery(
     {
       queryKey,
       enabled: Boolean(address && apiKey && scorerId),
       queryFn: () =>
-        fetchPassportScore({ apiKey, address, scorerId, overrideIamUrl }),
+        fetchPassportScore({
+          apiKey,
+          address,
+          scorerId,
+          embedServiceUrl,
+        }),
     },
     queryClient
   );
@@ -159,13 +167,13 @@ const fetchPassportScore = async ({
   apiKey,
   address,
   scorerId,
-  overrideIamUrl,
+  embedServiceUrl,
   credentialIds,
-}: PassportEmbedProps & {
+}: PassportQueryProps & {
   credentialIds?: string[];
 }): Promise<PassportScore> => {
   const response = await axios.post<EmbedVerifyResponse>(
-    `${overrideIamUrl || DEFAULT_IAM_URL}/embed/auto-verify`,
+    `${embedServiceUrl}/embed/auto-verify`,
     {
       address,
       scorerId,
