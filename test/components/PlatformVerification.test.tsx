@@ -4,7 +4,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { PlatformVerification } from "../../src/components/Body/PlatformVerification";
 import * as usePassportScore from "../../src/hooks/usePassportScore";
 import * as usePlatformStatus from "../../src/hooks/usePlatformStatus";
-import * as QueryContext from "../../src/contexts/QueryContext";
+import * as useQueryContext from "../../src/hooks/useQueryContext";
 import {
   mockExpectedConsoleErrorLog,
   setupTestQueryClient,
@@ -14,7 +14,7 @@ import { Platform } from "../../src/hooks/useStampPages";
 // Mock the hooks
 jest.mock("../../src/hooks/usePassportScore");
 jest.mock("../../src/hooks/usePlatformStatus");
-jest.mock("../../src/contexts/QueryContext");
+jest.mock("../../src/hooks/useQueryContext");
 
 // Mock fetch
 global.fetch = jest.fn();
@@ -48,7 +48,7 @@ describe("PlatformVerification", () => {
     (usePlatformStatus.usePlatformStatus as jest.Mock).mockReturnValue({
       claimed: false,
     });
-    (QueryContext.useQueryContext as jest.Mock).mockReturnValue({
+    (useQueryContext.useQueryContext as jest.Mock).mockReturnValue({
       address: "0x123",
       embedServiceUrl: "https://test.com",
     });
@@ -196,7 +196,7 @@ describe("PlatformVerification", () => {
 
     it("handles missing address error", async () => {
       // Mock missing address in context
-      (QueryContext.useQueryContext as jest.Mock).mockReturnValue({
+      (useQueryContext.useQueryContext as jest.Mock).mockReturnValue({
         address: null,
       });
 
