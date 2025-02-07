@@ -67,6 +67,7 @@ const generateSignature = async (message: string) => {
 const DirectPassportDataAccess = ({ address }: { address?: string }) => {
   const { data, isError, error } = usePassportScore({
     ...passportEmbedParams,
+    embedServiceUrl: passportEmbedParams.overrideEmbedServiceUrl,
     address,
   });
 
@@ -81,7 +82,7 @@ const DirectPassportDataAccess = ({ address }: { address?: string }) => {
           What stamps?
           <pre>{JSON.stringify(data?.stamps, undefined, 2)}</pre>
         </li>
-        {isError && <li>Error: {error?.message}</li>}
+        {isError && <li>Error: {(error as Error)?.message}</li>}
       </ul>
     </div>
   );

@@ -1,4 +1,5 @@
 export { PassportScoreWidget } from "./widgets/PassportScoreWidget";
+export { DEFAULT_EMBED_SERVICE_URL } from "./contexts/QueryContext";
 export type { PassportScoreWidgetProps } from "./widgets/PassportScoreWidget";
 export type {
   GenericPassportWidgetProps,
