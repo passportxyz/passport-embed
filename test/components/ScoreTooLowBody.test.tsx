@@ -10,10 +10,10 @@ import {
   useWidgetPassportScore,
   useWidgetVerifyCredentials,
 } from "../../src/hooks/usePassportScore";
-import { useHeaderControls } from "../../src/contexts/HeaderContext";
+import { useHeaderControls } from "../../src/hooks/useHeaderControls";
 
 jest.mock("../../src/hooks/usePassportScore");
-jest.mock("../../src/contexts/HeaderContext");
+jest.mock("../../src/hooks/useHeaderControls");
 
 jest.mock("../../src/utils/stampDataApi", () => ({
   fetchStampPages: jest.fn().mockResolvedValue([
