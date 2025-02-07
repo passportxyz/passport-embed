@@ -34,9 +34,11 @@
   ],
   "scripts": {
     "test": "jest",
-    "build": "npm run build:bundle && npm run build:types",
-    "build:bundle": "webpack",
+    "build": "npm run build:esm && npm run build:cjs && npm run build:types",
+    "build:esm": "tsc --module ESNext --outDir dist/esm && postcss 'src/**/*.css' -d dist/esm/ --base src",
+    "build:cjs": "tsc --module CommonJS --outDir dist/cjs && postcss 'src/**/*.css' -d dist/cjs/ --base src",
     "build:types": "tsc --declaration --declarationDir dist --emitDeclarationOnly",
+    "push": "yalc push",
     "dev": "cd example && yarn dev",
     "watch:css": "postcss 'src/**/*.css' -d dist/esm/ --base src --watch",
     "watch:esm": "tsc --module ESNext --outDir dist/esm --watch",
@@ -85,7 +87,8 @@
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.23.0",
     "webpack": "^5.97.1",
-    "webpack-cli": "^6.0.1"
+    "webpack-cli": "^6.0.1",
+    "yalc": "^1.0.0-pre.53"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.62.11",
