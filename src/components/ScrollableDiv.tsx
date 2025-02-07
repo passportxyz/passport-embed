@@ -75,13 +75,15 @@ const ScrollIndicator = ({
     });
 
     // Initial visibility check on mount
-    scrollContainerRef.current && onScroll(scrollContainerRef.current);
+    if (scrollContainerRef.current) onScroll(scrollContainerRef.current);
+
+    const localRef = scrollContainerRef.current;
 
     // Remove on dismount
     return () => {
-      scrollContainerRef.current?.removeEventListener("scroll", onScrollEvent);
+      localRef?.removeEventListener("scroll", onScrollEvent);
     };
-  }, [scrollContainerRef]);
+  }, [scrollContainerRef, direction]);
 
   return (
     <div

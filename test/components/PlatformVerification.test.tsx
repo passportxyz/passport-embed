@@ -50,8 +50,7 @@ describe("PlatformVerification", () => {
     });
     (QueryContext.useQueryContext as jest.Mock).mockReturnValue({
       address: "0x123",
-      challengeSignatureUrl: "https://test.com/challenge",
-      oAuthPopUpUrl: "https://test.com/oauth",
+      embedServiceUrl: "https://test.com",
     });
 
     // Mock window.open
@@ -154,7 +153,7 @@ describe("PlatformVerification", () => {
 
     // Verify challenge fetch was called
     expect(global.fetch).toHaveBeenCalledWith(
-      "https://test.com/challenge",
+      "https://test.com/embed/challenge",
       expect.any(Object)
     );
   });

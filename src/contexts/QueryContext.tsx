@@ -1,55 +1,12 @@
-import { createContext, useContext, useMemo } from "react";
-import { PassportEmbedProps } from "../hooks/usePassportScore";
+// Use this through the `useQueryContext` hook
 
-type QueryContextValue = Pick<
-  PassportEmbedProps,
-  | "apiKey"
-  | "address"
-  | "scorerId"
-  | "overrideIamUrl"
-  | "challengeSignatureUrl"
-  | "oAuthPopUpUrl"
->;
+import { createContext } from "react";
+import { PassportQueryProps } from "../hooks/usePassportScore";
 
-export const QueryContext = createContext<QueryContextValue>({
+export const DEFAULT_EMBED_SERVICE_URL = "https://embed.passport.xyz";
+
+export const QueryContext = createContext<PassportQueryProps>({
   apiKey: "",
   scorerId: "",
+  embedServiceUrl: DEFAULT_EMBED_SERVICE_URL,
 });
-
-export const QueryContextProvider = ({
-  children,
-  apiKey,
-  address,
-  scorerId,
-  overrideIamUrl,
-  challengeSignatureUrl,
-  oAuthPopUpUrl,
-}: {
-  children: React.ReactNode;
-} & PassportEmbedProps) => {
-  const value = useMemo(
-    () => ({
-      apiKey,
-      address,
-      scorerId,
-      overrideIamUrl,
-      challengeSignatureUrl,
-      oAuthPopUpUrl,
-    }),
-    [
-      apiKey,
-      address,
-      scorerId,
-      overrideIamUrl,
-      challengeSignatureUrl,
-      oAuthPopUpUrl,
-    ]
-  );
-
-  return (
-    <QueryContext.Provider value={value}>{children}</QueryContext.Provider>
-  );
-};
-
-export const useQueryContext = (): QueryContextValue =>
-  useContext(QueryContext);
