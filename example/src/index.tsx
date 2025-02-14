@@ -1,4 +1,6 @@
 import { createRoot } from "react-dom/client";
+import { useState } from "react";
+import { Buffer } from "buffer";
 import {
   PassportScoreWidget,
   usePassportScore,
@@ -6,8 +8,6 @@ import {
 } from "@passportxyz/passport-embed";
 
 import "./index.css";
-
-import { useState } from "react";
 
 const passportEmbedParams = {
   apiKey: import.meta.env.VITE_API_KEY,
@@ -51,10 +51,13 @@ const generateSignature = async (message: string) => {
 
     const signerAddress = accounts[0];
 
+    const stringToSign = `0x${Buffer.from(message, "utf8").toString(
+      "hex"
+    )}`;
     // Sign the message
     const signature = await window.ethereum.request({
       method: "personal_sign",
-      params: [message, signerAddress],
+      params: [stringToSign, signerAddress],
     });
 
     return signature ? signature : "";
