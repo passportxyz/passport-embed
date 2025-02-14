@@ -178,7 +178,6 @@ export const PlatformVerification = ({
               if (popup.closed) {
                 clearInterval(checkPopupClosed);
                 console.log("Pop-up closed");
-                alert("OAuth process completed or cancelled. Interval check");
                 // Refresh stamps
                 verifyCredentials(platformCredentialIds);
               }
