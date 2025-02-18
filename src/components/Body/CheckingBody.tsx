@@ -2,7 +2,7 @@ import styles from "./Body.module.css";
 import utilStyles from "../../utilStyles.module.css";
 import { Button } from "../Button";
 import { useEffect } from "react";
-import { useHeaderControls } from "../../contexts/HeaderContext";
+import { useHeaderControls } from "../../hooks/useHeaderControls";
 
 export const CheckingBody = () => {
   const { setSubtitle } = useHeaderControls();

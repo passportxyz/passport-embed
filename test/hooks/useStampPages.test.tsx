@@ -13,6 +13,7 @@ describe("usePaginatedStampPages", () => {
   const mockProps = {
     apiKey: "test-api-key",
     scorerId: "test-scorer-id",
+    embedServiceUrl: "https://test.com",
   };
 
   const mockRawStampPages = [
@@ -134,7 +135,7 @@ describe("usePaginatedStampPages", () => {
   it("should pass custom IAM URL to fetchStampPages", async () => {
     const propsWithIamUrl = {
       ...mockProps,
-      overrideIamUrl: "https://custom-iam.example.com",
+      embedServiceUrl: "https://custom-iam.example.com",
     };
 
     mockFetchStampPages.mockResolvedValueOnce(mockRawStampPages);

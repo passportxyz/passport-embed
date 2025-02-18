@@ -53,8 +53,10 @@ const BodyRouter = ({
   if (isError) {
     let errorMessage = "An error occurred";
     try {
-      errorMessage = error.message;
-    } catch {}
+      errorMessage = (error as Error).message;
+    } catch {
+      /* ignore if error is unexpected format */
+    }
     return <ErrorBody errorMessage={errorMessage} />;
   }
 

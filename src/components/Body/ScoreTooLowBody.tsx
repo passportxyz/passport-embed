@@ -2,14 +2,14 @@ import styles from "./Body.module.css";
 import utilStyles from "../../utilStyles.module.css";
 import { Button } from "../Button";
 import { useEffect, useState } from "react";
-import { useHeaderControls } from "../../contexts/HeaderContext";
+import { useHeaderControls } from "../../hooks/useHeaderControls";
 import { useWidgetPassportScore } from "../../hooks/usePassportScore";
 import { usePaginatedStampPages, Platform } from "../../hooks/useStampPages";
 import { TextButton } from "../TextButton";
 import { RightArrow } from "../../assets/rightArrow";
 import { ScrollableDiv } from "../ScrollableDiv";
 import { PlatformVerification } from "./PlatformVerification";
-import { useQueryContext } from "../../contexts/QueryContext";
+import { useQueryContext } from "../../hooks/useQueryContext";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
 
 export const Hyperlink = ({
@@ -99,12 +99,12 @@ export const AddStamps = ({
 }) => {
   const { setSubtitle } = useHeaderControls();
   const queryProps = useQueryContext();
-  const { scorerId, apiKey, overrideIamUrl } = queryProps;
+  const { scorerId, apiKey, embedServiceUrl } = queryProps;
   const { page, nextPage, prevPage, isFirstPage, isLastPage, loading, error } =
     usePaginatedStampPages({
       apiKey,
       scorerId,
-      overrideIamUrl,
+      embedServiceUrl,
     });
   const [openPlatform, setOpenPlatform] = useState<Platform | null>(null);
 
