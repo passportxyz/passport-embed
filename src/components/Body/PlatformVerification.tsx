@@ -9,12 +9,9 @@ import {
   useWidgetIsQuerying,
   useWidgetVerifyCredentials,
 } from "../../hooks/usePassportScore";
-import { useQueryContext } from "../../contexts/QueryContext";
+import { useQueryContext } from "../../hooks/useQueryContext";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
 import { Platform } from "../../hooks/useStampPages";
-
-const DEFAULT_CHALLENGE_URL =
-  "https://iam.review.passport.xyz/api/v0.0.0/challenge";
 
 const CloseIcon = () => (
   <svg
@@ -40,6 +37,28 @@ const CloseIcon = () => (
     />
   </svg>
 );
+
+const getChallenge = async (
+  challengeUrl: string,
+  address: string,
+  providerType: string
+) => {
+  const payload = {
+    address: address,
+    signatureType: "EIP712",
+    type: providerType,
+  };
+
+  const response = await fetch(challengeUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ payload }),
+  });
+
+  return response.json();
+};
 
 export const PlatformVerification = ({
   platform,
@@ -68,28 +87,6 @@ export const PlatformVerification = ({
       }
     }
   }, [initiatedVerification, isQuerying, claimed, onClose]);
-
-  const getChallenge = async (
-    challengeUrl: string,
-    address: string,
-    providerType: string
-  ) => {
-    const payload = {
-      address: address,
-      signatureType: "EIP712",
-      type: providerType,
-    };
-
-    const response = await fetch(challengeUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ payload }),
-    });
-
-    return response.json();
-  };
 
   return (
     <div className={styles.container}>
@@ -138,10 +135,7 @@ export const PlatformVerification = ({
               return;
             }
 
-            // TODO: fix this URL
-            const challengeEndpoint = `${
-              queryProps.challengeSignatureUrl || DEFAULT_CHALLENGE_URL
-            }`;
+            const challengeEndpoint = `${queryProps.embedServiceUrl}/embed/challenge`;
             const challenge = await getChallenge(
               challengeEndpoint,
               queryProps.address,
@@ -190,9 +184,7 @@ export const PlatformVerification = ({
               if (popup.closed) {
                 clearInterval(checkPopupClosed);
                 console.log("Pop-up closed");
-                alert(
-                  "LinkedIn OAuth process completed or cancelled. Interval check"
-                );
+                alert("OAuth process completed or cancelled. Interval check");
                 // Refresh stamps
                 verifyCredentials(platformCredentialIds);
               }

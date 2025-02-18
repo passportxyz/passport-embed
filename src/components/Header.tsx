@@ -3,7 +3,7 @@ import { PassportLogo } from "../assets/passportLogo";
 import { CheckmarkIcon } from "../assets/checkmarkIcon";
 import { XIcon } from "../assets/xIcon";
 import { Ellipsis } from "./Ellipsis";
-import { useHeaderControls } from "../contexts/HeaderContext";
+import { useHeaderControls } from "../hooks/useHeaderControls";
 import {
   useWidgetIsQuerying,
   useWidgetPassportScore,

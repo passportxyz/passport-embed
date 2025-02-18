@@ -37,6 +37,7 @@ const mockQueryContextValue = {
   apiKey: "test-api-key",
   address: "0x123",
   scorerId: "test-scorer",
+  embedServiceUrl: "https://test.com",
 };
 
 // Test wrapper setup
@@ -68,6 +69,7 @@ describe("Passport Score Hooks", () => {
           apiKey: "test-api-key",
           address: "0x123",
           scorerId: "test-scorer",
+          embedServiceUrl: "https://test.com",
         })
       );
 
@@ -104,6 +106,7 @@ describe("Passport Score Hooks", () => {
           apiKey: "test-api-key",
           address: undefined,
           scorerId: "test-scorer",
+          embedServiceUrl: "https://test.com",
         })
       );
 
@@ -120,6 +123,7 @@ describe("Passport Score Hooks", () => {
           apiKey: "test-api-key",
           address: "0x123",
           scorerId: "test-scorer",
+          embedServiceUrl: "https://test.com",
         })
       );
 
@@ -146,6 +150,7 @@ describe("Passport Score Hooks", () => {
             apiKey: "test-api-key",
             address: "0x123",
             scorerId: "test-scorer",
+            embedServiceUrl: "https://test.com",
           }),
         }),
         {
@@ -195,6 +200,7 @@ describe("Passport Score Hooks", () => {
           apiKey: "test-api-key",
           address: "0x123",
           scorerId: "test-scorer",
+          embedServiceUrl: "https://test.com",
         }),
         useIsQuerying: useWidgetIsQuerying(),
       }));
@@ -228,7 +234,7 @@ describe("Passport Score Hooks", () => {
       });
 
       expect(spy).toHaveBeenCalledWith({
-        queryKey: ["passportScore", "0x123", "test-scorer", undefined],
+        queryKey: ["passportScore", "0x123", "test-scorer", "https://test.com"],
       });
     });
   });
