@@ -1,7 +1,6 @@
 import styles from "./PlatformVerification.module.css";
 import utilStyles from "../../utilStyles.module.css";
 import { useEffect, useState } from "react";
-import { Buffer } from "buffer";
 import { Button } from "../Button";
 import { Hyperlink } from "./ScoreTooLowBody";
 import { ScrollableDiv } from "../ScrollableDiv";
@@ -144,12 +143,7 @@ export const PlatformVerification = ({
             credential = challenge.credential;
             const _challenge = challenge.credential.credentialSubject.challenge;
 
-            const challengeToSign = `0x${Buffer.from(
-              _challenge,
-              "utf8"
-            ).toString("hex")}`;
-
-            signature = await generateSignatureCallback(challengeToSign);
+            signature = await generateSignatureCallback(_challenge);
           }
 
           if (platform.requiresPopup && platform.popupUrl) {
@@ -184,7 +178,6 @@ export const PlatformVerification = ({
               if (popup.closed) {
                 clearInterval(checkPopupClosed);
                 console.log("Pop-up closed");
-                alert("OAuth process completed or cancelled. Interval check");
                 // Refresh stamps
                 verifyCredentials(platformCredentialIds);
               }
