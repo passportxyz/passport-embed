@@ -156,7 +156,9 @@ export const PlatformVerification = ({
               queryProps.scorerId || ""
             )}&platform=${encodeURIComponent(
               platform.name
-            )}&signature=${encodeURIComponent(
+            )}&providers=${encodeURIComponent(JSON.stringify(
+              platformCredentialIds
+            ))}&signature=${encodeURIComponent(
               signature || ""
             )}&credential=${encodeURIComponent(JSON.stringify(credential))}`;
 
