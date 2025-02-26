@@ -48,7 +48,7 @@ jobs:
           git log
           git checkout -b package-version-update
           git push --force origin package-version-update
-          NEW_TAG = "v$NEW_VERSION"
+          NEW_TAG="v$NEW_VERSION"
           git push --force origin $NEW_TAG
           
       - name: Create Pull Request
