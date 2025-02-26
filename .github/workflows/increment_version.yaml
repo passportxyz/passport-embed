@@ -6,7 +6,7 @@ on:
       version-increment-type:
         description: "What would you like to increment? Major, minor or patch?"
         required: true
-        default: "review"
+        default: "patch"
         type: choice
         options:
           - major
@@ -23,10 +23,11 @@ jobs:
         with:
           node-version: 22.14.0
           cache: "yarn"
-      - name: Test
+      - name: Increment package version
         run: |
           git log
           git config user.name 'GHA Workflow'
           git config user.email '-'
           npm version ${{ github.event.inputs.version-increment-type }}
           git log
+          git push --follow-tags
