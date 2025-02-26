@@ -33,6 +33,7 @@ jobs:
         run: |
           rm -Rf dist
           yarn install --frozen-lockfile
+          yarn build
 
       - name: Increment package version
         run: |
