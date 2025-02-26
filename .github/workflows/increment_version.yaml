@@ -1,0 +1,30 @@
+name: Release workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      version-increment-type:
+        description: "What would you like to increment? Major, minor or patch?"
+        required: true
+        default: "review"
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 22
+        uses: actions/setup-node@v3
+        with:
+          node-version: 22.14.0
+          cache: "yarn"
+      - name: Test
+        run: |
+          git log
+          npm version ${{ github.event.inputs.version-increment-type }}
+          git log
