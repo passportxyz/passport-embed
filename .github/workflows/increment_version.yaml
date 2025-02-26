@@ -29,17 +29,17 @@ jobs:
           git config user.name 'GHA Workflow'
           git config user.email '-'
 
-      - name: Rebuild dist
-        run: |
-          rm -Rf dist
-          yarn install --frozen-lockfile
-          yarn build
-
       - name: Increment package version
         run: |
           git log
           NEW_VERSION=`npm version --git-tag-version=false ${{ github.event.inputs.version-increment-type }}`
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV  # Save to environment
+
+      - name: Rebuild dist
+        run: |
+          rm -Rf dist
+          yarn install --frozen-lockfile
+          yarn build
 
       - name: Commit & Push
         run: |
