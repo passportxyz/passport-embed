@@ -6,12 +6,17 @@ on:
       version-increment-type:
         description: "What would you like to increment? Major, minor or patch?"
         required: true
-        default: "patch"
+        default: "prerelease"
         type: choice
         options:
           - major
           - minor
           - patch
+          - premajor
+          - preminor
+          - prepatch
+          - prerelease
+          
 jobs:
   increment-version:
     runs-on: ubuntu-latest
