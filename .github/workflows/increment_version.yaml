@@ -38,4 +38,4 @@ jobs:
         run: |
           gh pr create --base main --head package-version-update --title "Update package version" --body "This PR was created automatically."
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
