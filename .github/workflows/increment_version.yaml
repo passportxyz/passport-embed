@@ -13,7 +13,7 @@ on:
           - minor
           - patch
 jobs:
-  run-tests:
+  increment-version:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,6 +23,7 @@ jobs:
         with:
           node-version: 22.14.0
           cache: "yarn"
+
       - name: Increment package version
         run: |
           git log
@@ -30,4 +31,10 @@ jobs:
           git config user.email '-'
           npm version ${{ github.event.inputs.version-increment-type }}
           git log
-          git push --follow-tags
+          git push --follow-tags --force origin package-version-update
+
+      - name: Create Pull Request
+        run: |
+          gh pr create --base main --head package-version-update --title "Update package version" --body "This PR was created automatically."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
