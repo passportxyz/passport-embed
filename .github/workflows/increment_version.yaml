@@ -24,13 +24,26 @@ jobs:
           node-version: 22.14.0
           cache: "yarn"
 
+      - name: Configure git
+        run: |
+          git config user.name 'GHA Workflow'
+          git config user.email '-'
+
+      - name: Rebuild dist
+        run: |
+          rm -Rf dist
+          yarn install --frozen-lockfile
+
       - name: Increment package version
         run: |
           git log
-          git config user.name 'GHA Workflow'
-          git config user.email '-'
-          NEW_VERSION=`npm version ${{ github.event.inputs.version-increment-type }} -m "Upgrading package version to %s"`
+          NEW_VERSION=`npm version --git-tag-version=false ${{ github.event.inputs.version-increment-type }}`
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV  # Save to environment
+
+      - name: Commit & Push
+        run: |
+          git add -f package.json dist
+          git commit -m "New build + update package version to $NEW_VERSION"
           git log
           git checkout -b package-version-update
           git push --follow-tags --force origin package-version-update
