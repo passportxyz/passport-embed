@@ -29,13 +29,14 @@ jobs:
           git log
           git config user.name 'GHA Workflow'
           git config user.email '-'
-          npm version ${{ github.event.inputs.version-increment-type }}
+          NEW_VERSION=`npm version ${{ github.event.inputs.version-increment-type }} -m "Upgrading package version to %s"`
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV  # Save to environment
           git log
           git checkout -b package-version-update
           git push --follow-tags --force origin package-version-update
 
       - name: Create Pull Request
         run: |
-          gh pr create --base main --head package-version-update --title "Update package version" --body "This PR was created automatically."
+          gh pr create --base main --head package-version-update --title "Update package version to $NEW_VERSION" --body "This PR was created automatically."
         env:
           GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
