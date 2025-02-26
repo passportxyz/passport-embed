@@ -5,7 +5,30 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  publish_preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.14.0
+          registry-url: https://registry.npmjs.org/
+      - run: npm publish --dry-run=true
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
+  publish_confirm:
+    name: Review Before Publishing
+    needs: [publish_preview]
+    runs-on: ubuntu-latest
+    environment: npm
+    steps:
+      - name: Approve Publish to NPM (check preview step)
+        run: |
+          echo "Waiting for approval"
+          
+  publish:
+    needs: [publish_confirm]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
