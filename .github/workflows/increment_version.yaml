@@ -1,4 +1,4 @@
-name: Release workflow
+name: Update package version
 
 on:
   workflow_dispatch:
@@ -17,14 +17,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Use Node.js 22
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: 22.14.0
           cache: "yarn"
       - name: Test
         run: |
           git log
+          git config user.name 'GHA Workflow'
+          git config user.email '-'
           npm version ${{ github.event.inputs.version-increment-type }}
           git log
