@@ -18,7 +18,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
   publish_confirm:
-    name: Review BEfore Publishing
+    name: Review Before Publishing
     needs: [publish_preview]
     runs-on: ubuntu-latest
     environment: npm
