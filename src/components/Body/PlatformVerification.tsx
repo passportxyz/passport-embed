@@ -156,13 +156,13 @@ export const PlatformVerification = ({
               queryProps.scorerId || ""
             )}&platform=${encodeURIComponent(
               platform.name
-            )}&providers=${encodeURIComponent(JSON.stringify(
-              platformCredentialIds
-            ))}&signature=${encodeURIComponent(
+            )}&providers=${encodeURIComponent(
+              JSON.stringify(platformCredentialIds)
+            )}&signature=${encodeURIComponent(
               signature || ""
-            )}&credential=${encodeURIComponent(JSON.stringify(credential))}`;
-
-            console.log("THIS IS OAUTH POPUP URL", oAuthPopUpUrl);
+            )}&credential=${encodeURIComponent(
+              JSON.stringify(credential)
+            )}&apiKey=${encodeURIComponent(queryProps.apiKey || "")}`;
 
             const popup = window.open(
               oAuthPopUpUrl,
