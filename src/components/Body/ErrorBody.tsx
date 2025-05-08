@@ -4,18 +4,25 @@ import utilStyles from "../../utilStyles.module.css";
 import { useHeaderControls } from "../../hooks/useHeaderControls";
 import { Button } from "../Button";
 import { useResetWidgetPassportScore } from "../../hooks/usePassportScore";
+import { isAxiosError } from "axios";
 
-export const ErrorBody = ({ errorMessage }: { errorMessage: string }) => {
+interface ErrorBodyProps {
+  error: unknown;
+}
+
+export const ErrorBody = ({ error }: ErrorBodyProps) => {
   const { setSubtitle } = useHeaderControls();
   const { resetPassportScore } = useResetWidgetPassportScore();
 
   useEffect(() => {
     setSubtitle("ERROR");
-  });
+  }, [setSubtitle]);
+
+  const errorMessage = error instanceof Error ? error.message : "An error occurred";
 
   return (
     <>
-      <div className={`${styles.textBlock}`}>
+      <div className={styles.textBlock}>
         <div className={styles.heading}>Error</div>
         <div>{errorMessage}</div>
       </div>

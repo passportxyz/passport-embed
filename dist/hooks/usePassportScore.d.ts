@@ -36,6 +36,9 @@ export type PassportEmbedResult = {
 export declare const useWidgetPassportScoreAndVerifyCredentials: () => {
     data: PassportScore | undefined;
 };
+export declare class RateLimitError extends Error {
+    constructor(message: string);
+}
 export declare const useWidgetPassportScore: () => PassportEmbedResult;
 export declare const useWidgetVerifyCredentials: () => import("@tanstack/react-query").UseMutationResult<PassportScore, Error, void, unknown>;
 export declare const useWidgetIsQuerying: () => boolean;
