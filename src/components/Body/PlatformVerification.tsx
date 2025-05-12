@@ -6,7 +6,7 @@ import { Hyperlink } from "./ScoreTooLowBody";
 import { ScrollableDiv } from "../ScrollableDiv";
 import {
   useWidgetIsQuerying,
-  useWidgetVerifyCredentials,
+  useWidgetPassportScore,
 } from "../../hooks/usePassportScore";
 import { useQueryContext } from "../../hooks/useQueryContext";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
@@ -72,10 +72,10 @@ export const PlatformVerification = ({
   const [initiatedVerification, setInitiatedVerification] = useState(false);
   const [failedVerification, setFailedVerification] = useState(false);
 
-  const { verifyCredentials } = useWidgetVerifyCredentials();
-  const platformCredentialIds = platform.credentials.map(({ id }) => id);
   const isQuerying = useWidgetIsQuerying();
   const queryProps = useQueryContext();
+  const { refetch } = useWidgetPassportScore();
+  const platformCredentialIds = platform.credentials.map(({ id }) => id);
 
   useEffect(() => {
     if (initiatedVerification && !isQuerying) {
@@ -156,9 +156,9 @@ export const PlatformVerification = ({
               queryProps.scorerId || ""
             )}&platform=${encodeURIComponent(
               platform.name
-            )}&providers=${encodeURIComponent(JSON.stringify(
-              platformCredentialIds
-            ))}&signature=${encodeURIComponent(
+            )}&providers=${encodeURIComponent(
+              JSON.stringify(platformCredentialIds)
+            )}&signature=${encodeURIComponent(
               signature || ""
             )}&credential=${encodeURIComponent(JSON.stringify(credential))}`;
 
@@ -181,11 +181,11 @@ export const PlatformVerification = ({
                 clearInterval(checkPopupClosed);
                 console.log("Pop-up closed");
                 // Refresh stamps
-                verifyCredentials(platformCredentialIds);
+                refetch();
               }
             }, 100);
           } else {
-            verifyCredentials(platformCredentialIds);
+            refetch();
             setFailedVerification(false);
             setInitiatedVerification(true);
           }
