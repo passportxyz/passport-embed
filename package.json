@@ -1,6 +1,6 @@
 {
   "name": "@passportxyz/passport-embed",
-  "version": "0.1.5",
+  "version": "v0.1.6-rc.2",
   "description": "Passport XYZ Embeddable Widgets",
   "repository": "https://github.com/passportxyz/passport-embed",
   "license": "AGPL-3.0-or-later",

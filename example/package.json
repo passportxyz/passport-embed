@@ -8,7 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@passportxyz/passport-embed": "^0.0.2",
+    "@passportxyz/passport-embed": "../.",
     "@tanstack/react-query": "^5.62.11",
     "buffer": "^6.0.3",
     "react": "^18.2.0",

@@ -10,6 +10,7 @@ import { ConnectWalletBody } from "./Body/ConnectWalletBody";
 import { ErrorBody } from "./Body/ErrorBody";
 import { useRef } from "react";
 import { CollapseMode } from "../widgets/Widget";
+import { isAxiosError } from "axios";
 
 const BodyWrapper = ({
   children,
@@ -51,13 +52,7 @@ const BodyRouter = ({
   const { isError, isLoading, error, data } = useWidgetPassportScore();
 
   if (isError) {
-    let errorMessage = "An error occurred";
-    try {
-      errorMessage = (error as Error).message;
-    } catch {
-      /* ignore if error is unexpected format */
-    }
-    return <ErrorBody errorMessage={errorMessage} />;
+    return <ErrorBody error={error} />;
   }
 
   if (data) {

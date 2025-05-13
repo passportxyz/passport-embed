@@ -6,7 +6,7 @@ import {
   useQuery,
   QueryObserverResult,
 } from "@tanstack/react-query";
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 import { useQueryContext } from "../hooks/useQueryContext";
 import { usePassportQueryClient } from "./usePassportQueryClient";
 
@@ -91,6 +91,13 @@ export const useWidgetPassportScoreAndVerifyCredentials = () => {
   return { data };
 };
 
+export class RateLimitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "RateLimitError";
+  }
+}
+
 export const useWidgetPassportScore = () => {
   const queryProps = useQueryContext();
   return usePassportScore(queryProps);
@@ -108,7 +115,7 @@ export const useWidgetVerifyCredentials = () => {
         queryClient.setQueryData(queryKey, data);
       },
     },
-    queryClient
+    queryClient,
   );
 
   return verifyCredentialsMutation;
@@ -165,7 +172,7 @@ export const usePassportScore = ({
           embedServiceUrl,
         }),
     },
-    queryClient
+    queryClient,
   );
 };
 
@@ -192,40 +199,56 @@ const fetchPassportScore = async ({
   scorerId,
   embedServiceUrl,
 }: PassportQueryProps): Promise<PassportScore> => {
-  const scoreResponse = await axios.get<EmbedScoreResponse>(
-    `${embedServiceUrl}/embed/score/${scorerId}/${address}`,
+  try {
+    const scoreResponse = await axios.get<EmbedScoreResponse>(
+      `${embedServiceUrl}/embed/score/${scorerId}/${address}`,
 
-    {
-      headers: {
-        "X-API-KEY": apiKey,
-        "Content-Type": "application/json",
+      {
+        headers: {
+          "X-API-KEY": apiKey,
+          "Content-Type": "application/json",
+        },
       },
+    );
+
+    return processScoreResponse(scoreResponse.data);
+  } catch (error) {
+    throw processScoreResponseError(error);
+  }
+};
+
+const processScoreResponse = (
+  scoreData: EmbedScoreResponse,
+): PassportScore => ({
+  address: scoreData.address,
+  score: parseFloat(scoreData.score),
+  passingScore: scoreData.passing_score,
+  lastScoreTimestamp: new Date(scoreData.last_score_timestamp),
+  expirationTimestamp: new Date(scoreData.expiration_timestamp),
+  threshold: parseFloat(scoreData.threshold),
+  stamps: Object.entries(scoreData.stamps).reduce(
+    (stamps, [credentialId, { score, expiration_date, dedup }]) => {
+      stamps[credentialId] = {
+        score: parseFloat(score),
+        dedup,
+        expirationDate: new Date(expiration_date),
+      };
+      return stamps;
+    },
+    {} as Record<string, PassportProviderPoints>,
+  ),
+});
+
+const processScoreResponseError = <T extends unknown>(error: T): T | Error => {
+  if (isAxiosError(error) && error.response?.status === 429) {
+    if (error.response.headers["x-ratelimit-limit"] === "0") {
+      return new RateLimitError(
+        "This API key does not have permission to access the Embed API.",
+      );
     }
-  );
-
-  const scoreData = scoreResponse.data;
-
-  const ret: PassportScore = {
-    address: scoreData.address,
-    score: parseFloat(scoreData.score),
-    passingScore: scoreData.passing_score,
-    lastScoreTimestamp: new Date(scoreData.last_score_timestamp),
-    expirationTimestamp: new Date(scoreData.expiration_timestamp),
-    threshold: parseFloat(scoreData.threshold),
-    stamps: Object.entries(scoreData.stamps).reduce(
-      (stamps, [credentialId, { score, expiration_date, dedup }]) => {
-        stamps[credentialId] = {
-          score: parseFloat(score),
-          dedup,
-          expirationDate: new Date(expiration_date),
-        };
-        return stamps;
-      },
-      {} as Record<string, PassportProviderPoints>
-    ),
-  };
-
-  return ret;
+    return new RateLimitError("Rate limit exceeded.");
+  }
+  return error;
 };
 
 const verifyStampsForPassport = async ({
@@ -237,42 +260,25 @@ const verifyStampsForPassport = async ({
 }: PassportQueryProps & {
   credentialIds?: string[];
 }): Promise<PassportScore> => {
-  const scoreResponse = await axios.post<EmbedScoreResponse>(
-    `${embedServiceUrl}/embed/auto-verify`,
-    {
-      address,
-      scorerId,
-      credentialIds,
-    },
-    {
-      headers: {
-        "X-API-KEY": apiKey,
-        "Content-Type": "application/json",
-      },
-    }
-  );
-
-  const scoreData = scoreResponse.data;
-
-  const ret: PassportScore = {
-    address: scoreData.address,
-    score: parseFloat(scoreData.score),
-    passingScore: scoreData.passing_score,
-    lastScoreTimestamp: new Date(scoreData.last_score_timestamp),
-    expirationTimestamp: new Date(scoreData.expiration_timestamp),
-    threshold: parseFloat(scoreData.threshold),
-    stamps: Object.entries(scoreData.stamps).reduce(
-      (stamps, [credentialId, { score, expiration_date, dedup }]) => {
-        stamps[credentialId] = {
-          score: parseFloat(score),
-          dedup,
-          expirationDate: new Date(expiration_date),
-        };
-        return stamps;
-      },
-      {} as Record<string, PassportProviderPoints>
-    ),
-  };
-
-  return ret;
+  try {
+    const scoreData = (
+      await axios.post<EmbedScoreResponse>(
+        `${embedServiceUrl}/embed/auto-verify`,
+        {
+          address,
+          scorerId,
+          credentialIds,
+        },
+        {
+          headers: {
+            "X-API-KEY": apiKey,
+            "Content-Type": "application/json",
+          },
+        },
+      )
+    ).data;
+    return processScoreResponse(scoreData);
+  } catch (error) {
+    throw processScoreResponseError(error);
+  }
 };
