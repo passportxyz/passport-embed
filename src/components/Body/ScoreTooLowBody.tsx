@@ -137,7 +137,7 @@ export const AddStamps = ({
         {isVisitPassportPage ? (
           <div>
             Visit{" "}
-            <Hyperlink href="https://app.passport.xyz">Passport XYZ</Hyperlink>{" "}
+            <Hyperlink href="https://app.passport.xyz">Human Passport</Hyperlink>{" "}
             for more Stamp options!
           </div>
         ) : (
