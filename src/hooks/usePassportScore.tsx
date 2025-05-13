@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from "react";
 import {
   useIsFetching,
   useIsMutating,
@@ -6,12 +7,8 @@ import {
   QueryObserverResult,
 } from "@tanstack/react-query";
 import axios from "axios";
-
-import { DEFAULT_EMBED_SERVICE_URL } from "../contexts/QueryContext";
-import { useCallback, useEffect, useState } from "react";
-
+import { useQueryContext } from "../hooks/useQueryContext";
 import { usePassportQueryClient } from "./usePassportQueryClient";
-import { useQueryContext } from "./useQueryContext";
 
 export type PassportEmbedProps = {
   apiKey: string;
@@ -196,9 +193,7 @@ const fetchPassportScore = async ({
   embedServiceUrl,
 }: PassportQueryProps): Promise<PassportScore> => {
   const scoreResponse = await axios.get<EmbedScoreResponse>(
-    `${
-      embedServiceUrl || DEFAULT_EMBED_SERVICE_URL
-    }/embed/score/${scorerId}/${address}`,
+    `${embedServiceUrl}/embed/score/${scorerId}/${address}`,
 
     {
       headers: {
@@ -243,7 +238,7 @@ const verifyStampsForPassport = async ({
   credentialIds?: string[];
 }): Promise<PassportScore> => {
   const scoreResponse = await axios.post<EmbedScoreResponse>(
-    `${embedServiceUrl || DEFAULT_EMBED_SERVICE_URL}/embed/auto-verify`,
+    `${embedServiceUrl}/embed/auto-verify`,
     {
       address,
       scorerId,
