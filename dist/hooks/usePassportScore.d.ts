@@ -1,3 +1,4 @@
+import { QueryObserverResult } from "@tanstack/react-query";
 export type PassportEmbedProps = {
     apiKey: string;
     scorerId: string;
@@ -29,12 +30,14 @@ export type PassportEmbedResult = {
     isFetching: boolean;
     isLoading: boolean;
     isError: boolean;
-    error: unknown;
+    error: any;
+    refetch: () => Promise<QueryObserverResult<PassportScore | undefined, Error>>;
+};
+export declare const useWidgetPassportScoreAndVerifyCredentials: () => {
+    data: PassportScore | undefined;
 };
 export declare const useWidgetPassportScore: () => PassportEmbedResult;
-export declare const useWidgetVerifyCredentials: () => {
-    verifyCredentials: (credentialIds: string[]) => void;
-};
+export declare const useWidgetVerifyCredentials: () => import("@tanstack/react-query").UseMutationResult<PassportScore, Error, void, unknown>;
 export declare const useWidgetIsQuerying: () => boolean;
 export declare const useResetWidgetPassportScore: () => {
     resetPassportScore: () => void;

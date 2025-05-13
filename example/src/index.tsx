@@ -13,6 +13,10 @@ const passportEmbedParams = {
   apiKey: import.meta.env.VITE_API_KEY,
   scorerId: import.meta.env.VITE_SCORER_ID,
   overrideEmbedServiceUrl: "http://localhost:8004",
+  // overrideIamUrl: "http://localhost:8004",
+  challengeSignatureUrl: "http://localhost:8004/embed/challenge",
+  // overrideIamUrl: "https://embed.review.passport.xyz",
+  // challengeSignatureUrl: "https://embed.review.passport.xyz/embed/challenge",
 };
 
 const connectWallet = async () => {

@@ -6,13 +6,13 @@ import { Ellipsis } from "./Ellipsis";
 import { useHeaderControls } from "../hooks/useHeaderControls";
 import {
   useWidgetIsQuerying,
-  useWidgetPassportScore,
+  useWidgetPassportScoreAndVerifyCredentials,
 } from "../hooks/usePassportScore";
 import { displayNumber } from "../utils";
 import { Dispatch, SetStateAction } from "react";
 
 const ScoreDisplay = () => {
-  const { data } = useWidgetPassportScore();
+  const { data } = useWidgetPassportScoreAndVerifyCredentials();
 
   if (!data) {
     return <PassportLogo />;
