@@ -1,12 +1,13 @@
+import { useCallback, useEffect, useState } from "react";
 import {
   useIsFetching,
   useIsMutating,
   useMutation,
   useQuery,
+  QueryObserverResult,
 } from "@tanstack/react-query";
 import axios from "axios";
 import { useQueryContext } from "../hooks/useQueryContext";
-import { useCallback } from "react";
 import { usePassportQueryClient } from "./usePassportQueryClient";
 
 export type PassportEmbedProps = {
@@ -58,7 +59,36 @@ export type PassportEmbedResult = {
   isLoading: boolean;
 
   isError: boolean;
-  error: unknown;
+  error: any;
+  refetch: () => Promise<QueryObserverResult<PassportScore | undefined, Error>>;
+};
+
+export const useWidgetPassportScoreAndVerifyCredentials = () => {
+  const { isFetching, data, isError } = useWidgetPassportScore();
+  const { mutate } = useWidgetVerifyCredentials();
+  const [checkingEvmCredentials, setCheckingEvmCredentials] = useState(false);
+  const [evmCredentialsChecked, setEvmCredentialsChecked] = useState(false);
+
+  useEffect(() => {
+    if (!isFetching && !isError && data !== undefined) {
+      if (
+        data.score < data.threshold &&
+        !checkingEvmCredentials &&
+        !evmCredentialsChecked
+      ) {
+        setCheckingEvmCredentials(true);
+        mutate(undefined, {
+          onSettled: (data, error, variables, context) => {
+            setCheckingEvmCredentials(false);
+            setEvmCredentialsChecked(true);
+          },
+        });
+      }
+    }
+  }, [isFetching, data, isError]);
+
+  // TODO: shall we compute a single state that takes into account the query & the mutation?
+  return { data };
 };
 
 export const useWidgetPassportScore = () => {
@@ -73,8 +103,7 @@ export const useWidgetVerifyCredentials = () => {
 
   const verifyCredentialsMutation = useMutation(
     {
-      mutationFn: (credentialIds: string[]) =>
-        fetchPassportScore({ ...queryProps, credentialIds }),
+      mutationFn: () => verifyStampsForPassport({ ...queryProps }),
       onSuccess: (data) => {
         queryClient.setQueryData(queryKey, data);
       },
@@ -82,13 +111,7 @@ export const useWidgetVerifyCredentials = () => {
     queryClient
   );
 
-  const verifyCredentials = useCallback(
-    (credentialIds: string[]) =>
-      verifyCredentialsMutation.mutate(credentialIds),
-    [verifyCredentialsMutation]
-  );
-
-  return { verifyCredentials };
+  return verifyCredentialsMutation;
 };
 
 // Returns true if any queries are currently in progress
@@ -146,7 +169,7 @@ export const usePassportScore = ({
   );
 };
 
-type EmbedVerifyResponse = {
+type EmbedScoreResponse = {
   address: string;
   score: string;
   passing_score: boolean;
@@ -168,11 +191,53 @@ const fetchPassportScore = async ({
   address,
   scorerId,
   embedServiceUrl,
+}: PassportQueryProps): Promise<PassportScore> => {
+  const scoreResponse = await axios.get<EmbedScoreResponse>(
+    `${embedServiceUrl}/embed/score/${scorerId}/${address}`,
+
+    {
+      headers: {
+        "X-API-KEY": apiKey,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  const scoreData = scoreResponse.data;
+
+  const ret: PassportScore = {
+    address: scoreData.address,
+    score: parseFloat(scoreData.score),
+    passingScore: scoreData.passing_score,
+    lastScoreTimestamp: new Date(scoreData.last_score_timestamp),
+    expirationTimestamp: new Date(scoreData.expiration_timestamp),
+    threshold: parseFloat(scoreData.threshold),
+    stamps: Object.entries(scoreData.stamps).reduce(
+      (stamps, [credentialId, { score, expiration_date, dedup }]) => {
+        stamps[credentialId] = {
+          score: parseFloat(score),
+          dedup,
+          expirationDate: new Date(expiration_date),
+        };
+        return stamps;
+      },
+      {} as Record<string, PassportProviderPoints>
+    ),
+  };
+
+  return ret;
+};
+
+const verifyStampsForPassport = async ({
+  apiKey,
+  address,
+  scorerId,
+  embedServiceUrl,
   credentialIds,
 }: PassportQueryProps & {
   credentialIds?: string[];
 }): Promise<PassportScore> => {
-  const response = await axios.post<EmbedVerifyResponse>(
+  const scoreResponse = await axios.post<EmbedScoreResponse>(
     `${embedServiceUrl}/embed/auto-verify`,
     {
       address,
@@ -187,7 +252,7 @@ const fetchPassportScore = async ({
     }
   );
 
-  const scoreData = response.data;
+  const scoreData = scoreResponse.data;
 
   const ret: PassportScore = {
     address: scoreData.address,
