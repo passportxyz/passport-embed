@@ -1,10 +1,10 @@
 {
-  "name": "@passportxyz/passport-embed",
+  "name": "@human-tech/passport-embed",
   "version": "v0.1.6-rc.2",
-  "description": "Passport XYZ Embeddable Widgets",
+  "description": "Human Passport Embeddable Widgets",
   "repository": "https://github.com/passportxyz/passport-embed",
   "license": "AGPL-3.0-or-later",
-  "author": "PassportXYZ",
+  "author": "human.tech",
   "type": "module",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
