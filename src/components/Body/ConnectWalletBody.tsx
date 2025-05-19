@@ -25,7 +25,7 @@ export const ConnectWalletBody = ({
       <div className={styles.textBlock}>
         <div className={styles.heading}>Proof of Unique Humanity</div>
         <div>
-          Your Passport XYZ score represents the likelihood that you’re a unique
+          Your Human Passport score represents the likelihood that you’re a unique
           human, rather than a bot or bad actor.
         </div>
         <div className={utilStyles.bold}>
