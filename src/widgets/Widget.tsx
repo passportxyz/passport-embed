@@ -6,7 +6,6 @@ import { usePassportQueryClient } from "../hooks/usePassportQueryClient";
 export type CollapseMode = "shift" | "overlay" | "off";
 
 export type GenericPassportWidgetProps = {
-  children?: React.ReactNode;
   theme?: PassportWidgetTheme;
   collapseMode?: CollapseMode;
   className?: string;
@@ -49,7 +48,7 @@ export const Widget = ({
   children,
   theme,
   className,
-}: GenericPassportWidgetProps) => {
+}: GenericPassportWidgetProps & {children: React.ReactNode}) => {
   const queryClient = usePassportQueryClient();
   const widgetRef = useRef<HTMLDivElement>(null);
 
