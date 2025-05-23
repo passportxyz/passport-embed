@@ -2,6 +2,7 @@ import styles from "./Body/Body.module.css";
 import {
   PassportEmbedProps,
   useWidgetPassportScore,
+  useWidgetIsQuerying,
 } from "../hooks/usePassportScore";
 import { CheckingBody } from "./Body/CheckingBody";
 import { CongratsBody } from "./Body/CongratsBody";
@@ -10,7 +11,6 @@ import { ConnectWalletBody } from "./Body/ConnectWalletBody";
 import { ErrorBody } from "./Body/ErrorBody";
 import { useRef } from "react";
 import { CollapseMode } from "../widgets/Widget";
-import { isAxiosError } from "axios";
 
 const BodyWrapper = ({
   children,
@@ -49,10 +49,15 @@ const BodyRouter = ({
   PassportEmbedProps,
   "connectWalletCallback" | "generateSignatureCallback"
 >) => {
-  const { isError, isLoading, error, data } = useWidgetPassportScore();
+  const { isError, error, data } = useWidgetPassportScore();
+  const isQuerying = useWidgetIsQuerying();
 
   if (isError) {
     return <ErrorBody error={error} />;
+  }
+
+  if (isQuerying) {
+    return <CheckingBody />;
   }
 
   if (data) {
@@ -65,10 +70,6 @@ const BodyRouter = ({
         }
       />
     );
-  }
-
-  if (isLoading) {
-    return <CheckingBody />;
   }
 
   return <ConnectWalletBody connectWalletCallback={connectWalletCallback} />;

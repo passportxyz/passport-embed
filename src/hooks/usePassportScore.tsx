@@ -9,6 +9,7 @@ import {
 import axios, { isAxiosError } from "axios";
 import { useQueryContext } from "../hooks/useQueryContext";
 import { usePassportQueryClient } from "./usePassportQueryClient";
+import { DEFAULT_EMBED_SERVICE_URL } from "../contexts/QueryContext";
 
 export type PassportEmbedProps = {
   apiKey: string;
@@ -29,7 +30,7 @@ export type PassportQueryProps = Pick<
   PassportEmbedProps,
   "apiKey" | "address" | "scorerId"
 > & {
-  embedServiceUrl: PassportEmbedProps["overrideEmbedServiceUrl"];
+  embedServiceUrl?: PassportEmbedProps["overrideEmbedServiceUrl"];
 };
 
 type PassportProviderPoints = {
@@ -100,7 +101,7 @@ export class RateLimitError extends Error {
 
 export const useWidgetPassportScore = () => {
   const queryProps = useQueryContext();
-  return usePassportScore(queryProps);
+  return useInternalPassportScore(queryProps);
 };
 
 export const useWidgetVerifyCredentials = () => {
@@ -115,7 +116,7 @@ export const useWidgetVerifyCredentials = () => {
         queryClient.setQueryData(queryKey, data);
       },
     },
-    queryClient,
+    queryClient
   );
 
   return verifyCredentialsMutation;
@@ -150,16 +151,14 @@ export const useResetWidgetPassportScore = () => {
   return { resetPassportScore };
 };
 
-export const usePassportScore = ({
+const useInternalPassportScore = ({
   apiKey,
   address,
   scorerId,
   embedServiceUrl,
 }: PassportQueryProps): PassportEmbedResult => {
   const queryClient = usePassportQueryClient();
-
   const queryKey = useQueryKey({ address, scorerId, embedServiceUrl });
-
   return useQuery(
     {
       queryKey,
@@ -172,7 +171,7 @@ export const usePassportScore = ({
           embedServiceUrl,
         }),
     },
-    queryClient,
+    queryClient
   );
 };
 
@@ -208,7 +207,7 @@ const fetchPassportScore = async ({
           "X-API-KEY": apiKey,
           "Content-Type": "application/json",
         },
-      },
+      }
     );
 
     return processScoreResponse(scoreResponse.data);
@@ -218,7 +217,7 @@ const fetchPassportScore = async ({
 };
 
 const processScoreResponse = (
-  scoreData: EmbedScoreResponse,
+  scoreData: EmbedScoreResponse
 ): PassportScore => ({
   address: scoreData.address,
   score: parseFloat(scoreData.score),
@@ -235,7 +234,7 @@ const processScoreResponse = (
       };
       return stamps;
     },
-    {} as Record<string, PassportProviderPoints>,
+    {} as Record<string, PassportProviderPoints>
   ),
 });
 
@@ -243,7 +242,7 @@ const processScoreResponseError = <T extends unknown>(error: T): T | Error => {
   if (isAxiosError(error) && error.response?.status === 429) {
     if (error.response.headers["x-ratelimit-limit"] === "0") {
       return new RateLimitError(
-        "This API key does not have permission to access the Embed API.",
+        "This API key does not have permission to access the Embed API."
       );
     }
     return new RateLimitError("Rate limit exceeded.");
@@ -274,11 +273,28 @@ const verifyStampsForPassport = async ({
             "X-API-KEY": apiKey,
             "Content-Type": "application/json",
           },
-        },
+        }
       )
     ).data;
     return processScoreResponse(scoreData);
   } catch (error) {
     throw processScoreResponseError(error);
   }
+};
+
+export const usePassportScore = ({
+  apiKey,
+  address,
+  scorerId,
+  embedServiceUrl,
+}: PassportQueryProps): PassportEmbedResult => {
+  // Because this hook might be also used directly by users we have no guarantee that embedServiceUrl has been overriden
+  const verifiedEmbedServiceUrl = embedServiceUrl || DEFAULT_EMBED_SERVICE_URL;
+
+  return useInternalPassportScore({
+    apiKey,
+    address,
+    scorerId,
+    embedServiceUrl: verifiedEmbedServiceUrl,
+  });
 };

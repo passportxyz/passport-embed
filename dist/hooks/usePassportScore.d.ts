@@ -8,7 +8,7 @@ export type PassportEmbedProps = {
     overrideEmbedServiceUrl?: string;
 };
 export type PassportQueryProps = Pick<PassportEmbedProps, "apiKey" | "address" | "scorerId"> & {
-    embedServiceUrl: PassportEmbedProps["overrideEmbedServiceUrl"];
+    embedServiceUrl?: PassportEmbedProps["overrideEmbedServiceUrl"];
 };
 type PassportProviderPoints = {
     score: number;
