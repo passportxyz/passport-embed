@@ -1,6 +1,5 @@
 export type CollapseMode = "shift" | "overlay" | "off";
 export type GenericPassportWidgetProps = {
-    children?: React.ReactNode;
     theme?: PassportWidgetTheme;
     collapseMode?: CollapseMode;
     className?: string;
@@ -37,4 +36,6 @@ export type PassportWidgetTheme = {
         overlayZIndex?: string;
     };
 };
-export declare const Widget: ({ children, theme, className, }: GenericPassportWidgetProps) => import("react/jsx-runtime").JSX.Element;
+export declare const Widget: ({ children, theme, className, }: GenericPassportWidgetProps & {
+    children: React.ReactNode;
+}) => import("react/jsx-runtime").JSX.Element;

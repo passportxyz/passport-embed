@@ -310,14 +310,15 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@passportxyz/passport-embed@../.":
+"@passportxyz/passport-embed@^0.1.5":
   version "0.1.5"
+  resolved "https://registry.yarnpkg.com/@passportxyz/passport-embed/-/passport-embed-0.1.5.tgz#f33f4373caca02d665afb25fbbe1102471b532eb"
+  integrity sha512-w4ljfG1Tlyd5jjI5NW8MybBTZeBNSnWiDOGEZO6G6Fz07gzMAhaOsBeiwGHMP6k8BbXtdq3gnBCxpHmbqZ688g==
   dependencies:
     "@tanstack/react-query" "^5.62.11"
     axios "^1.7.7"
     dompurify "^3.2.4"
     html-react-parser "^5.2.2"
-    onfido-sdk-ui "^14.45.0"
 
 "@rollup/rollup-android-arm-eabi@4.24.0":
   version "4.24.0"
@@ -586,9 +587,9 @@ domhandler@5.0.3, domhandler@^5.0.2, domhandler@^5.0.3:
     domelementtype "^2.3.0"
 
 dompurify@^3.2.4:
-  version "3.2.5"
-  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.2.5.tgz#11b108656a5fb72b24d916df17a1421663d7129c"
-  integrity sha512-mLPd29uoRe9HpvwP2TxClGQBzGXeEC/we/q+bFlmPPmj2p2Ugl3r6ATu/UU1v77DXNcehiBg9zsr1dREyA/dJQ==
+  version "3.2.6"
+  resolved "https://registry.yarnpkg.com/dompurify/-/dompurify-3.2.6.tgz#ca040a6ad2b88e2a92dc45f38c79f84a714a1cad"
+  integrity sha512-/2GogDQlohXPZe6D6NOgQvXLPSYBqIWMnZ8zzOhn09REE4eyAzb+Hed3jhoM9OkuaJ8P6ZGTTVWQKAi8ieIzfQ==
   optionalDependencies:
     "@types/trusted-types" "^2.0.7"
 
@@ -769,21 +770,21 @@ hasown@^2.0.2:
   dependencies:
     function-bind "^1.1.2"
 
-html-dom-parser@5.0.13:
-  version "5.0.13"
-  resolved "https://registry.yarnpkg.com/html-dom-parser/-/html-dom-parser-5.0.13.tgz#36b25b3ad05dc71741e9cd200ff276cdf8e3831d"
-  integrity sha512-B7JonBuAfG32I7fDouUQEogBrz3jK9gAuN1r1AaXpED6dIhtg/JwiSRhjGL7aOJwRz3HU4efowCjQBaoXiREqg==
+html-dom-parser@5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/html-dom-parser/-/html-dom-parser-5.1.1.tgz#9efb2cfa055f6a71de1bb2f07c5b019db5004f9e"
+  integrity sha512-+o4Y4Z0CLuyemeccvGN4bAO20aauB2N9tFEAep5x4OW34kV4PTarBHm6RL02afYt2BMKcr0D2Agep8S3nJPIBg==
   dependencies:
     domhandler "5.0.3"
     htmlparser2 "10.0.0"
 
 html-react-parser@^5.2.2:
-  version "5.2.3"
-  resolved "https://registry.yarnpkg.com/html-react-parser/-/html-react-parser-5.2.3.tgz#fc87fe097ff661d24d65997e4bf341ab509958a3"
-  integrity sha512-y34oKTu+9T1fKdJE1cN9QWFWu8sx8Qa5tJOafUfMUF5Niah+yF6zlEHhWh7a0iZEcLRPIMw54bY14ajQF7xP7A==
+  version "5.2.5"
+  resolved "https://registry.yarnpkg.com/html-react-parser/-/html-react-parser-5.2.5.tgz#4a0d62c129d5d5c63cc49f986c946552d737190c"
+  integrity sha512-bRPdv8KTqG9CEQPMNGksDqmbiRfVQeOidry8pVetdh/1jQ1Edx4KX5m0lWvDD89Pt4CqTYjK1BLz6NoNVxN/Uw==
   dependencies:
     domhandler "5.0.3"
-    html-dom-parser "5.0.13"
+    html-dom-parser "5.1.1"
     react-property "2.0.2"
     style-to-js "1.1.16"
 
@@ -867,11 +868,6 @@ node-releases@^2.0.18:
   version "2.0.18"
   resolved "https://registry.npmjs.org/node-releases/-/node-releases-2.0.18.tgz"
   integrity sha512-d9VeXT4SJ7ZeOqGX6R5EM022wpL+eWPooLI+5UpWn2jCT1aosUQEhQP214x33Wkwx3JQMvIm+tIoVOdodFS40g==
-
-onfido-sdk-ui@^14.45.0:
-  version "14.45.1"
-  resolved "https://registry.yarnpkg.com/onfido-sdk-ui/-/onfido-sdk-ui-14.45.1.tgz#d88d35cb27837a259d794b868ef7e7cdb9534171"
-  integrity sha512-IxXaUsZa0sqDUTyw464SjICZ56oANGIxvISTYsODcMyWQ6YWDwkSzAWx1UgsqYhGxQZ/iaKiD8qqqUD8+nmaIQ==
 
 picocolors@^1.0.0, picocolors@^1.1.0:
   version "1.1.1"
