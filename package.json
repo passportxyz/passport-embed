@@ -1,8 +1,11 @@
 {
   "name": "@passportxyz/passport-embed",
-  "version": "v0.1.6-rc.3",
+  "version": "0.1.6-rc.3",
   "description": "Human Passport Embeddable Widgets",
-  "repository": "https://github.com/passportxyz/passport-embed",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/passportxyz/passport-embed.git"
+  },
   "license": "AGPL-3.0-or-later",
   "author": "human.tech",
   "type": "module",
