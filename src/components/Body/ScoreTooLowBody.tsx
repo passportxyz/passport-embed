@@ -1,7 +1,7 @@
 import styles from "./Body.module.css";
 import utilStyles from "../../utilStyles.module.css";
 import { Button } from "../Button";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useHeaderControls } from "../../hooks/useHeaderControls";
 import { useWidgetPassportScore } from "../../hooks/usePassportScore";
 import { usePaginatedStampPages, Platform } from "../../hooks/useStampPages";
@@ -36,10 +36,11 @@ const VISIT_PASSPORT_HEADER = "More Options";
 export const ScoreTooLowBody = ({
   generateSignatureCallback,
 }: {
-  generateSignatureCallback: (message: string) => Promise<string | undefined>;
+  generateSignatureCallback:
+    | ((message: string) => Promise<string | undefined>)
+    | undefined;
 }) => {
   const [addingStamps, setAddingStamps] = useState(false);
-
   return addingStamps ? (
     <AddStamps generateSignatureCallback={generateSignatureCallback} />
   ) : (
@@ -95,7 +96,9 @@ const PlatformButton = ({
 export const AddStamps = ({
   generateSignatureCallback,
 }: {
-  generateSignatureCallback: (message: string) => Promise<string | undefined>;
+  generateSignatureCallback:
+    | ((message: string) => Promise<string | undefined>)
+    | undefined;
 }) => {
   const { setSubtitle } = useHeaderControls();
   const queryProps = useQueryContext();
@@ -106,19 +109,42 @@ export const AddStamps = ({
       scorerId,
       embedServiceUrl,
     });
-  const [openPlatform, setOpenPlatform] = useState<Platform | null>(null);
+  const [configurationError, setConfigurationError] = useState<
+    string | undefined
+  >();
+  const [openPlatform, _setOpenPlatform] = useState<Platform | null>(null);
 
   useEffect(() => {
     setSubtitle("VERIFY STAMPS");
   }, [setSubtitle]);
 
+  const setOpenPlatform = useCallback(
+    (openPlatform: Platform | null) => {
+      if (
+        openPlatform &&
+        openPlatform.requiresSignature &&
+        !generateSignatureCallback
+      ) {
+        // This is a misconfiguration, the 'generateSignatureCallback' was not provided
+        setConfigurationError(
+          "Missing value for 'generateSignatureCallback' configuration parameter in '<PassportScoreWidget>'. Please check the integration."
+        );
+      } else {
+        _setOpenPlatform(openPlatform);
+      }
+    },
+    [generateSignatureCallback]
+  );
+
   if (loading) return <div>Loading Stamps Metadata...</div>;
   if (error) return <div>{error}</div>;
+  if (configurationError) return <div>{configurationError}</div>;
+
   if (!page) return <div>No stamp metadata available</div>;
 
   const { header, platforms } = page;
 
-  if (openPlatform) {
+  if (openPlatform && generateSignatureCallback) {
     return (
       <PlatformVerification
         platform={openPlatform}
@@ -137,7 +163,9 @@ export const AddStamps = ({
         {isVisitPassportPage ? (
           <div>
             Visit{" "}
-            <Hyperlink href="https://app.passport.xyz">Human Passport</Hyperlink>{" "}
+            <Hyperlink href="https://app.passport.xyz">
+              Human Passport
+            </Hyperlink>{" "}
             for more Stamp options!
           </div>
         ) : (
