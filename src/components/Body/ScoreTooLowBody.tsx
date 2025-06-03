@@ -127,7 +127,7 @@ export const AddStamps = ({
       ) {
         // This is a misconfiguration, the 'generateSignatureCallback' was not provided
         setConfigurationError(
-          "Missing value for 'generateSignatureCallback' configuration parameter in '<PassportScoreWidget>'. Please check the integration."
+          "Something’s missing! This Stamp needs an extra setup step to work properly. If you&apos;re the site owner, please add a generateSignatureCallback to the widget configuration."
         );
       } else {
         _setOpenPlatform(openPlatform);
