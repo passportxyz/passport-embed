@@ -64,11 +64,7 @@ const BodyRouter = ({
     return data.passingScore ? (
       <CongratsBody />
     ) : (
-      <ScoreTooLowBody
-        generateSignatureCallback={
-          generateSignatureCallback || (async () => undefined)
-        }
-      />
+      <ScoreTooLowBody generateSignatureCallback={generateSignatureCallback} />
     );
   }
 
