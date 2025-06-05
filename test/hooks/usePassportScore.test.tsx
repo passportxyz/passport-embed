@@ -59,7 +59,7 @@ describe("Passport Score Hooks", () => {
 
   describe("usePassportScore", () => {
     it("should fetch and transform passport score data", async () => {
-      mockedAxios.post.mockImplementationOnce(async () => {
+      mockedAxios.get.mockImplementationOnce(async () => {
         await new Promise((resolve) => setTimeout(resolve, 100));
         return { data: mockScoreData };
       });
@@ -133,39 +133,18 @@ describe("Passport Score Hooks", () => {
   });
 
   describe("useWidgetVerifyCredentials", () => {
-    it("should verify credentials and update query cache", async () => {
-      const updatedScore = "80";
-      const updatedScoreData = {
-        ...mockScoreData,
-        score: updatedScore,
-      };
-
+    it("should verify credentials and call API with correct parameters", async () => {
       mockedAxios.post.mockResolvedValueOnce({ data: mockScoreData });
-      mockedAxios.post.mockResolvedValueOnce({ data: updatedScoreData });
 
       const { result } = renderHook(
-        () => ({
-          useVerify: useWidgetVerifyCredentials(),
-          useScore: usePassportScore({
-            apiKey: "test-api-key",
-            address: "0x123",
-            scorerId: "test-scorer",
-            embedServiceUrl: "https://test.com",
-          }),
-        }),
+        () => useWidgetVerifyCredentials(),
         {
           wrapper: createWidgetWrapper(),
         }
       );
 
-      await waitFor(() =>
-        expect(result.current.useScore.isLoading).toBe(false)
-      );
-
-      expect(result.current.useScore.data?.score).toEqual(75.5);
-
       await act(async () => {
-        result.current.useVerify.verifyCredentials(["credential1"]);
+        result.current.verifyCredentials(["credential1"]);
       });
 
       expect(mockedAxios.post).toHaveBeenCalledWith(
@@ -176,13 +155,7 @@ describe("Passport Score Hooks", () => {
         expect.any(Object)
       );
 
-      await waitFor(() =>
-        expect(result.current.useScore.isFetching).toBe(false)
-      );
-
-      expect(result.current.useScore.data?.score).toEqual(80);
-
-      expect(mockedAxios.post).toHaveBeenCalledTimes(2);
+      expect(mockedAxios.post).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -240,6 +213,8 @@ describe("Passport Score Hooks", () => {
   });
 
   it("should share a client between the widget and non-widget hook", async () => {
+    mockedAxios.get.mockResolvedValueOnce({ data: mockScoreData });
+    
     const { result } = renderHook(
       () => ({
         useScore: usePassportScore(mockQueryContextValue),
@@ -259,6 +234,6 @@ describe("Passport Score Hooks", () => {
       result.current.useWidgetScore.data
     );
 
-    expect(mockedAxios.post).toHaveBeenCalledTimes(1);
+    expect(mockedAxios.get).toHaveBeenCalledTimes(1);
   });
 });

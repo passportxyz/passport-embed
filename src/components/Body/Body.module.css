@@ -102,6 +102,13 @@
   color: rgba(var(--color-background-c6dbf459), 1);
 }
 
+.platformButtonHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
 .platformButtonTitle {
   line-height: 1;
   flex-grow: 1;
@@ -135,4 +142,18 @@
   gap: 8px;
   align-items: center;
   width: 100%;
+}
+
+.dedupeBadge {
+  background-color: rgb(var(--color-background-c6dbf459));
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  color: rgb(var(--color-foreground-c6dbf459));
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.dedupeText {
+  font-family: var(--font-family-alt, monospace);
 }

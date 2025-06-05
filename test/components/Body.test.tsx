@@ -4,6 +4,7 @@ import { Body } from "../../src/components/Body";
 import {
   useResetWidgetPassportScore,
   useWidgetPassportScore,
+  useWidgetIsQuerying,
 } from "../../src/hooks/usePassportScore";
 
 // Mock the custom hook
@@ -11,6 +12,7 @@ jest.mock("../../src/hooks/usePassportScore");
 const mockUseWidgetPassportScore = useWidgetPassportScore as jest.Mock;
 const mockUseResetWidgetPassportScore =
   useResetWidgetPassportScore as jest.Mock;
+const mockUseWidgetIsQuerying = useWidgetIsQuerying as jest.Mock;
 
 describe("Body Routing", () => {
   const defaultProps = {
@@ -22,6 +24,8 @@ describe("Body Routing", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Default mock return values
+    mockUseWidgetIsQuerying.mockReturnValue(false);
   });
 
   it("renders ErrorBody when there is an error", () => {
@@ -83,6 +87,8 @@ describe("Body Routing", () => {
       isLoading: true,
       data: null,
     });
+    
+    mockUseWidgetIsQuerying.mockReturnValue(true);
 
     render(<Body {...defaultProps} />);
     expect(

@@ -11,6 +11,7 @@ import { ScrollableDiv } from "../ScrollableDiv";
 import { PlatformVerification } from "./PlatformVerification";
 import { useQueryContext } from "../../hooks/useQueryContext";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
+import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
 
 export const Hyperlink = ({
   href,
@@ -65,6 +66,12 @@ const ClaimedIcon = () => (
   </svg>
 );
 
+const DedupeBadge = () => (
+  <div className={styles.dedupeBadge}>
+    <span className={styles.dedupeText}>Dedupe</span>
+  </div>
+);
+
 const PlatformButton = ({
   platform,
   setOpenPlatform,
@@ -73,6 +80,8 @@ const PlatformButton = ({
   setOpenPlatform: (platform: Platform) => void;
 }) => {
   const { claimed } = usePlatformStatus({ platform });
+  const isDeduped = usePlatformDeduplication({ platform });
+  
   return (
     <button
       className={`${styles.platformButton} ${
@@ -80,7 +89,10 @@ const PlatformButton = ({
       }`}
       onClick={() => setOpenPlatform(platform)}
     >
-      <div className={styles.platformButtonTitle}>{platform.name}</div>
+      <div className={styles.platformButtonHeader}>
+        <div className={styles.platformButtonTitle}>{platform.name}</div>
+        {isDeduped && <DedupeBadge />}
+      </div>
       {claimed ? (
         <ClaimedIcon />
       ) : (

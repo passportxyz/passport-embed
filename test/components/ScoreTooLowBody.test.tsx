@@ -192,4 +192,107 @@ describe("AddStamps Component", () => {
     const p1Button = screen.getByText("Platform 1").closest("button");
     expect(p1Button).not.toHaveClass("platformButtonClaimed");
   });
+
+  describe("Platform Deduplication", () => {
+    it("should show dedupe badge when platform has deduplicated stamps", async () => {
+      // Mock deduplication scenario
+      mockUseWidgetPassportScore.mockReturnValue({
+        data: {
+          stamps: {
+            cred1: { score: 0, dedup: true },
+          },
+        },
+      });
+
+      const { container } = render(
+        <AddStamps generateSignatureCallback={mockGenerateSignature} />
+      );
+
+      await waitFor(() =>
+        expect(
+          screen.queryByText("Loading Stamps Metadata...")
+        ).not.toBeInTheDocument()
+      );
+
+      // Check for dedupe badge
+      expect(container.querySelector(".dedupeBadge")).toBeInTheDocument();
+      expect(screen.getByText("Dedupe")).toBeInTheDocument();
+    });
+
+    it("should not show dedupe badge when platform has no deduplicated stamps", async () => {
+      mockUseWidgetPassportScore.mockReturnValue({
+        data: {
+          stamps: {
+            cred1: { score: 5, dedup: false },
+          },
+        },
+      });
+
+      const { container } = render(
+        <AddStamps generateSignatureCallback={mockGenerateSignature} />
+      );
+
+      await waitFor(() =>
+        expect(
+          screen.queryByText("Loading Stamps Metadata...")
+        ).not.toBeInTheDocument()
+      );
+
+      // Check that dedupe badge is not present
+      expect(container.querySelector(".dedupeBadge")).not.toBeInTheDocument();
+      expect(screen.queryByText("Dedupe")).not.toBeInTheDocument();
+    });
+
+    it("should show dedupe badge when platform has mixed credentials with one deduplicated", async () => {
+      // Mock platform with multiple credentials where one is deduplicated
+      mockUseWidgetPassportScore.mockReturnValue({
+        data: {
+          stamps: {
+            cred2: { score: 20, dedup: false },
+            anotherCred: { score: 0, dedup: true },
+          },
+        },
+      });
+
+      render(
+        <AddStamps generateSignatureCallback={mockGenerateSignature} />
+      );
+
+      await waitFor(() =>
+        expect(
+          screen.queryByText("Loading Stamps Metadata...")
+        ).not.toBeInTheDocument()
+      );
+
+      // Find Platform 2 button which has both cred2 and anotherCred
+      const platform2Button = screen.getByText("Platform 2").closest("button");
+      
+      // Check for dedupe badge on Platform 2
+      expect(platform2Button?.querySelector(".dedupeBadge")).toBeInTheDocument();
+    });
+
+    it("should not show dedupe badge when dedup is true but score is not 0", async () => {
+      mockUseWidgetPassportScore.mockReturnValue({
+        data: {
+          stamps: {
+            cred1: { score: 5, dedup: true },
+          },
+        },
+      });
+
+      const { container } = render(
+        <AddStamps generateSignatureCallback={mockGenerateSignature} />
+      );
+
+      await waitFor(() =>
+        expect(
+          screen.queryByText("Loading Stamps Metadata...")
+        ).not.toBeInTheDocument()
+      );
+
+      // Check that dedupe badge is not present (dedup is true but score is not 0)
+      expect(container.querySelector(".dedupeBadge")).not.toBeInTheDocument();
+      expect(screen.queryByText("Dedupe")).not.toBeInTheDocument();
+    });
+  });
 });

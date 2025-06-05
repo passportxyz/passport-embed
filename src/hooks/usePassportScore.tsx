@@ -60,6 +60,7 @@ export type PassportEmbedResult = {
   isLoading: boolean;
 
   isError: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any;
   refetch: () => Promise<QueryObserverResult<PassportScore | undefined, Error>>;
 };
@@ -79,14 +80,14 @@ export const useWidgetPassportScoreAndVerifyCredentials = () => {
       ) {
         setCheckingEvmCredentials(true);
         mutate(undefined, {
-          onSettled: (data, error, variables, context) => {
+          onSettled: () => {
             setCheckingEvmCredentials(false);
             setEvmCredentialsChecked(true);
           },
         });
       }
     }
-  }, [isFetching, data, isError]);
+  }, [isFetching, data, isError, checkingEvmCredentials, evmCredentialsChecked, mutate]);
 
   // TODO: shall we compute a single state that takes into account the query & the mutation?
   return { data };
@@ -111,7 +112,7 @@ export const useWidgetVerifyCredentials = () => {
 
   const verifyCredentialsMutation = useMutation(
     {
-      mutationFn: () => verifyStampsForPassport({ ...queryProps }),
+      mutationFn: (credentialIds?: string[]) => verifyStampsForPassport({ ...queryProps, credentialIds }),
       onSuccess: (data) => {
         queryClient.setQueryData(queryKey, data);
       },
@@ -119,7 +120,10 @@ export const useWidgetVerifyCredentials = () => {
     queryClient
   );
 
-  return verifyCredentialsMutation;
+  return {
+    ...verifyCredentialsMutation,
+    verifyCredentials: verifyCredentialsMutation.mutate,
+  };
 };
 
 // Returns true if any queries are currently in progress
@@ -238,7 +242,7 @@ const processScoreResponse = (
   ),
 });
 
-const processScoreResponseError = <T extends unknown>(error: T): T | Error => {
+const processScoreResponseError = <T,>(error: T): T | Error => {
   if (isAxiosError(error) && error.response?.status === 429) {
     if (error.response.headers["x-ratelimit-limit"] === "0") {
       return new RateLimitError(

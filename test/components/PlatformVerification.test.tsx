@@ -5,6 +5,7 @@ import { PlatformVerification } from "../../src/components/Body/PlatformVerifica
 import * as usePassportScore from "../../src/hooks/usePassportScore";
 import * as usePlatformStatus from "../../src/hooks/usePlatformStatus";
 import * as useQueryContext from "../../src/hooks/useQueryContext";
+import * as usePlatformDeduplication from "../../src/hooks/usePlatformDeduplication";
 import {
   mockExpectedConsoleErrorLog,
   setupTestQueryClient,
@@ -15,6 +16,7 @@ import { Platform } from "../../src/hooks/useStampPages";
 jest.mock("../../src/hooks/usePassportScore");
 jest.mock("../../src/hooks/usePlatformStatus");
 jest.mock("../../src/hooks/useQueryContext");
+jest.mock("../../src/hooks/usePlatformDeduplication");
 
 // Mock fetch
 global.fetch = jest.fn();
@@ -41,6 +43,13 @@ describe("PlatformVerification", () => {
     jest.clearAllMocks();
 
     // Default mock implementations
+    (usePassportScore.useWidgetPassportScore as jest.Mock).mockReturnValue({
+      data: null,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    });
     (usePassportScore.useWidgetVerifyCredentials as jest.Mock).mockReturnValue({
       verifyCredentials: jest.fn(),
     });
@@ -52,6 +61,7 @@ describe("PlatformVerification", () => {
       address: "0x123",
       embedServiceUrl: "https://test.com",
     });
+    (usePlatformDeduplication.usePlatformDeduplication as jest.Mock).mockReturnValue(false);
 
     // Mock window.open
     window.open = jest.fn();
@@ -225,6 +235,103 @@ describe("PlatformVerification", () => {
       });
 
       expect(mockVerifyCredentials).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Platform Deduplication", () => {
+    it("should show deduplication notice when platform has deduplicated stamps", () => {
+      (usePlatformDeduplication.usePlatformDeduplication as jest.Mock).mockReturnValue(true);
+
+      render(
+        <PlatformVerification
+          platform={mockPlatform}
+          onClose={mockOnClose}
+          generateSignatureCallback={mockGenerateSignature}
+        />
+      );
+
+      expect(screen.getByText("⚠️ Already Claimed")).toBeInTheDocument();
+      expect(
+        screen.getByText(/Some stamps for this platform were already claimed by another wallet address/)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/You can still verify to confirm your eligibility/)
+      ).toBeInTheDocument();
+    });
+
+    it("should not show deduplication notice when platform has no deduplicated stamps", () => {
+      (usePlatformDeduplication.usePlatformDeduplication as jest.Mock).mockReturnValue(false);
+
+      render(
+        <PlatformVerification
+          platform={mockPlatform}
+          onClose={mockOnClose}
+          generateSignatureCallback={mockGenerateSignature}
+        />
+      );
+
+      expect(screen.queryByText("⚠️ Already Claimed")).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/Some stamps for this platform were already claimed/)
+      ).not.toBeInTheDocument();
+    });
+
+    it("should show deduplication notice above description section", () => {
+      (usePlatformDeduplication.usePlatformDeduplication as jest.Mock).mockReturnValue(true);
+
+      const { container } = render(
+        <PlatformVerification
+          platform={mockPlatform}
+          onClose={mockOnClose}
+          generateSignatureCallback={mockGenerateSignature}
+        />
+      );
+
+      const deduplicationNotice = container.querySelector('.deduplicationNotice');
+      const descriptionSection = screen.getByText("Verify your LinkedIn account").closest('div');
+      
+      expect(deduplicationNotice).toBeInTheDocument();
+      expect(descriptionSection).toBeInTheDocument();
+      
+      // Check that deduplication notice appears before description in DOM order
+      if (deduplicationNotice && descriptionSection) {
+        expect(deduplicationNotice.compareDocumentPosition(descriptionSection))
+          .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+      }
+    });
+
+    it("should show deduplication notice even when platform is already claimed", () => {
+      (usePlatformDeduplication.usePlatformDeduplication as jest.Mock).mockReturnValue(true);
+      (usePlatformStatus.usePlatformStatus as jest.Mock).mockReturnValue({
+        claimed: true,
+      });
+
+      render(
+        <PlatformVerification
+          platform={mockPlatform}
+          onClose={mockOnClose}
+          generateSignatureCallback={mockGenerateSignature}
+        />
+      );
+
+      expect(screen.getByText("⚠️ Already Claimed")).toBeInTheDocument();
+      expect(screen.getByText("Already Verified")).toBeInTheDocument();
+    });
+
+    it("should call usePlatformDeduplication with correct platform parameter", () => {
+      const mockUsePlatformDeduplication = usePlatformDeduplication.usePlatformDeduplication as jest.Mock;
+
+      render(
+        <PlatformVerification
+          platform={mockPlatform}
+          onClose={mockOnClose}
+          generateSignatureCallback={mockGenerateSignature}
+        />
+      );
+
+      expect(mockUsePlatformDeduplication).toHaveBeenCalledWith({
+        platform: mockPlatform,
+      });
     });
   });
 });

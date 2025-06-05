@@ -6,10 +6,11 @@ import { Hyperlink } from "./ScoreTooLowBody";
 import { ScrollableDiv } from "../ScrollableDiv";
 import {
   useWidgetIsQuerying,
-  useWidgetPassportScore,
+  useWidgetVerifyCredentials,
 } from "../../hooks/usePassportScore";
 import { useQueryContext } from "../../hooks/useQueryContext";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
+import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
 import { Platform } from "../../hooks/useStampPages";
 
 const CloseIcon = () => (
@@ -59,6 +60,17 @@ const getChallenge = async (
   return response.json();
 };
 
+const DeduplicationNotice = () => (
+  <div className={styles.deduplicationNotice}>
+    <div className={styles.noticeHeader}>⚠️ Already Claimed</div>
+    <div className={styles.noticeText}>
+      Some stamps for this platform were already claimed by another wallet address. 
+      You can still verify to confirm your eligibility, but won't receive points 
+      for stamps claimed elsewhere.
+    </div>
+  </div>
+);
+
 export const PlatformVerification = ({
   platform,
   onClose,
@@ -69,12 +81,13 @@ export const PlatformVerification = ({
   generateSignatureCallback: (message: string) => Promise<string | undefined>;
 }) => {
   const { claimed } = usePlatformStatus({ platform });
+  const isDeduped = usePlatformDeduplication({ platform });
   const [initiatedVerification, setInitiatedVerification] = useState(false);
   const [failedVerification, setFailedVerification] = useState(false);
 
   const isQuerying = useWidgetIsQuerying();
   const queryProps = useQueryContext();
-  const { refetch } = useWidgetPassportScore();
+  const { verifyCredentials } = useWidgetVerifyCredentials();
   const platformCredentialIds = platform.credentials.map(({ id }) => id);
 
   useEffect(() => {
@@ -100,6 +113,10 @@ export const PlatformVerification = ({
           <CloseIcon />
         </button>
       </div>
+      
+      {/* Show deduplication notice if applicable */}
+      {isDeduped && <DeduplicationNotice />}
+      
       <ScrollableDiv
         className={styles.description}
         invertScrollIconColor={true}
@@ -121,9 +138,6 @@ export const PlatformVerification = ({
         invert={true}
         disabled={isQuerying || claimed}
         onClick={async () => {
-          //
-
-          console.log("DEBUG  THIS ON CLICK VERIFY CREDENTIALS platform");
           let signature, credential;
           if (platform.requiresSignature) {
             // get the challenge and  sign it
@@ -180,12 +194,12 @@ export const PlatformVerification = ({
               if (popup.closed) {
                 clearInterval(checkPopupClosed);
                 console.log("Pop-up closed");
-                // Refresh stamps
-                refetch();
+                // Verify platform credentials
+                verifyCredentials(platformCredentialIds);
               }
             }, 100);
           } else {
-            refetch();
+            verifyCredentials(platformCredentialIds);
             setFailedVerification(false);
             setInitiatedVerification(true);
           }
