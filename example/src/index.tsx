@@ -12,7 +12,8 @@ import "./index.css";
 const passportEmbedParams = {
   apiKey: import.meta.env.VITE_API_KEY,
   scorerId: import.meta.env.VITE_SCORER_ID,
-  // embedServiceUrl: "http://localhost:8004",
+  overrideEmbedServiceUrl: "http://localhost:8004",
+  embedServiceUrl: "http://localhost:8004",
 };
 
 const connectWallet = async () => {

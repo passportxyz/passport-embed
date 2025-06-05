@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import {
   useIsFetching,
   useIsMutating,
@@ -65,33 +65,6 @@ export type PassportEmbedResult = {
   refetch: () => Promise<QueryObserverResult<PassportScore | undefined, Error>>;
 };
 
-export const useWidgetPassportScoreAndVerifyCredentials = () => {
-  const { isFetching, data, isError } = useWidgetPassportScore();
-  const { mutate } = useWidgetVerifyCredentials();
-  const [checkingEvmCredentials, setCheckingEvmCredentials] = useState(false);
-  const [evmCredentialsChecked, setEvmCredentialsChecked] = useState(false);
-
-  useEffect(() => {
-    if (!isFetching && !isError && data !== undefined) {
-      if (
-        data.score < data.threshold &&
-        !checkingEvmCredentials &&
-        !evmCredentialsChecked
-      ) {
-        setCheckingEvmCredentials(true);
-        mutate(undefined, {
-          onSettled: () => {
-            setCheckingEvmCredentials(false);
-            setEvmCredentialsChecked(true);
-          },
-        });
-      }
-    }
-  }, [isFetching, data, isError, checkingEvmCredentials, evmCredentialsChecked, mutate]);
-
-  // TODO: shall we compute a single state that takes into account the query & the mutation?
-  return { data };
-};
 
 export class RateLimitError extends Error {
   constructor(message: string) {
@@ -113,6 +86,39 @@ export const useWidgetVerifyCredentials = () => {
   const verifyCredentialsMutation = useMutation(
     {
       mutationFn: (credentialIds?: string[]) => verifyStampsForPassport({ ...queryProps, credentialIds }),
+      onSuccess: (data) => {
+        queryClient.setQueryData(queryKey, data);
+      },
+    },
+    queryClient
+  );
+
+  return {
+    ...verifyCredentialsMutation,
+    verifyCredentials: verifyCredentialsMutation.mutate,
+  };
+};
+
+// Pure mutation hook for external use
+export const useVerifyCredentials = ({
+  apiKey,
+  address,
+  scorerId,
+  embedServiceUrl,
+}: PassportQueryProps) => {
+  const queryClient = usePassportQueryClient();
+  const verifiedEmbedServiceUrl = embedServiceUrl || DEFAULT_EMBED_SERVICE_URL;
+  const queryKey = useQueryKey({ address, scorerId, embedServiceUrl: verifiedEmbedServiceUrl });
+
+  const verifyCredentialsMutation = useMutation(
+    {
+      mutationFn: (credentialIds?: string[]) => verifyStampsForPassport({ 
+        apiKey, 
+        address, 
+        scorerId, 
+        embedServiceUrl: verifiedEmbedServiceUrl, 
+        credentialIds 
+      }),
       onSuccess: (data) => {
         queryClient.setQueryData(queryKey, data);
       },

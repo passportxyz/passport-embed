@@ -41,7 +41,7 @@ const CloseIcon = () => (
 const getChallenge = async (
   challengeUrl: string,
   address: string,
-  providerType: string
+  providerType: string,
 ) => {
   const payload = {
     address: address,
@@ -64,9 +64,9 @@ const DeduplicationNotice = () => (
   <div className={styles.deduplicationNotice}>
     <div className={styles.noticeHeader}>⚠️ Already Claimed</div>
     <div className={styles.noticeText}>
-      Some stamps for this platform were already claimed by another wallet address. 
-      You can still verify to confirm your eligibility, but won't receive points 
-      for stamps claimed elsewhere.
+      Some stamps for this platform were already claimed by another wallet
+      address. You can still verify to confirm your eligibility, but won't
+      receive points for stamps claimed elsewhere.
     </div>
   </div>
 );
@@ -113,10 +113,10 @@ export const PlatformVerification = ({
           <CloseIcon />
         </button>
       </div>
-      
+
       {/* Show deduplication notice if applicable */}
       {isDeduped && <DeduplicationNotice />}
-      
+
       <ScrollableDiv
         className={styles.description}
         invertScrollIconColor={true}
@@ -152,7 +152,7 @@ export const PlatformVerification = ({
             const challenge = await getChallenge(
               challengeEndpoint,
               queryProps.address,
-              platform.name
+              platform.name,
             );
             credential = challenge.credential;
             const _challenge = challenge.credential.credentialSubject.challenge;
@@ -160,28 +160,37 @@ export const PlatformVerification = ({
             signature = await generateSignatureCallback(_challenge);
           }
 
+          console.log(
+            "Platform Verification Signature:",
+            signature,
+            "requiresPopup:",
+            platform.requiresPopup,
+            "popupUrl:",
+            platform.popupUrl,
+          );
+
           if (platform.requiresPopup && platform.popupUrl) {
             // open the popup
             const oAuthPopUpUrl = `${
               platform.popupUrl
             }?address=${encodeURIComponent(
-              queryProps.address || ""
+              queryProps.address || "",
             )}&scorerId=${encodeURIComponent(
-              queryProps.scorerId || ""
+              queryProps.scorerId || "",
             )}&platform=${encodeURIComponent(
-              platform.name
+              platform.name,
             )}&providers=${encodeURIComponent(
-              JSON.stringify(platformCredentialIds)
+              JSON.stringify(platformCredentialIds),
             )}&signature=${encodeURIComponent(
-              signature || ""
+              signature || "",
             )}&credential=${encodeURIComponent(
-              JSON.stringify(credential)
+              JSON.stringify(credential),
             )}&apiKey=${encodeURIComponent(queryProps.apiKey || "")}`;
 
             const popup = window.open(
               oAuthPopUpUrl,
               "passportPopup",
-              "width=600,height=700"
+              "width=600,height=700",
             );
 
             if (!popup) {
@@ -208,8 +217,8 @@ export const PlatformVerification = ({
         {failedVerification
           ? "Try Again"
           : claimed
-          ? "Already Verified"
-          : `Verify${isQuerying ? "ing..." : ""}`}
+            ? "Already Verified"
+            : `Verify${isQuerying ? "ing..." : ""}`}
       </Button>
     </div>
   );

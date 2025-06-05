@@ -4,7 +4,6 @@ import { Body } from "../../src/components/Body";
 import {
   useResetWidgetPassportScore,
   useWidgetPassportScore,
-  useWidgetIsQuerying,
 } from "../../src/hooks/usePassportScore";
 
 // Mock the custom hook
@@ -12,7 +11,6 @@ jest.mock("../../src/hooks/usePassportScore");
 const mockUseWidgetPassportScore = useWidgetPassportScore as jest.Mock;
 const mockUseResetWidgetPassportScore =
   useResetWidgetPassportScore as jest.Mock;
-const mockUseWidgetIsQuerying = useWidgetIsQuerying as jest.Mock;
 
 describe("Body Routing", () => {
   const defaultProps = {
@@ -24,8 +22,6 @@ describe("Body Routing", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Default mock return values
-    mockUseWidgetIsQuerying.mockReturnValue(false);
   });
 
   it("renders ErrorBody when there is an error", () => {
@@ -80,17 +76,15 @@ describe("Body Routing", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders CheckingBody when loading", () => {
+  it("renders CheckingBody when showLoading is true", () => {
     mockUseWidgetPassportScore.mockReturnValue({
       isError: false,
       error: null,
-      isLoading: true,
+      isLoading: false,
       data: null,
     });
-    
-    mockUseWidgetIsQuerying.mockReturnValue(true);
 
-    render(<Body {...defaultProps} />);
+    render(<Body {...defaultProps} showLoading={true} />);
     expect(
       screen.getByRole("button", { name: "Verifying..." })
     ).toBeInTheDocument();
