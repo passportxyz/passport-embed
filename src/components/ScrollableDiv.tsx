@@ -15,10 +15,7 @@ export const ScrollableDiv = ({
 
   return (
     <div className={`${className} ${styles.scrollableDiv}`}>
-      <div
-        className={`${styles.scrollable} ${className}`}
-        ref={scrollContainerRef}
-      >
+      <div className={`${styles.scrollable} ${className}`} ref={scrollContainerRef}>
         {children}
       </div>
       <ScrollIndicator
@@ -87,21 +84,11 @@ const ScrollIndicator = ({
 
   return (
     <div
-      className={`${styles.scrollIndicator} ${
-        visible ? styles.visible : styles.invisible
-      } ${
-        direction === "down"
-          ? styles.scrollDownIndicator
-          : styles.scrollUpIndicator
+      className={`${styles.scrollIndicator} ${visible ? styles.visible : styles.invisible} ${
+        direction === "down" ? styles.scrollDownIndicator : styles.scrollUpIndicator
       }`}
     >
-      <svg
-        width="16"
-        height="8"
-        viewBox="0 0 16 8"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
+      <svg width="16" height="8" viewBox="0 0 16 8" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <filter id="f1">
             <feDropShadow
@@ -111,9 +98,7 @@ const ScrollIndicator = ({
               floodOpacity="1"
               floodColor={
                 "rgba(var(" +
-                (invertScrollIconColor
-                  ? "--color-background-c6dbf459"
-                  : "--color-primary-c6dbf459") +
+                (invertScrollIconColor ? "--color-background-c6dbf459" : "--color-primary-c6dbf459") +
                 "), 1)"
               }
             />
@@ -124,9 +109,7 @@ const ScrollIndicator = ({
         <path
           d="M0 0.999999L8 7.5L16 1"
           stroke={
-            invertScrollIconColor
-              ? "rgb(var(--color-primary-c6dbf459))"
-              : "rgb(var(--color-background-c6dbf459))"
+            invertScrollIconColor ? "rgb(var(--color-primary-c6dbf459))" : "rgb(var(--color-background-c6dbf459))"
           }
           strokeWidth="7"
           strokeLinecap="round"
@@ -136,9 +119,7 @@ const ScrollIndicator = ({
         <path
           d="M1 0.999999L8 7L15 1"
           stroke={
-            invertScrollIconColor
-              ? "rgb(var(--color-background-c6dbf459))"
-              : "rgb(var(--color-primary-c6dbf459))"
+            invertScrollIconColor ? "rgb(var(--color-background-c6dbf459))" : "rgb(var(--color-primary-c6dbf459))"
           }
           strokeWidth="2"
           strokeLinecap="round"

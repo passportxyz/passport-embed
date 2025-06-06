@@ -1,9 +1,5 @@
 import styles from "./Body/Body.module.css";
-import {
-  PassportEmbedProps,
-  useWidgetPassportScore,
-  useWidgetIsQuerying,
-} from "../hooks/usePassportScore";
+import { PassportEmbedProps, useWidgetPassportScore } from "../hooks/usePassportScore";
 import { CheckingBody } from "./Body/CheckingBody";
 import { CongratsBody } from "./Body/CongratsBody";
 import { ScoreTooLowBody } from "./Body/ScoreTooLowBody";
@@ -45,18 +41,17 @@ const BodyWrapper = ({
 const BodyRouter = ({
   connectWalletCallback,
   generateSignatureCallback,
-}: Pick<
-  PassportEmbedProps,
-  "connectWalletCallback" | "generateSignatureCallback"
->) => {
+  showLoading,
+}: Pick<PassportEmbedProps, "connectWalletCallback" | "generateSignatureCallback"> & {
+  showLoading?: boolean;
+}) => {
   const { isError, error, data } = useWidgetPassportScore();
-  const isQuerying = useWidgetIsQuerying();
 
   if (isError) {
     return <ErrorBody error={error} />;
   }
 
-  if (isQuerying) {
+  if (showLoading) {
     return <CheckingBody />;
   }
 
@@ -77,23 +72,19 @@ export const Body = ({
   collapseMode,
   connectWalletCallback,
   generateSignatureCallback,
+  showLoading,
 }: {
   className?: string;
   isOpen: boolean;
   collapseMode: CollapseMode;
-} & Pick<
-  PassportEmbedProps,
-  "connectWalletCallback" | "generateSignatureCallback"
->) => {
+  showLoading?: boolean;
+} & Pick<PassportEmbedProps, "connectWalletCallback" | "generateSignatureCallback">) => {
   return (
-    <BodyWrapper
-      className={className}
-      isOpen={isOpen}
-      collapseMode={collapseMode}
-    >
+    <BodyWrapper className={className} isOpen={isOpen} collapseMode={collapseMode}>
       <BodyRouter
         connectWalletCallback={connectWalletCallback}
         generateSignatureCallback={generateSignatureCallback}
+        showLoading={showLoading}
       />
     </BodyWrapper>
   );

@@ -16,8 +16,7 @@ export const CheckingBody = () => {
       <div className={styles.textBlock}>
         <div className={styles.heading}>Verifying onchain activity...</div>
         <div>
-          Please wait a few seconds as we analyze your onchain activities and
-          verify relevant Stamps on your behalf.
+          Please wait a few seconds as we analyze your onchain activities and verify relevant Stamps on your behalf.
         </div>
       </div>
       <Button className={utilStyles.wFull} disabled={true}>

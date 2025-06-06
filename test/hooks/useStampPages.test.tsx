@@ -5,9 +5,7 @@ import { mockExpectedConsoleErrorLog } from "../testUtils";
 
 jest.mock("../../src/utils/stampDataApi");
 
-const mockFetchStampPages = fetchStampPages as jest.MockedFunction<
-  typeof fetchStampPages
->;
+const mockFetchStampPages = fetchStampPages as jest.MockedFunction<typeof fetchStampPages>;
 
 describe("usePaginatedStampPages", () => {
   const mockProps = {
@@ -140,9 +138,7 @@ describe("usePaginatedStampPages", () => {
 
     mockFetchStampPages.mockResolvedValueOnce(mockRawStampPages);
 
-    const { result } = renderHook(() =>
-      usePaginatedStampPages(propsWithIamUrl)
-    );
+    const { result } = renderHook(() => usePaginatedStampPages(propsWithIamUrl));
 
     expect(mockFetchStampPages).toHaveBeenCalledWith(propsWithIamUrl);
 

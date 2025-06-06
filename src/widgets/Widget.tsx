@@ -44,11 +44,7 @@ export type PassportWidgetTheme = {
   };
 };
 
-export const Widget = ({
-  children,
-  theme,
-  className,
-}: GenericPassportWidgetProps & {children: React.ReactNode}) => {
+export const Widget = ({ children, theme, className }: GenericPassportWidgetProps & { children: React.ReactNode }) => {
   const queryClient = usePassportQueryClient();
   const widgetRef = useRef<HTMLDivElement>(null);
 
@@ -65,26 +61,11 @@ export const Widget = ({
 
 const CSS_VARIABLE_POSTFIX = "-c6dbf459";
 
-const setCssProperty = ({
-  ref,
-  name,
-  value,
-}: {
-  ref: RefObject<HTMLElement>;
-  name: string;
-  value?: string;
-}) => {
-  if (value && ref.current)
-    ref.current.style.setProperty(`--${name}${CSS_VARIABLE_POSTFIX}`, value);
+const setCssProperty = ({ ref, name, value }: { ref: RefObject<HTMLElement>; name: string; value?: string }) => {
+  if (value && ref.current) ref.current.style.setProperty(`--${name}${CSS_VARIABLE_POSTFIX}`, value);
 };
 
-const setTheme = ({
-  theme,
-  ref,
-}: {
-  theme?: PassportWidgetTheme;
-  ref: RefObject<HTMLElement>;
-}) => {
+const setTheme = ({ theme, ref }: { theme?: PassportWidgetTheme; ref: RefObject<HTMLElement> }) => {
   if (!theme) return;
 
   const { colors, padding, radius, transition, font, position } = theme;

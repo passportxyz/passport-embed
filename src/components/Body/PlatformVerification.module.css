@@ -46,3 +46,7 @@
 .closeButton:disabled {
   cursor: not-allowed;
 }
+
+.deduplicationNotice {
+  margin-bottom: 2px;
+}
