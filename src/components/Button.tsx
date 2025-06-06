@@ -5,10 +5,5 @@ export const Button = ({
   className,
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { invert?: boolean }) => {
-  return (
-    <button
-      {...props}
-      className={`${styles.button} ${invert ? styles.invert : ""} ${className}`}
-    />
-  );
+  return <button {...props} className={`${styles.button} ${invert ? styles.invert : ""} ${className}`} />;
 };

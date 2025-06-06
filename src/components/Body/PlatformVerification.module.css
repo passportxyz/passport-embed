@@ -48,23 +48,5 @@
 }
 
 .deduplicationNotice {
-  background-color: rgba(var(--color-background-c6dbf459), 0.1);
-  border: 1px solid rgba(var(--color-background-c6dbf459), 0.3);
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 16px;
-}
-
-.noticeHeader {
-  font-weight: 600;
-  font-size: 14px;
-  color: rgb(var(--color-background-c6dbf459));
-  margin-bottom: 8px;
-}
-
-.noticeText {
-  font-size: 13px;
-  line-height: 1.4;
-  color: rgb(var(--color-background-c6dbf459));
-  opacity: 0.8;
+  margin-bottom: 2px;
 }

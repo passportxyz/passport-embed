@@ -6,10 +6,7 @@ import * as usePassportScore from "../../src/hooks/usePassportScore";
 import * as usePlatformStatus from "../../src/hooks/usePlatformStatus";
 import * as useQueryContext from "../../src/hooks/useQueryContext";
 import * as usePlatformDeduplication from "../../src/hooks/usePlatformDeduplication";
-import {
-  mockExpectedConsoleErrorLog,
-  setupTestQueryClient,
-} from "../testUtils";
+import { mockExpectedConsoleErrorLog, setupTestQueryClient } from "../testUtils";
 import { Platform } from "../../src/hooks/useStampPages";
 
 // Mock the hooks
@@ -77,9 +74,7 @@ describe("PlatformVerification", () => {
     );
 
     expect(screen.getByText("LinkedIn")).toBeInTheDocument();
-    expect(
-      screen.getByText("Verify your LinkedIn account")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Verify your LinkedIn account")).toBeInTheDocument();
   });
 
   it("handles close button click", () => {
@@ -162,10 +157,7 @@ describe("PlatformVerification", () => {
     });
 
     // Verify challenge fetch was called
-    expect(global.fetch).toHaveBeenCalledWith(
-      "https://test.com/embed/challenge",
-      expect.any(Object)
-    );
+    expect(global.fetch).toHaveBeenCalledWith("https://test.com/embed/challenge", expect.any(Object));
   });
 
   it("handles verification failure state", async () => {
@@ -174,9 +166,7 @@ describe("PlatformVerification", () => {
     (usePassportScore.useWidgetVerifyCredentials as jest.Mock).mockReturnValue({
       verifyCredentials: mockVerifyCredentials,
     });
-    (usePassportScore.useWidgetIsQuerying as jest.Mock).mockReturnValueOnce(
-      false
-    );
+    (usePassportScore.useWidgetIsQuerying as jest.Mock).mockReturnValueOnce(false);
 
     render(
       <PlatformVerification
@@ -194,9 +184,7 @@ describe("PlatformVerification", () => {
     fireEvent.click(screen.getByRole("button", { name: /verify/i }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/Unable to claim this Stamp/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/Unable to claim this Stamp/i)).toBeInTheDocument();
       expect(screen.getByText("Try Again")).toBeInTheDocument();
     });
   });
@@ -211,9 +199,7 @@ describe("PlatformVerification", () => {
       });
 
       const mockVerifyCredentials = jest.fn();
-      (
-        usePassportScore.useWidgetVerifyCredentials as jest.Mock
-      ).mockReturnValue({
+      (usePassportScore.useWidgetVerifyCredentials as jest.Mock).mockReturnValue({
         verifyCredentials: mockVerifyCredentials,
       });
 
@@ -229,9 +215,7 @@ describe("PlatformVerification", () => {
       fireEvent.click(screen.getByRole("button", { name: /verify/i }));
 
       await waitFor(() => {
-        expect(
-          screen.getByText(/Unable to claim this Stamp/i)
-        ).toBeInTheDocument();
+        expect(screen.getByText(/Unable to claim this Stamp/i)).toBeInTheDocument();
       });
 
       expect(mockVerifyCredentials).not.toHaveBeenCalled();
@@ -250,13 +234,12 @@ describe("PlatformVerification", () => {
         />
       );
 
-      expect(screen.getByText("⚠️ Already Claimed")).toBeInTheDocument();
-      expect(
-        screen.getByText(/Some stamps for this platform were already claimed by another wallet address/)
-      ).toBeInTheDocument();
-      expect(
-        screen.getByText(/You can still verify to confirm your eligibility/)
-      ).toBeInTheDocument();
+      expect(screen.getByText("⚠️")).toBeInTheDocument();
+      expect(screen.getByText("Already claimed elsewhere")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Already claimed elsewhere" })).toHaveAttribute(
+        "href",
+        "https://support.passport.xyz/passport-knowledge-base/common-questions/why-am-i-receiving-zero-points-for-a-verified-stamp"
+      );
     });
 
     it("should not show deduplication notice when platform has no deduplicated stamps", () => {
@@ -270,16 +253,13 @@ describe("PlatformVerification", () => {
         />
       );
 
-      expect(screen.queryByText("⚠️ Already Claimed")).not.toBeInTheDocument();
-      expect(
-        screen.queryByText(/Some stamps for this platform were already claimed/)
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Already claimed elsewhere")).not.toBeInTheDocument();
     });
 
-    it("should show deduplication notice above description section", () => {
+    it("should show deduplication notice in the description section", () => {
       (usePlatformDeduplication.usePlatformDeduplication as jest.Mock).mockReturnValue(true);
 
-      const { container } = render(
+      render(
         <PlatformVerification
           platform={mockPlatform}
           onClose={mockOnClose}
@@ -287,17 +267,10 @@ describe("PlatformVerification", () => {
         />
       );
 
-      const deduplicationNotice = container.querySelector('.deduplicationNotice');
-      const descriptionSection = screen.getByText("Verify your LinkedIn account").closest('div');
-      
-      expect(deduplicationNotice).toBeInTheDocument();
-      expect(descriptionSection).toBeInTheDocument();
-      
-      // Check that deduplication notice appears before description in DOM order
-      if (deduplicationNotice && descriptionSection) {
-        expect(deduplicationNotice.compareDocumentPosition(descriptionSection))
-          .toBe(Node.DOCUMENT_POSITION_FOLLOWING);
-      }
+      // Both deduplication notice and description should be in the same scrollable section
+      expect(screen.getByText("⚠️")).toBeInTheDocument();
+      expect(screen.getByText("Already claimed elsewhere")).toBeInTheDocument();
+      expect(screen.getByText("Verify your LinkedIn account")).toBeInTheDocument();
     });
 
     it("should show deduplication notice even when platform is already claimed", () => {
@@ -314,7 +287,8 @@ describe("PlatformVerification", () => {
         />
       );
 
-      expect(screen.getByText("⚠️ Already Claimed")).toBeInTheDocument();
+      expect(screen.getByText("⚠️")).toBeInTheDocument();
+      expect(screen.getByText("Already claimed elsewhere")).toBeInTheDocument();
       expect(screen.getByText("Already Verified")).toBeInTheDocument();
     });
 

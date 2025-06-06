@@ -10,10 +10,7 @@ const DEFAULT_OPTIONS = {
     staleTime: 60000,
     gcTime: 86400000,
     retry: (failureCount: number, error: unknown) => {
-      if (
-        error instanceof RateLimitError ||
-        (error instanceof Error && error.message.includes("429"))
-      ) {
+      if (error instanceof RateLimitError || (error instanceof Error && error.message.includes("429"))) {
         return false; // Do not retry on rate limit error
       }
       return failureCount < 2; // Retry up to 2 times for other errors

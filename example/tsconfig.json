@@ -20,9 +20,5 @@
     "types": ["vite/client"]
   },
   // Include both the dev src and the package src
-  "include": [
-    "src",
-    "../src/**/*"
-  ]
+  "include": ["src", "../src/**/*"]
 }
-

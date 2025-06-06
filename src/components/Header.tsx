@@ -4,30 +4,26 @@ import { CheckmarkIcon } from "../assets/checkmarkIcon";
 import { XIcon } from "../assets/xIcon";
 import { Ellipsis } from "./Ellipsis";
 import { useHeaderControls } from "../hooks/useHeaderControls";
-import {
-  useWidgetIsQuerying,
-  useWidgetPassportScore,
-} from "../hooks/usePassportScore";
+import { useWidgetIsQuerying, useWidgetPassportScore } from "../hooks/usePassportScore";
 import { displayNumber } from "../utils";
 import { Dispatch, SetStateAction } from "react";
 
 const ScoreDisplay = () => {
+  const isQuerying = useWidgetIsQuerying();
   const { data } = useWidgetPassportScore();
-
-  if (!data) {
-    return <PassportLogo />;
-  }
 
   return (
     <>
-      {data?.passingScore ? <CheckmarkIcon /> : <XIcon />}
-      <div
-        className={`${data?.passingScore ? styles.success : styles.failure} ${
-          styles.score
-        }`}
-      >
-        {displayNumber(data?.score)}
-      </div>
+      {(isQuerying || !data) && <PassportLogo />}
+      {isQuerying && <Ellipsis />}
+      {!isQuerying && data && (
+        <>
+          {data.passingScore ? <CheckmarkIcon /> : <XIcon />}
+          <div className={`${data.passingScore ? styles.success : styles.failure} ${styles.score}`}>
+            {displayNumber(data.score)}
+          </div>
+        </>
+      )}
     </>
   );
 };
@@ -35,9 +31,7 @@ const ScoreDisplay = () => {
 const CollapseToggle = ({ bodyIsOpen }: { bodyIsOpen: boolean }) => {
   return (
     <svg
-      className={`${styles.collapseToggle} ${
-        bodyIsOpen ? styles.collapseToggleOpen : ""
-      }`}
+      className={`${styles.collapseToggle} ${bodyIsOpen ? styles.collapseToggleOpen : ""}`}
       width="14"
       height="12"
       viewBox="0 0 14 12"
@@ -61,16 +55,11 @@ export const Header = ({
   collapsible: boolean;
 }) => {
   const { subtitle } = useHeaderControls();
-  const isQuerying = useWidgetIsQuerying();
 
   return (
     <button
-      className={`${styles.container} ${
-        bodyIsOpen || !collapsible ? styles.bodyExpanded : styles.bodyCollapsed
-      } ${
-        collapsible
-          ? styles.containerCollapseButton
-          : styles.containerNoCollapseButton
+      className={`${styles.container} ${bodyIsOpen || !collapsible ? styles.bodyExpanded : styles.bodyCollapsed} ${
+        collapsible ? styles.containerCollapseButton : styles.containerNoCollapseButton
       }`}
       onClick={() => {
         if (collapsible) {
@@ -83,7 +72,6 @@ export const Header = ({
         <div className={styles.subtitle}>{subtitle}</div>
       </div>
       <ScoreDisplay />
-      {isQuerying && <Ellipsis />}
       {collapsible && <CollapseToggle bodyIsOpen={bodyIsOpen} />}
     </button>
   );

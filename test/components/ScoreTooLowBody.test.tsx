@@ -1,10 +1,7 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-import {
-  ScoreTooLowBody,
-  AddStamps,
-} from "../../src/components/Body/ScoreTooLowBody";
+import { ScoreTooLowBody, AddStamps } from "../../src/components/Body/ScoreTooLowBody";
 import {
   useWidgetIsQuerying,
   useWidgetPassportScore,
@@ -76,16 +73,10 @@ describe("ScoreTooLowBody Component", () => {
       data: { threshold: 25 },
     });
 
-    render(
-      <ScoreTooLowBody generateSignatureCallback={mockGenerateSignature} />
-    );
+    render(<ScoreTooLowBody generateSignatureCallback={mockGenerateSignature} />);
 
-    expect(
-      screen.getByText(/Your score is too low to participate/i)
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/Increase your score to 25\+ by verifying/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Your score is too low to participate/i)).toBeInTheDocument();
+    expect(screen.getByText(/Increase your score to 25\+ by verifying/i)).toBeInTheDocument();
     expect(screen.getByText("Add Stamps")).toBeInTheDocument();
   });
 
@@ -94,17 +85,11 @@ describe("ScoreTooLowBody Component", () => {
       data: { threshold: 25 },
     });
 
-    render(
-      <ScoreTooLowBody generateSignatureCallback={mockGenerateSignature} />
-    );
+    render(<ScoreTooLowBody generateSignatureCallback={mockGenerateSignature} />);
 
     fireEvent.click(screen.getByText("Add Stamps"));
 
-    await waitFor(() =>
-      expect(
-        screen.getByText("Choose from below and verify")
-      ).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByText("Choose from below and verify")).toBeInTheDocument());
   });
 });
 
@@ -127,11 +112,7 @@ describe("AddStamps Component", () => {
     it("should render platform buttons correctly", async () => {
       render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-      await waitFor(() =>
-        expect(
-          screen.queryByText("Loading Stamps Metadata...")
-        ).not.toBeInTheDocument()
-      );
+      await waitFor(() => expect(screen.queryByText("Loading Stamps Metadata...")).not.toBeInTheDocument());
 
       // Check for KYC verification section
       expect(screen.getByText("Page 1 Header")).toBeInTheDocument();
@@ -142,11 +123,7 @@ describe("AddStamps Component", () => {
     it("should handle platform selection", async () => {
       render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-      await waitFor(() =>
-        expect(
-          screen.queryByText("Loading Stamps Metadata...")
-        ).not.toBeInTheDocument()
-      );
+      await waitFor(() => expect(screen.queryByText("Loading Stamps Metadata...")).not.toBeInTheDocument());
 
       fireEvent.click(screen.getByText("Platform 1"));
 
@@ -157,11 +134,7 @@ describe("AddStamps Component", () => {
     it("should navigate between pages", async () => {
       render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-      await waitFor(() =>
-        expect(
-          screen.queryByText("Loading Stamps Metadata...")
-        ).not.toBeInTheDocument()
-      );
+      await waitFor(() => expect(screen.queryByText("Loading Stamps Metadata...")).not.toBeInTheDocument());
 
       fireEvent.click(screen.getByText("Try another way"));
       expect(screen.getByText("Page 2 Header")).toBeInTheDocument();
@@ -180,11 +153,7 @@ describe("AddStamps Component", () => {
 
     render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-    await waitFor(() =>
-      expect(
-        screen.queryByText("Loading Stamps Metadata...")
-      ).not.toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.queryByText("Loading Stamps Metadata...")).not.toBeInTheDocument());
 
     const p2Button = screen.getByText("Platform 2").closest("button");
     expect(p2Button).toHaveClass("platformButtonClaimed");
@@ -204,19 +173,13 @@ describe("AddStamps Component", () => {
         },
       });
 
-      const { container } = render(
-        <AddStamps generateSignatureCallback={mockGenerateSignature} />
-      );
+      const { container } = render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-      await waitFor(() =>
-        expect(
-          screen.queryByText("Loading Stamps Metadata...")
-        ).not.toBeInTheDocument()
-      );
+      await waitFor(() => expect(screen.queryByText("Loading Stamps Metadata...")).not.toBeInTheDocument());
 
       // Check for dedupe badge
       expect(container.querySelector(".dedupeBadge")).toBeInTheDocument();
-      expect(screen.getByText("Dedupe")).toBeInTheDocument();
+      expect(screen.getByText("Deduplicated")).toBeInTheDocument();
     });
 
     it("should not show dedupe badge when platform has no deduplicated stamps", async () => {
@@ -228,15 +191,9 @@ describe("AddStamps Component", () => {
         },
       });
 
-      const { container } = render(
-        <AddStamps generateSignatureCallback={mockGenerateSignature} />
-      );
+      const { container } = render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-      await waitFor(() =>
-        expect(
-          screen.queryByText("Loading Stamps Metadata...")
-        ).not.toBeInTheDocument()
-      );
+      await waitFor(() => expect(screen.queryByText("Loading Stamps Metadata...")).not.toBeInTheDocument());
 
       // Check that dedupe badge is not present
       expect(container.querySelector(".dedupeBadge")).not.toBeInTheDocument();
@@ -254,19 +211,13 @@ describe("AddStamps Component", () => {
         },
       });
 
-      render(
-        <AddStamps generateSignatureCallback={mockGenerateSignature} />
-      );
+      render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-      await waitFor(() =>
-        expect(
-          screen.queryByText("Loading Stamps Metadata...")
-        ).not.toBeInTheDocument()
-      );
+      await waitFor(() => expect(screen.queryByText("Loading Stamps Metadata...")).not.toBeInTheDocument());
 
       // Find Platform 2 button which has both cred2 and anotherCred
       const platform2Button = screen.getByText("Platform 2").closest("button");
-      
+
       // Check for dedupe badge on Platform 2
       expect(platform2Button?.querySelector(".dedupeBadge")).toBeInTheDocument();
     });
@@ -280,15 +231,9 @@ describe("AddStamps Component", () => {
         },
       });
 
-      const { container } = render(
-        <AddStamps generateSignatureCallback={mockGenerateSignature} />
-      );
+      const { container } = render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-      await waitFor(() =>
-        expect(
-          screen.queryByText("Loading Stamps Metadata...")
-        ).not.toBeInTheDocument()
-      );
+      await waitFor(() => expect(screen.queryByText("Loading Stamps Metadata...")).not.toBeInTheDocument());
 
       // Check that dedupe badge is not present (dedup is true but score is not 0)
       expect(container.querySelector(".dedupeBadge")).not.toBeInTheDocument();

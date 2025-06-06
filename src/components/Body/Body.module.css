@@ -111,9 +111,11 @@
 
 .platformButtonTitle {
   line-height: 1;
-  flex-grow: 1;
   font-weight: 500;
   text-align: left;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .platformButtonWeight {
@@ -145,11 +147,11 @@
 }
 
 .dedupeBadge {
-  background-color: rgb(var(--color-background-c6dbf459));
+  background-color: rgb(var(--color-secondary-c6dbf459));
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 10px;
-  color: rgb(var(--color-foreground-c6dbf459));
+  color: rgb(var(--color-primary-c6dbf459));
   font-weight: 500;
   text-transform: uppercase;
 }

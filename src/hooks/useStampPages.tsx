@@ -34,11 +34,7 @@ type RawStampPageData = Omit<StampPage, "platforms"> & {
 
 export type StampsMetadataResponse = RawStampPageData[];
 
-export const usePaginatedStampPages = ({
-  apiKey,
-  scorerId,
-  embedServiceUrl,
-}: PassportQueryProps) => {
+export const usePaginatedStampPages = ({ apiKey, scorerId, embedServiceUrl }: PassportQueryProps) => {
   const [stampPages, setStampPages] = useState<StampPage[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,18 +49,14 @@ export const usePaginatedStampPages = ({
           embedServiceUrl,
         });
 
-        const formattedData: StampPage[] = data.map(
-          (page: RawStampPageData) => ({
-            ...page,
-            platforms: page.platforms.map((platform) => ({
-              ...platform,
-              description: (
-                <SanitizedHTMLComponent html={platform.description || ""} />
-              ),
-              displayWeight: platform.displayWeight,
-            })),
-          })
-        );
+        const formattedData: StampPage[] = data.map((page: RawStampPageData) => ({
+          ...page,
+          platforms: page.platforms.map((platform) => ({
+            ...platform,
+            description: <SanitizedHTMLComponent html={platform.description || ""} />,
+            displayWeight: platform.displayWeight,
+          })),
+        }));
 
         setStampPages(formattedData);
       } catch (err) {
@@ -77,8 +69,7 @@ export const usePaginatedStampPages = ({
   }, [apiKey, scorerId, embedServiceUrl]);
 
   // Pagination controls
-  const nextPage = () =>
-    setIdx((prev) => Math.min(prev + 1, stampPages.length - 1));
+  const nextPage = () => setIdx((prev) => Math.min(prev + 1, stampPages.length - 1));
   const prevPage = () => setIdx((prev) => Math.max(prev - 1, 0));
 
   const isFirstPage = idx === 0;

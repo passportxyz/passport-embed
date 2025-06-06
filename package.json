@@ -1,6 +1,6 @@
 {
   "name": "@passportxyz/passport-embed",
-  "version": "0.1.6-rc.3",
+  "version": "0.1.6-rc.4",
   "description": "Human Passport Embeddable Widgets",
   "repository": {
     "type": "git",
@@ -44,7 +44,8 @@
     "dev": "cd example && yarn dev",
     "watch:css": "postcss 'src/**/*.css' -d dist/esm/ --base src --watch",
     "watch:esm": "tsc --module ESNext --outDir dist/esm --watch",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "prettier": "prettier --write ."
   },
   "peerDependencies": {
     "react": ">=18.0.0",
@@ -80,6 +81,7 @@
     "postcss": "^8.4.47",
     "postcss-cli": "^11.0.0",
     "postcss-loader": "^8.1.1",
+    "prettier": "^3.5.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "style-loader": "^4.0.0",

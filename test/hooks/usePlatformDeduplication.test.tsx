@@ -11,7 +11,9 @@ jest.mock("../../src/hooks/usePassportScore", () => ({
 const mockUseWidgetPassportScore = useWidgetPassportScore as jest.MockedFunction<typeof useWidgetPassportScore>;
 
 // Helper function to create mock passport score data
-const createMockPassportScore = (stamps: Record<string, { score: number; dedup?: boolean; expiration_date?: string }>) => ({
+const createMockPassportScore = (
+  stamps: Record<string, { score: number; dedup?: boolean; expiration_date?: string }>
+) => ({
   address: "0x123",
   score: 10,
   passingScore: false,
@@ -31,7 +33,9 @@ const createMockPassportScore = (stamps: Record<string, { score: number; dedup?:
 });
 
 // Helper function to create complete mock PassportEmbedResult
-const createMockPassportEmbedResult = (stamps: Record<string, { score: number; dedup?: boolean; expiration_date?: string }> | undefined = {}) => ({
+const createMockPassportEmbedResult = (
+  stamps: Record<string, { score: number; dedup?: boolean; expiration_date?: string }> | undefined = {}
+) => ({
   data: stamps === undefined ? undefined : createMockPassportScore(stamps),
   isPending: false,
   isFetching: false,

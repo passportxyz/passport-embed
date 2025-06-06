@@ -18,8 +18,9 @@ The passport widget has a modal state loss issue where clicking "Verify" causes 
 ## Solution Design
 
 ### Core Requirements
+
 1. **Initial load**: Check score → if low, auto-verify all credentials
-2. **Manual verification**: Auto-verify just the specific credential  
+2. **Manual verification**: Auto-verify just the specific credential
 3. **Tab change/refresh**: Just fetch score (no auto-verify)
 4. **Both endpoints return score data**
 5. **Preserve modal state during verification**

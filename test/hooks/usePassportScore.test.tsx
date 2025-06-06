@@ -43,9 +43,7 @@ const mockQueryContextValue = {
 // Test wrapper setup
 const createWidgetWrapper = () => {
   return ({ children }: { children: React.ReactNode }) => (
-    <QueryContext.Provider value={mockQueryContextValue}>
-      {children}
-    </QueryContext.Provider>
+    <QueryContext.Provider value={mockQueryContextValue}>{children}</QueryContext.Provider>
   );
 };
 
@@ -136,12 +134,9 @@ describe("Passport Score Hooks", () => {
     it("should verify credentials and call API with correct parameters", async () => {
       mockedAxios.post.mockResolvedValueOnce({ data: mockScoreData });
 
-      const { result } = renderHook(
-        () => useWidgetVerifyCredentials(),
-        {
-          wrapper: createWidgetWrapper(),
-        }
-      );
+      const { result } = renderHook(() => useWidgetVerifyCredentials(), {
+        wrapper: createWidgetWrapper(),
+      });
 
       await act(async () => {
         result.current.verifyCredentials(["credential1"]);
@@ -162,10 +157,7 @@ describe("Passport Score Hooks", () => {
   describe("useWidgetIsQuerying", () => {
     it("should return true when queries are in progress", async () => {
       mockedAxios.post.mockImplementation(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve({ data: mockScoreData }), 100)
-          )
+        () => new Promise((resolve) => setTimeout(() => resolve({ data: mockScoreData }), 100))
       );
 
       const { result } = renderHook(() => ({
@@ -214,7 +206,7 @@ describe("Passport Score Hooks", () => {
 
   it("should share a client between the widget and non-widget hook", async () => {
     mockedAxios.get.mockResolvedValueOnce({ data: mockScoreData });
-    
+
     const { result } = renderHook(
       () => ({
         useScore: usePassportScore(mockQueryContextValue),
@@ -226,13 +218,9 @@ describe("Passport Score Hooks", () => {
     );
 
     await waitFor(() => expect(result.current.useScore.isLoading).toBe(false));
-    await waitFor(() =>
-      expect(result.current.useWidgetScore.isLoading).toBe(false)
-    );
+    await waitFor(() => expect(result.current.useWidgetScore.isLoading).toBe(false));
 
-    expect(result.current.useScore.data).toEqual(
-      result.current.useWidgetScore.data
-    );
+    expect(result.current.useScore.data).toEqual(result.current.useWidgetScore.data);
 
     expect(mockedAxios.get).toHaveBeenCalledTimes(1);
   });

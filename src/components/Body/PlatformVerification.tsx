@@ -4,23 +4,14 @@ import { useEffect, useState } from "react";
 import { Button } from "../Button";
 import { Hyperlink } from "./ScoreTooLowBody";
 import { ScrollableDiv } from "../ScrollableDiv";
-import {
-  useWidgetIsQuerying,
-  useWidgetVerifyCredentials,
-} from "../../hooks/usePassportScore";
+import { useWidgetIsQuerying, useWidgetVerifyCredentials } from "../../hooks/usePassportScore";
 import { useQueryContext } from "../../hooks/useQueryContext";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
 import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
 import { Platform } from "../../hooks/useStampPages";
 
 const CloseIcon = () => (
-  <svg
-    width="12"
-    height="12"
-    viewBox="0 0 12 12"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
+  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
       d="M1 11L6 6L1 1"
       stroke="rgb(var(--color-background-c6dbf459))"
@@ -38,11 +29,7 @@ const CloseIcon = () => (
   </svg>
 );
 
-const getChallenge = async (
-  challengeUrl: string,
-  address: string,
-  providerType: string,
-) => {
+const getChallenge = async (challengeUrl: string, address: string, providerType: string) => {
   const payload = {
     address: address,
     signatureType: "EIP712",
@@ -59,17 +46,6 @@ const getChallenge = async (
 
   return response.json();
 };
-
-const DeduplicationNotice = () => (
-  <div className={styles.deduplicationNotice}>
-    <div className={styles.noticeHeader}>⚠️ Already Claimed</div>
-    <div className={styles.noticeText}>
-      Some stamps for this platform were already claimed by another wallet
-      address. You can still verify to confirm your eligibility, but won't
-      receive points for stamps claimed elsewhere.
-    </div>
-  </div>
-);
 
 export const PlatformVerification = ({
   platform,
@@ -114,23 +90,24 @@ export const PlatformVerification = ({
         </button>
       </div>
 
-      {/* Show deduplication notice if applicable */}
-      {isDeduped && <DeduplicationNotice />}
-
-      <ScrollableDiv
-        className={styles.description}
-        invertScrollIconColor={true}
-      >
+      <ScrollableDiv className={styles.description} invertScrollIconColor={true}>
         {failedVerification ? (
           <div>
-            Unable to claim this Stamp. Find{" "}
-            <Hyperlink href={platform.documentationLink}>
-              instructions here
-            </Hyperlink>{" "}
+            Unable to claim this Stamp. Find <Hyperlink href={platform.documentationLink}>instructions here</Hyperlink>{" "}
             and come back after.
           </div>
         ) : (
-          <div>{platform.description}</div>
+          <div>
+            {isDeduped && (
+              <div className={styles.deduplicationNotice}>
+                ⚠️{" "}
+                <Hyperlink href="https://support.passport.xyz/passport-knowledge-base/common-questions/why-am-i-receiving-zero-points-for-a-verified-stamp">
+                  Already claimed elsewhere
+                </Hyperlink>
+              </div>
+            )}
+            {platform.description}
+          </div>
         )}
       </ScrollableDiv>
       <Button
@@ -149,11 +126,7 @@ export const PlatformVerification = ({
             }
 
             const challengeEndpoint = `${queryProps.embedServiceUrl}/embed/challenge`;
-            const challenge = await getChallenge(
-              challengeEndpoint,
-              queryProps.address,
-              platform.name,
-            );
+            const challenge = await getChallenge(challengeEndpoint, queryProps.address, platform.name);
             credential = challenge.credential;
             const _challenge = challenge.credential.credentialSubject.challenge;
 
@@ -166,32 +139,22 @@ export const PlatformVerification = ({
             "requiresPopup:",
             platform.requiresPopup,
             "popupUrl:",
-            platform.popupUrl,
+            platform.popupUrl
           );
 
           if (platform.requiresPopup && platform.popupUrl) {
             // open the popup
-            const oAuthPopUpUrl = `${
-              platform.popupUrl
-            }?address=${encodeURIComponent(
-              queryProps.address || "",
-            )}&scorerId=${encodeURIComponent(
-              queryProps.scorerId || "",
-            )}&platform=${encodeURIComponent(
-              platform.name,
-            )}&providers=${encodeURIComponent(
-              JSON.stringify(platformCredentialIds),
-            )}&signature=${encodeURIComponent(
-              signature || "",
+            const oAuthPopUpUrl = `${platform.popupUrl}?address=${encodeURIComponent(
+              queryProps.address || ""
+            )}&scorerId=${encodeURIComponent(queryProps.scorerId || "")}&platform=${encodeURIComponent(
+              platform.name
+            )}&providers=${encodeURIComponent(JSON.stringify(platformCredentialIds))}&signature=${encodeURIComponent(
+              signature || ""
             )}&credential=${encodeURIComponent(
-              JSON.stringify(credential),
+              JSON.stringify(credential)
             )}&apiKey=${encodeURIComponent(queryProps.apiKey || "")}`;
 
-            const popup = window.open(
-              oAuthPopUpUrl,
-              "passportPopup",
-              "width=600,height=700",
-            );
+            const popup = window.open(oAuthPopUpUrl, "passportPopup", "width=600,height=700");
 
             if (!popup) {
               console.error("Failed to open pop-up");
@@ -214,11 +177,7 @@ export const PlatformVerification = ({
           }
         }}
       >
-        {failedVerification
-          ? "Try Again"
-          : claimed
-            ? "Already Verified"
-            : `Verify${isQuerying ? "ing..." : ""}`}
+        {failedVerification ? "Try Again" : claimed ? "Already Verified" : `Verify${isQuerying ? "ing..." : ""}`}
       </Button>
     </div>
   );

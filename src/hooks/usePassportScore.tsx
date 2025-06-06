@@ -1,11 +1,5 @@
 import { useCallback } from "react";
-import {
-  useIsFetching,
-  useIsMutating,
-  useMutation,
-  useQuery,
-  QueryObserverResult,
-} from "@tanstack/react-query";
+import { useIsFetching, useIsMutating, useMutation, useQuery, QueryObserverResult } from "@tanstack/react-query";
 import axios, { isAxiosError } from "axios";
 import { useQueryContext } from "../hooks/useQueryContext";
 import { usePassportQueryClient } from "./usePassportQueryClient";
@@ -26,10 +20,7 @@ export type PassportEmbedProps = {
   overrideEmbedServiceUrl?: string;
 };
 
-export type PassportQueryProps = Pick<
-  PassportEmbedProps,
-  "apiKey" | "address" | "scorerId"
-> & {
+export type PassportQueryProps = Pick<PassportEmbedProps, "apiKey" | "address" | "scorerId"> & {
   embedServiceUrl?: PassportEmbedProps["overrideEmbedServiceUrl"];
 };
 
@@ -65,7 +56,6 @@ export type PassportEmbedResult = {
   refetch: () => Promise<QueryObserverResult<PassportScore | undefined, Error>>;
 };
 
-
 export class RateLimitError extends Error {
   constructor(message: string) {
     super(message);
@@ -100,25 +90,21 @@ export const useWidgetVerifyCredentials = () => {
 };
 
 // Pure mutation hook for external use
-export const useVerifyCredentials = ({
-  apiKey,
-  address,
-  scorerId,
-  embedServiceUrl,
-}: PassportQueryProps) => {
+export const useVerifyCredentials = ({ apiKey, address, scorerId, embedServiceUrl }: PassportQueryProps) => {
   const queryClient = usePassportQueryClient();
   const verifiedEmbedServiceUrl = embedServiceUrl || DEFAULT_EMBED_SERVICE_URL;
   const queryKey = useQueryKey({ address, scorerId, embedServiceUrl: verifiedEmbedServiceUrl });
 
   const verifyCredentialsMutation = useMutation(
     {
-      mutationFn: (credentialIds?: string[]) => verifyStampsForPassport({ 
-        apiKey, 
-        address, 
-        scorerId, 
-        embedServiceUrl: verifiedEmbedServiceUrl, 
-        credentialIds 
-      }),
+      mutationFn: (credentialIds?: string[]) =>
+        verifyStampsForPassport({
+          apiKey,
+          address,
+          scorerId,
+          embedServiceUrl: verifiedEmbedServiceUrl,
+          credentialIds,
+        }),
       onSuccess: (data) => {
         queryClient.setQueryData(queryKey, data);
       },
@@ -226,9 +212,7 @@ const fetchPassportScore = async ({
   }
 };
 
-const processScoreResponse = (
-  scoreData: EmbedScoreResponse
-): PassportScore => ({
+const processScoreResponse = (scoreData: EmbedScoreResponse): PassportScore => ({
   address: scoreData.address,
   score: parseFloat(scoreData.score),
   passingScore: scoreData.passing_score,
@@ -251,9 +235,7 @@ const processScoreResponse = (
 const processScoreResponseError = <T,>(error: T): T | Error => {
   if (isAxiosError(error) && error.response?.status === 429) {
     if (error.response.headers["x-ratelimit-limit"] === "0") {
-      return new RateLimitError(
-        "This API key does not have permission to access the Embed API."
-      );
+      return new RateLimitError("This API key does not have permission to access the Embed API.");
     }
     return new RateLimitError("Rate limit exceeded.");
   }

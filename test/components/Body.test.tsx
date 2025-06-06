@@ -1,16 +1,12 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Body } from "../../src/components/Body";
-import {
-  useResetWidgetPassportScore,
-  useWidgetPassportScore,
-} from "../../src/hooks/usePassportScore";
+import { useResetWidgetPassportScore, useWidgetPassportScore } from "../../src/hooks/usePassportScore";
 
 // Mock the custom hook
 jest.mock("../../src/hooks/usePassportScore");
 const mockUseWidgetPassportScore = useWidgetPassportScore as jest.Mock;
-const mockUseResetWidgetPassportScore =
-  useResetWidgetPassportScore as jest.Mock;
+const mockUseResetWidgetPassportScore = useResetWidgetPassportScore as jest.Mock;
 
 describe("Body Routing", () => {
   const defaultProps = {
@@ -57,9 +53,7 @@ describe("Body Routing", () => {
     });
 
     render(<Body {...defaultProps} />);
-    expect(
-      screen.getByText("You have proven your unique humanity. Please proceed!")
-    ).toBeInTheDocument();
+    expect(screen.getByText("You have proven your unique humanity. Please proceed!")).toBeInTheDocument();
   });
 
   it("renders ScoreTooLowBody when score is not passing", () => {
@@ -71,9 +65,7 @@ describe("Body Routing", () => {
     });
 
     render(<Body {...defaultProps} />);
-    expect(
-      screen.getByText("Your score is too low to participate.")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Your score is too low to participate.")).toBeInTheDocument();
   });
 
   it("renders CheckingBody when showLoading is true", () => {
@@ -85,9 +77,7 @@ describe("Body Routing", () => {
     });
 
     render(<Body {...defaultProps} showLoading={true} />);
-    expect(
-      screen.getByRole("button", { name: "Verifying..." })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Verifying..." })).toBeInTheDocument();
   });
 
   describe("renders ConnectWalletBody by default", () => {
@@ -101,20 +91,14 @@ describe("Body Routing", () => {
 
       render(<Body {...defaultProps} connectWalletCallback={async () => {}} />);
 
-      expect(
-        screen.getByText("Connect your wallet", { exact: false })
-      ).toBeInTheDocument();
+      expect(screen.getByText("Connect your wallet", { exact: false })).toBeInTheDocument();
 
       const button = screen.getByRole("button", { name: "Connect Wallet" });
       expect(button).toBeInTheDocument();
 
       fireEvent.click(button);
 
-      waitFor(() =>
-        expect(
-          screen.getByRole("button", { name: "Connecting..." })
-        ).toBeInTheDocument()
-      );
+      waitFor(() => expect(screen.getByRole("button", { name: "Connecting..." })).toBeInTheDocument());
     });
 
     it("requests connect when connectWalletCallback undefined", async () => {
@@ -127,9 +111,7 @@ describe("Body Routing", () => {
 
       render(<Body {...defaultProps} connectWalletCallback={undefined} />);
 
-      expect(
-        screen.getByText("Connect to the dapp", { exact: false })
-      ).toBeInTheDocument();
+      expect(screen.getByText("Connect to the dapp", { exact: false })).toBeInTheDocument();
 
       expect(screen.queryByRole("button")).not.toBeInTheDocument();
     });
@@ -161,24 +143,18 @@ describe("Body", () => {
   });
 
   it("applies correct classes when collapsed", async () => {
-    const { container } = render(
-      <Body {...defaultProps} isOpen={false} collapseMode="shift" />
-    );
+    const { container } = render(<Body {...defaultProps} isOpen={false} collapseMode="shift" />);
     expect(container.firstChild).toHaveClass("collapsed");
     expect(container.firstChild).not.toHaveClass("expanded");
   });
 
   it("applies overlay class when collapseMode is overlay", () => {
-    const { container } = render(
-      <Body {...defaultProps} collapseMode="overlay" />
-    );
+    const { container } = render(<Body {...defaultProps} collapseMode="overlay" />);
     expect(container.firstChild).toHaveClass("overlay");
   });
 
   it("applies custom className when provided", () => {
-    const { container } = render(
-      <Body {...defaultProps} className="custom-class" />
-    );
+    const { container } = render(<Body {...defaultProps} className="custom-class" />);
     expect(container.firstChild).toHaveClass("custom-class");
   });
 });

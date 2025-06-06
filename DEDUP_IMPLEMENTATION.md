@@ -16,9 +16,11 @@ The passport-embed library **already supports the V2 API format** with deduplica
 ## Implementation Requirements
 
 ### User Story
+
 Users should understand when a stamp qualification exists but was claimed under a different wallet address through clear visual indicators and explanations.
 
 ### Acceptance Criteria
+
 1. **Platform Button Badge**: Display a "Dedupe" badge on platform buttons when any stamps in that platform are deduplicated
 2. **Platform Window Explanation**: Show explanation text in the platform verification window when deduplication is detected
 3. **Visual Design**: Use consistent styling with existing UI patterns
@@ -28,6 +30,7 @@ Users should understand when a stamp qualification exists but was claimed under 
 ### 1. Enhanced Platform Status Detection
 
 #### New Hook: `usePlatformDeduplication`
+
 Create a hook to detect if a platform has deduplicated stamps:
 
 ```typescript
@@ -36,17 +39,21 @@ import { useMemo } from "react";
 import { useWidgetPassportScore } from "./usePassportScore";
 import { Platform } from "./useStampPages";
 
-export const usePlatformDeduplication = ({ platform }: { platform: Platform }) => {
+export const usePlatformDeduplication = ({
+  platform,
+}: {
+  platform: Platform;
+}) => {
   const { data } = useWidgetPassportScore();
 
   return useMemo(() => {
     if (!data?.stamps) return false;
-    
+
     // Check if any credential in this platform is deduplicated
     return platform.credentials.some((credential) => {
       const stampData = data.stamps[credential.id];
       if (!stampData) return false;
-      
+
       // A stamp is deduplicated if:
       // 1. It has a dedup flag set to true
       // 2. Score is 0 (indicating points were claimed elsewhere)
@@ -78,7 +85,7 @@ const PlatformButton = ({
 }) => {
   const { claimed } = usePlatformStatus({ platform });
   const isDeduped = usePlatformDeduplication({ platform });
-  
+
   return (
     <button
       className={`${styles.platformButton} ${
@@ -112,17 +119,17 @@ const DeduplicationNotice = () => (
   <div className={styles.deduplicationNotice}>
     <div className={styles.noticeHeader}>⚠️ Already Claimed</div>
     <div className={styles.noticeText}>
-      Some stamps for this platform were already claimed by another wallet address. 
-      You can still verify to confirm your eligibility, but won't receive points 
-      for stamps claimed elsewhere.
+      Some stamps for this platform were already claimed by another wallet
+      address. You can still verify to confirm your eligibility, but won't
+      receive points for stamps claimed elsewhere.
     </div>
   </div>
 );
 
-export const PlatformVerification = ({ 
-  platform, 
-  onClose, 
-  generateSignatureCallback 
+export const PlatformVerification = ({
+  platform,
+  onClose,
+  generateSignatureCallback,
 }) => {
   const { claimed } = usePlatformStatus({ platform });
   const isDeduped = usePlatformDeduplication({ platform });
@@ -140,11 +147,14 @@ export const PlatformVerification = ({
           <CloseIcon />
         </button>
       </div>
-      
+
       {/* Show deduplication notice if applicable */}
       {isDeduped && <DeduplicationNotice />}
-      
-      <ScrollableDiv className={styles.description} invertScrollIconColor={true}>
+
+      <ScrollableDiv
+        className={styles.description}
+        invertScrollIconColor={true}
+      >
         {failedVerification ? (
           <div>
             Unable to claim this Stamp. Find{" "}
@@ -157,7 +167,7 @@ export const PlatformVerification = ({
           <div>{platform.description}</div>
         )}
       </ScrollableDiv>
-      
+
       {/* ... rest of component ... */}
     </div>
   );
@@ -167,6 +177,7 @@ export const PlatformVerification = ({
 ### 3. CSS Styles Implementation
 
 #### Add to `Body.module.css`:
+
 ```css
 /* Platform button header container for badge layout */
 .platformButtonHeader {
@@ -193,6 +204,7 @@ export const PlatformVerification = ({
 ```
 
 #### Add to `PlatformVerification.module.css`:
+
 ```css
 /* Deduplication notice styling */
 .deduplicationNotice {
@@ -221,6 +233,7 @@ export const PlatformVerification = ({
 ### 4. Testing Implementation
 
 #### Test File: `test/hooks/usePlatformDeduplication.test.tsx`
+
 ```typescript
 import { renderHook } from "@testing-library/react";
 import { usePlatformDeduplication } from "../../src/hooks/usePlatformDeduplication";
@@ -251,10 +264,13 @@ describe("usePlatformDeduplication", () => {
       },
     };
 
-    require("../../src/hooks/usePassportScore").useWidgetPassportScore
-      .mockReturnValue({ data: mockData });
+    require("../../src/hooks/usePassportScore").useWidgetPassportScore.mockReturnValue(
+      { data: mockData },
+    );
 
-    const { result } = renderHook(() => usePlatformDeduplication({ platform: mockPlatform }));
+    const { result } = renderHook(() =>
+      usePlatformDeduplication({ platform: mockPlatform }),
+    );
     expect(result.current).toBe(true);
   });
 
@@ -269,16 +285,20 @@ describe("usePlatformDeduplication", () => {
       },
     };
 
-    require("../../src/hooks/usePassportScore").useWidgetPassportScore
-      .mockReturnValue({ data: mockData });
+    require("../../src/hooks/usePassportScore").useWidgetPassportScore.mockReturnValue(
+      { data: mockData },
+    );
 
-    const { result } = renderHook(() => usePlatformDeduplication({ platform: mockPlatform }));
+    const { result } = renderHook(() =>
+      usePlatformDeduplication({ platform: mockPlatform }),
+    );
     expect(result.current).toBe(false);
   });
 });
 ```
 
 #### Test File: `test/components/ScoreTooLowBody.test.tsx` (updates)
+
 ```typescript
 // Add test cases for deduplication badge display
 describe("PlatformButton with deduplication", () => {
@@ -312,7 +332,9 @@ describe("PlatformButton with deduplication", () => {
 ### 5. Integration Points
 
 #### Type Updates (Already Complete)
+
 The existing `PassportProviderPoints` type already includes the dedup flag:
+
 ```typescript
 export type PassportProviderPoints = {
   score: number;
@@ -322,16 +344,19 @@ export type PassportProviderPoints = {
 ```
 
 #### API Response Processing (Already Complete)
+
 The `processScoreResponse` function in `usePassportScore.tsx` already processes dedup flags from the V2 API response.
 
 ## Implementation Checklist
 
 ### ✅ Prerequisites (Already Complete)
+
 - [x] V2 API format support in types
 - [x] API response processing with dedup flags
 - [x] Internal data structures with deduplication status
 
 ### 🚧 New Implementation Required
+
 - [ ] Create `usePlatformDeduplication` hook
 - [ ] Update `PlatformButton` component with badge
 - [ ] Update `PlatformVerification` component with notice
@@ -340,6 +365,7 @@ The `processScoreResponse` function in `usePassportScore.tsx` already processes 
 - [ ] Update documentation
 
 ### 📋 Testing Scenarios
+
 1. **Platform with deduplicated stamps**: Show badge and notice
 2. **Platform with no deduplicated stamps**: Show normal UI
 3. **Mixed scenario**: Platform with both claimed and deduplicated stamps
@@ -349,12 +375,14 @@ The `processScoreResponse` function in `usePassportScore.tsx` already processes 
 ## Design Rationale
 
 ### Visual Design Decisions
+
 - **Badge Position**: Top-right of platform name for high visibility
 - **Badge Style**: Subtle gray background to indicate "inactive" status
 - **Notice Placement**: Above description in platform window for immediate visibility
 - **Color Scheme**: Uses existing CSS variables for theme consistency
 
 ### Technical Decisions
+
 - **Hook-based Architecture**: Follows existing patterns in the codebase
 - **Memoization**: Prevents unnecessary re-calculations
 - **Graceful Degradation**: Works even if dedup data is missing
