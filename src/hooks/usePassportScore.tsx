@@ -70,12 +70,23 @@ export const useWidgetPassportScore = () => {
 
 export const useWidgetVerifyCredentials = () => {
   const queryProps = useQueryContext();
+  return useInternalVerifyCredentials(queryProps);
+};
+
+const useInternalVerifyCredentials = ({ apiKey, address, scorerId, embedServiceUrl }: PassportQueryProps) => {
   const queryClient = usePassportQueryClient();
-  const queryKey = useQueryKey(queryProps);
+  const queryKey = useQueryKey({ address, scorerId, embedServiceUrl });
 
   const verifyCredentialsMutation = useMutation(
     {
-      mutationFn: (credentialIds?: string[]) => verifyStampsForPassport({ ...queryProps, credentialIds }),
+      mutationFn: (credentialIds?: string[]) =>
+        verifyStampsForPassport({
+          apiKey,
+          address,
+          scorerId,
+          embedServiceUrl,
+          credentialIds,
+        }),
       onSuccess: (data) => {
         queryClient.setQueryData(queryKey, data);
       },
@@ -91,31 +102,14 @@ export const useWidgetVerifyCredentials = () => {
 
 // Pure mutation hook for external use
 export const useVerifyCredentials = ({ apiKey, address, scorerId, embedServiceUrl }: PassportQueryProps) => {
-  const queryClient = usePassportQueryClient();
   const verifiedEmbedServiceUrl = embedServiceUrl || DEFAULT_EMBED_SERVICE_URL;
-  const queryKey = useQueryKey({ address, scorerId, embedServiceUrl: verifiedEmbedServiceUrl });
 
-  const verifyCredentialsMutation = useMutation(
-    {
-      mutationFn: (credentialIds?: string[]) =>
-        verifyStampsForPassport({
-          apiKey,
-          address,
-          scorerId,
-          embedServiceUrl: verifiedEmbedServiceUrl,
-          credentialIds,
-        }),
-      onSuccess: (data) => {
-        queryClient.setQueryData(queryKey, data);
-      },
-    },
-    queryClient
-  );
-
-  return {
-    ...verifyCredentialsMutation,
-    verifyCredentials: verifyCredentialsMutation.mutate,
-  };
+  return useInternalVerifyCredentials({
+    apiKey,
+    address,
+    scorerId,
+    embedServiceUrl: verifiedEmbedServiceUrl,
+  });
 };
 
 // Returns true if any queries are currently in progress
