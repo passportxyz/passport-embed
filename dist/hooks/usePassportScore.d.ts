@@ -110,7 +110,7 @@ export declare const useWidgetVerifyCredentials: () => {
     submittedAt: number;
     mutateAsync: import("@tanstack/react-query").UseMutateAsyncFunction<PassportScore, Error, string[] | undefined, unknown>;
 };
-export declare const useVerifyCredentials: ({ apiKey, address, scorerId, embedServiceUrl, }: PassportQueryProps) => {
+export declare const useVerifyCredentials: ({ apiKey, address, scorerId, embedServiceUrl }: PassportQueryProps) => {
     verifyCredentials: import("@tanstack/react-query").UseMutateFunction<PassportScore, Error, string[] | undefined, unknown>;
     data: undefined;
     variables: undefined;

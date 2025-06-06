@@ -36,6 +36,6 @@ export type PassportWidgetTheme = {
         overlayZIndex?: string;
     };
 };
-export declare const Widget: ({ children, theme, className, }: GenericPassportWidgetProps & {
+export declare const Widget: ({ children, theme, className }: GenericPassportWidgetProps & {
     children: React.ReactNode;
 }) => import("react/jsx-runtime").JSX.Element;
