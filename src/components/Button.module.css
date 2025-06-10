@@ -12,7 +12,8 @@
   padding: 8px 16px;
 
   cursor: pointer;
-  transition: filter var(--transition-speed-c6dbf459) ease,
+  transition:
+    filter var(--transition-speed-c6dbf459) ease,
     outline var(--transition-speed-c6dbf459) ease,
     opacity var(--transition-speed-c6dbf459) ease;
 }

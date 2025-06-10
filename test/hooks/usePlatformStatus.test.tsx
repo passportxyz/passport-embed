@@ -34,9 +34,7 @@ describe("usePlatformStatus Hook", () => {
       },
     });
 
-    const { result } = renderHook(() =>
-      usePlatformStatus({ platform: mockPlatform })
-    );
+    const { result } = renderHook(() => usePlatformStatus({ platform: mockPlatform }));
     expect(result.current.claimed).toBe(true);
   });
 
@@ -49,9 +47,7 @@ describe("usePlatformStatus Hook", () => {
       },
     });
 
-    const { result } = renderHook(() =>
-      usePlatformStatus({ platform: mockPlatform })
-    );
+    const { result } = renderHook(() => usePlatformStatus({ platform: mockPlatform }));
     expect(result.current.claimed).toBe(false);
   });
 });

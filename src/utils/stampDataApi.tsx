@@ -2,11 +2,7 @@ import axios from "axios";
 import { StampsMetadataResponse } from "../hooks/useStampPages";
 import { PassportQueryProps } from "../hooks/usePassportScore";
 
-export const fetchStampPages = async ({
-  apiKey,
-  scorerId,
-  embedServiceUrl,
-}: PassportQueryProps) => {
+export const fetchStampPages = async ({ apiKey, scorerId, embedServiceUrl }: PassportQueryProps) => {
   const response = await axios.get<StampsMetadataResponse>(
     `${embedServiceUrl}/embed/stamps/metadata?scorerId=${scorerId}`,
     {

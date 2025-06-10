@@ -16,7 +16,7 @@ on:
           - preminor
           - prepatch
           - prerelease
-          
+
 jobs:
   increment-version:
     runs-on: ubuntu-latest
@@ -55,7 +55,7 @@ jobs:
           git push --force origin package-version-update
           git tag $NEW_VERSION
           git push --force origin $NEW_VERSION
-          
+
       - name: Create Pull Request
         run: |
           gh pr create --base main --head package-version-update --title "Update package version to $NEW_VERSION" --body "This PR was created automatically."

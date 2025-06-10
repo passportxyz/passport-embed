@@ -2,13 +2,7 @@ import styles from "./Ellipsis.module.css";
 
 const Dot = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 100 100" height="8px" width="8px" className={className}>
-    <circle
-      cx="50"
-      cy="50"
-      r="40"
-      fill="rgb(var(--color-primary-c6dbf459))"
-      stroke="none"
-    />
+    <circle cx="50" cy="50" r="40" fill="rgb(var(--color-primary-c6dbf459))" stroke="none" />
   </svg>
 );
 

@@ -10,9 +10,7 @@ export const CongratsBody = () => {
   });
 
   return (
-    <div
-      className={`${styles.textBlock} ${styles.extraBottomMarginForBodyWithoutButton}`}
-    >
+    <div className={`${styles.textBlock} ${styles.extraBottomMarginForBodyWithoutButton}`}>
       <div className={styles.heading}>Congratulations!</div>
       <div>You have proven your unique humanity. Please proceed!</div>
     </div>

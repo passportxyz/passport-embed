@@ -25,7 +25,7 @@ type RawStampPageData = Omit<StampPage, "platforms"> & {
     platforms: RawPlatformData[];
 };
 export type StampsMetadataResponse = RawStampPageData[];
-export declare const usePaginatedStampPages: ({ apiKey, scorerId, embedServiceUrl, }: PassportQueryProps) => {
+export declare const usePaginatedStampPages: ({ apiKey, scorerId, embedServiceUrl }: PassportQueryProps) => {
     page: StampPage;
     nextPage: () => void;
     prevPage: () => void;
