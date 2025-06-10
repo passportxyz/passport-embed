@@ -133,15 +133,6 @@ export const PlatformVerification = ({
             signature = await generateSignatureCallback(_challenge);
           }
 
-          console.log(
-            "Platform Verification Signature:",
-            signature,
-            "requiresPopup:",
-            platform.requiresPopup,
-            "popupUrl:",
-            platform.popupUrl
-          );
-
           if (platform.requiresPopup && platform.popupUrl) {
             // open the popup
             const oAuthPopUpUrl = `${platform.popupUrl}?address=${encodeURIComponent(
