@@ -11,6 +11,7 @@ import { ScrollableDiv } from "../ScrollableDiv";
 import { PlatformVerification } from "./PlatformVerification";
 import { useQueryContext } from "../../hooks/useQueryContext";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
+import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
 
 export const Hyperlink = ({
   href,
@@ -21,12 +22,7 @@ export const Hyperlink = ({
   children: React.ReactNode;
   className?: string;
 }) => (
-  <a
-    href={href}
-    target="_blank"
-    rel="noopener noreferrer"
-    className={`${styles.link} ${className}`}
-  >
+  <a href={href} target="_blank" rel="noopener noreferrer" className={`${styles.link} ${className}`}>
     {children}
   </a>
 );
@@ -36,9 +32,7 @@ const VISIT_PASSPORT_HEADER = "More Options";
 export const ScoreTooLowBody = ({
   generateSignatureCallback,
 }: {
-  generateSignatureCallback:
-    | ((message: string) => Promise<string | undefined>)
-    | undefined;
+  generateSignatureCallback: ((message: string) => Promise<string | undefined>) | undefined;
 }) => {
   const [addingStamps, setAddingStamps] = useState(false);
   return addingStamps ? (
@@ -49,20 +43,16 @@ export const ScoreTooLowBody = ({
 };
 
 const ClaimedIcon = () => (
-  <svg
-    width="16"
-    height="16"
-    viewBox="0 0 16 16"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
     <circle cx="8" cy="8" r="8" fill="rgb(var(--color-background-c6dbf459)" />
-    <path
-      d="M4 7.5L7 10.5L11.5 6"
-      stroke="rgb(var(--color-primary-c6dbf459)"
-      strokeWidth="2"
-    />
+    <path d="M4 7.5L7 10.5L11.5 6" stroke="rgb(var(--color-primary-c6dbf459)" strokeWidth="2" />
   </svg>
+);
+
+const DedupeBadge = () => (
+  <div className={styles.dedupeBadge}>
+    <span className={styles.dedupeText}>Deduplicated</span>
+  </div>
 );
 
 const PlatformButton = ({
@@ -73,21 +63,20 @@ const PlatformButton = ({
   setOpenPlatform: (platform: Platform) => void;
 }) => {
   const { claimed } = usePlatformStatus({ platform });
+  const isDeduped = usePlatformDeduplication({ platform });
+
   return (
     <button
-      className={`${styles.platformButton} ${
-        claimed ? styles.platformButtonClaimed : ""
-      }`}
+      className={`${styles.platformButton} ${claimed ? styles.platformButtonClaimed : ""}`}
       onClick={() => setOpenPlatform(platform)}
     >
-      <div className={styles.platformButtonTitle}>{platform.name}</div>
-      {claimed ? (
-        <ClaimedIcon />
-      ) : (
-        <div className={styles.platformButtonWeight}>
-          {platform.displayWeight}
+      <div className={styles.platformButtonHeader}>
+        <div className={styles.platformButtonTitle}>
+          {platform.name}
+          {isDeduped && <DedupeBadge />}
         </div>
-      )}
+      </div>
+      {claimed ? <ClaimedIcon /> : <div className={styles.platformButtonWeight}>{platform.displayWeight}</div>}
       <RightArrow invertColors={claimed} />
     </button>
   );
@@ -96,22 +85,17 @@ const PlatformButton = ({
 export const AddStamps = ({
   generateSignatureCallback,
 }: {
-  generateSignatureCallback:
-    | ((message: string) => Promise<string | undefined>)
-    | undefined;
+  generateSignatureCallback: ((message: string) => Promise<string | undefined>) | undefined;
 }) => {
   const { setSubtitle } = useHeaderControls();
   const queryProps = useQueryContext();
   const { scorerId, apiKey, embedServiceUrl } = queryProps;
-  const { page, nextPage, prevPage, isFirstPage, isLastPage, loading, error } =
-    usePaginatedStampPages({
-      apiKey,
-      scorerId,
-      embedServiceUrl,
-    });
-  const [configurationError, setConfigurationError] = useState<
-    string | undefined
-  >();
+  const { page, nextPage, prevPage, isFirstPage, isLastPage, loading, error } = usePaginatedStampPages({
+    apiKey,
+    scorerId,
+    embedServiceUrl,
+  });
+  const [configurationError, setConfigurationError] = useState<string | undefined>();
   const [openPlatform, _setOpenPlatform] = useState<Platform | null>(null);
 
   useEffect(() => {
@@ -120,11 +104,7 @@ export const AddStamps = ({
 
   const setOpenPlatform = useCallback(
     (openPlatform: Platform | null) => {
-      if (
-        openPlatform &&
-        openPlatform.requiresSignature &&
-        !generateSignatureCallback
-      ) {
+      if (openPlatform && openPlatform.requiresSignature && !generateSignatureCallback) {
         // This is a misconfiguration, the 'generateSignatureCallback' was not provided
         setConfigurationError(
           "Something's missing! This Stamp needs an extra setup step to work properly. If you're the site owner, please add a generateSignatureCallback to the widget configuration."
@@ -162,11 +142,7 @@ export const AddStamps = ({
         <div className={styles.heading}>{header}</div>
         {isVisitPassportPage ? (
           <div>
-            Visit{" "}
-            <Hyperlink href="https://app.passport.xyz">
-              Human Passport
-            </Hyperlink>{" "}
-            for more Stamp options!
+            Visit <Hyperlink href="https://app.passport.xyz">Human Passport</Hyperlink> for more Stamp options!
           </div>
         ) : (
           <div>Choose from below and verify</div>
@@ -175,25 +151,17 @@ export const AddStamps = ({
       {isVisitPassportPage || (
         <ScrollableDiv className={styles.platformButtonGroup}>
           {platforms.map((platform) => (
-            <PlatformButton
-              key={platform.name}
-              platform={platform}
-              setOpenPlatform={setOpenPlatform}
-            />
+            <PlatformButton key={platform.name} platform={platform} setOpenPlatform={setOpenPlatform} />
           ))}
         </ScrollableDiv>
       )}
       <div
         className={`${styles.navigationButtons} ${
-          isFirstPage || isLastPage
-            ? utilStyles.justifyCenter
-            : utilStyles.justifyBetween
+          isFirstPage || isLastPage ? utilStyles.justifyCenter : utilStyles.justifyBetween
         }`}
       >
         {isFirstPage || <TextButton onClick={prevPage}>Go back</TextButton>}
-        {isLastPage || (
-          <TextButton onClick={nextPage}>Try another way</TextButton>
-        )}
+        {isLastPage || <TextButton onClick={nextPage}>Try another way</TextButton>}
       </div>
     </>
   );
@@ -210,13 +178,8 @@ const InitialTooLow = ({ onContinue }: { onContinue: () => void }) => {
   return (
     <>
       <div className={styles.textBlock}>
-        <div className={styles.heading}>
-          Your score is too low to participate.
-        </div>
-        <div>
-          Increase your score to {data?.threshold || 20}+ by verifying
-          additional Stamps.
-        </div>
+        <div className={styles.heading}>Your score is too low to participate.</div>
+        <div>Increase your score to {data?.threshold || 20}+ by verifying additional Stamps.</div>
       </div>
       <Button className={utilStyles.wFull} onClick={onContinue}>
         Add Stamps

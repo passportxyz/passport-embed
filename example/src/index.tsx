@@ -1,18 +1,14 @@
 import { createRoot } from "react-dom/client";
 import { useState } from "react";
 import { Buffer } from "buffer";
-import {
-  PassportScoreWidget,
-  usePassportScore,
-  CollapseMode,
-} from "@passportxyz/passport-embed";
+import { PassportScoreWidget, usePassportScore, CollapseMode } from "@passportxyz/passport-embed";
 
 import "./index.css";
 
 const passportEmbedParams = {
   apiKey: import.meta.env.VITE_API_KEY,
   scorerId: import.meta.env.VITE_SCORER_ID,
-  // embedServiceUrl: "http://localhost:8004",
+  // overrideEmbedServiceUrl: "http://localhost:8004",
 };
 
 const connectWallet = async () => {
@@ -68,7 +64,6 @@ const generateSignature = async (message: string) => {
 const DirectPassportDataAccess = ({ address }: { address?: string }) => {
   const { data, isError, error } = usePassportScore({
     ...passportEmbedParams,
-
     address,
   });
 
@@ -99,12 +94,7 @@ const Dashboard = () => {
       <h3>Check your Passport score</h3>
       <div style={{ marginBottom: "1rem" }}>
         <label style={{ marginRight: "0.5rem" }}>Collapse Mode:</label>
-        <select
-          value={collapseMode}
-          onChange={(e) =>
-            setCollapseMode(e.target.value as "shift" | "overlay" | "off")
-          }
-        >
+        <select value={collapseMode} onChange={(e) => setCollapseMode(e.target.value as "shift" | "overlay" | "off")}>
           <option value="shift">Shift</option>
           <option value="overlay">Overlay</option>
           <option value="off">Off</option>

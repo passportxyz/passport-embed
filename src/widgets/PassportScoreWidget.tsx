@@ -1,5 +1,5 @@
 import { GenericPassportWidgetProps, Widget } from "./Widget";
-import { PassportEmbedProps } from "../hooks/usePassportScore";
+import { PassportEmbedProps, useWidgetPassportScore, useWidgetVerifyCredentials } from "../hooks/usePassportScore";
 import styles from "./PassportScoreWidget.module.css";
 import { Header } from "../components/Header";
 import { Body } from "../components/Body";
@@ -7,8 +7,7 @@ import { HeaderContextProvider } from "../components/HeaderContextProvider";
 import { QueryContextProvider } from "../components/QueryContextProvider";
 import { useEffect, useState } from "react";
 
-export type PassportScoreWidgetProps = PassportEmbedProps &
-  GenericPassportWidgetProps;
+export type PassportScoreWidgetProps = PassportEmbedProps & GenericPassportWidgetProps;
 
 export const PassportScoreWidget = (props: PassportScoreWidgetProps) => {
   useEffect(() => {
@@ -39,11 +38,30 @@ const PassportScore = ({
   connectWalletCallback,
   collapseMode,
   generateSignatureCallback,
-}: Pick<
-  PassportScoreWidgetProps,
-  "connectWalletCallback" | "collapseMode" | "generateSignatureCallback"
->) => {
+}: Pick<PassportScoreWidgetProps, "connectWalletCallback" | "collapseMode" | "generateSignatureCallback">) => {
   const [bodyIsOpen, setBodyIsOpen] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  const { data: score, isLoading, isError } = useWidgetPassportScore();
+  const { verifyCredentials, isPending: isVerifying } = useWidgetVerifyCredentials();
+
+  // Initial auto-verify logic when score is low
+  useEffect(() => {
+    if (!isLoading && !isError && score && !isInitialized) {
+      if (score.score < score.threshold) {
+        verifyCredentials(undefined, {
+          onSettled: () => {
+            setIsInitialized(true);
+          },
+        });
+      } else {
+        setIsInitialized(true);
+      }
+    }
+  }, [isLoading, isError, score, isInitialized, verifyCredentials]);
+
+  // Score initially loading, or verify is running for the first time
+  const showLoading = isLoading || (isVerifying && !isInitialized);
+
   return (
     <div className={styles.container}>
       <Header
@@ -57,6 +75,7 @@ const PassportScore = ({
         className={styles.body}
         connectWalletCallback={connectWalletCallback}
         generateSignatureCallback={generateSignatureCallback}
+        showLoading={showLoading}
       />
     </div>
   );

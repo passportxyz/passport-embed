@@ -4,7 +4,6 @@ import utilStyles from "../../utilStyles.module.css";
 import { useHeaderControls } from "../../hooks/useHeaderControls";
 import { Button } from "../Button";
 import { useResetWidgetPassportScore } from "../../hooks/usePassportScore";
-import { isAxiosError } from "axios";
 
 interface ErrorBodyProps {
   error: unknown;

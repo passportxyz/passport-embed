@@ -1,11 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import {
-  useIsFetching,
-  useIsMutating,
-  useMutation,
-  useQuery,
-  QueryObserverResult,
-} from "@tanstack/react-query";
+import { useCallback } from "react";
+import { useIsFetching, useIsMutating, useMutation, useQuery, QueryObserverResult } from "@tanstack/react-query";
 import axios, { isAxiosError } from "axios";
 import { useQueryContext } from "../hooks/useQueryContext";
 import { usePassportQueryClient } from "./usePassportQueryClient";
@@ -26,10 +20,7 @@ export type PassportEmbedProps = {
   overrideEmbedServiceUrl?: string;
 };
 
-export type PassportQueryProps = Pick<
-  PassportEmbedProps,
-  "apiKey" | "address" | "scorerId"
-> & {
+export type PassportQueryProps = Pick<PassportEmbedProps, "apiKey" | "address" | "scorerId"> & {
   embedServiceUrl?: PassportEmbedProps["overrideEmbedServiceUrl"];
 };
 
@@ -60,36 +51,9 @@ export type PassportEmbedResult = {
   isLoading: boolean;
 
   isError: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any;
   refetch: () => Promise<QueryObserverResult<PassportScore | undefined, Error>>;
-};
-
-export const useWidgetPassportScoreAndVerifyCredentials = () => {
-  const { isFetching, data, isError } = useWidgetPassportScore();
-  const { mutate } = useWidgetVerifyCredentials();
-  const [checkingEvmCredentials, setCheckingEvmCredentials] = useState(false);
-  const [evmCredentialsChecked, setEvmCredentialsChecked] = useState(false);
-
-  useEffect(() => {
-    if (!isFetching && !isError && data !== undefined) {
-      if (
-        data.score < data.threshold &&
-        !checkingEvmCredentials &&
-        !evmCredentialsChecked
-      ) {
-        setCheckingEvmCredentials(true);
-        mutate(undefined, {
-          onSettled: (data, error, variables, context) => {
-            setCheckingEvmCredentials(false);
-            setEvmCredentialsChecked(true);
-          },
-        });
-      }
-    }
-  }, [isFetching, data, isError]);
-
-  // TODO: shall we compute a single state that takes into account the query & the mutation?
-  return { data };
 };
 
 export class RateLimitError extends Error {
@@ -106,12 +70,23 @@ export const useWidgetPassportScore = () => {
 
 export const useWidgetVerifyCredentials = () => {
   const queryProps = useQueryContext();
+  return useInternalVerifyCredentials(queryProps);
+};
+
+const useInternalVerifyCredentials = ({ apiKey, address, scorerId, embedServiceUrl }: PassportQueryProps) => {
   const queryClient = usePassportQueryClient();
-  const queryKey = useQueryKey(queryProps);
+  const queryKey = useQueryKey({ address, scorerId, embedServiceUrl });
 
   const verifyCredentialsMutation = useMutation(
     {
-      mutationFn: () => verifyStampsForPassport({ ...queryProps }),
+      mutationFn: (credentialIds?: string[]) =>
+        verifyStampsForPassport({
+          apiKey,
+          address,
+          scorerId,
+          embedServiceUrl,
+          credentialIds,
+        }),
       onSuccess: (data) => {
         queryClient.setQueryData(queryKey, data);
       },
@@ -119,7 +94,22 @@ export const useWidgetVerifyCredentials = () => {
     queryClient
   );
 
-  return verifyCredentialsMutation;
+  return {
+    ...verifyCredentialsMutation,
+    verifyCredentials: verifyCredentialsMutation.mutate,
+  };
+};
+
+// Pure mutation hook for external use
+export const useVerifyCredentials = ({ apiKey, address, scorerId, embedServiceUrl }: PassportQueryProps) => {
+  const verifiedEmbedServiceUrl = embedServiceUrl || DEFAULT_EMBED_SERVICE_URL;
+
+  return useInternalVerifyCredentials({
+    apiKey,
+    address,
+    scorerId,
+    embedServiceUrl: verifiedEmbedServiceUrl,
+  });
 };
 
 // Returns true if any queries are currently in progress
@@ -216,9 +206,7 @@ const fetchPassportScore = async ({
   }
 };
 
-const processScoreResponse = (
-  scoreData: EmbedScoreResponse
-): PassportScore => ({
+const processScoreResponse = (scoreData: EmbedScoreResponse): PassportScore => ({
   address: scoreData.address,
   score: parseFloat(scoreData.score),
   passingScore: scoreData.passing_score,
@@ -238,12 +226,10 @@ const processScoreResponse = (
   ),
 });
 
-const processScoreResponseError = <T extends unknown>(error: T): T | Error => {
+const processScoreResponseError = <T,>(error: T): T | Error => {
   if (isAxiosError(error) && error.response?.status === 429) {
     if (error.response.headers["x-ratelimit-limit"] === "0") {
-      return new RateLimitError(
-        "This API key does not have permission to access the Embed API."
-      );
+      return new RateLimitError("This API key does not have permission to access the Embed API.");
     }
     return new RateLimitError("Rate limit exceeded.");
   }

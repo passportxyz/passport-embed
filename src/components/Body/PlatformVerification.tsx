@@ -4,22 +4,14 @@ import { useEffect, useState } from "react";
 import { Button } from "../Button";
 import { Hyperlink } from "./ScoreTooLowBody";
 import { ScrollableDiv } from "../ScrollableDiv";
-import {
-  useWidgetIsQuerying,
-  useWidgetPassportScore,
-} from "../../hooks/usePassportScore";
+import { useWidgetIsQuerying, useWidgetVerifyCredentials } from "../../hooks/usePassportScore";
 import { useQueryContext } from "../../hooks/useQueryContext";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
+import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
 import { Platform } from "../../hooks/useStampPages";
 
 const CloseIcon = () => (
-  <svg
-    width="12"
-    height="12"
-    viewBox="0 0 12 12"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
+  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
       d="M1 11L6 6L1 1"
       stroke="rgb(var(--color-background-c6dbf459))"
@@ -37,11 +29,7 @@ const CloseIcon = () => (
   </svg>
 );
 
-const getChallenge = async (
-  challengeUrl: string,
-  address: string,
-  providerType: string
-) => {
+const getChallenge = async (challengeUrl: string, address: string, providerType: string) => {
   const payload = {
     address: address,
     signatureType: "EIP712",
@@ -69,12 +57,13 @@ export const PlatformVerification = ({
   generateSignatureCallback: (message: string) => Promise<string | undefined>;
 }) => {
   const { claimed } = usePlatformStatus({ platform });
+  const isDeduped = usePlatformDeduplication({ platform });
   const [initiatedVerification, setInitiatedVerification] = useState(false);
   const [failedVerification, setFailedVerification] = useState(false);
 
   const isQuerying = useWidgetIsQuerying();
   const queryProps = useQueryContext();
-  const { refetch } = useWidgetPassportScore();
+  const { verifyCredentials } = useWidgetVerifyCredentials();
   const platformCredentialIds = platform.credentials.map(({ id }) => id);
 
   useEffect(() => {
@@ -100,20 +89,25 @@ export const PlatformVerification = ({
           <CloseIcon />
         </button>
       </div>
-      <ScrollableDiv
-        className={styles.description}
-        invertScrollIconColor={true}
-      >
+
+      <ScrollableDiv className={styles.description} invertScrollIconColor={true}>
         {failedVerification ? (
           <div>
-            Unable to claim this Stamp. Find{" "}
-            <Hyperlink href={platform.documentationLink}>
-              instructions here
-            </Hyperlink>{" "}
+            Unable to claim this Stamp. Find <Hyperlink href={platform.documentationLink}>instructions here</Hyperlink>{" "}
             and come back after.
           </div>
         ) : (
-          <div>{platform.description}</div>
+          <div>
+            {isDeduped && (
+              <div className={styles.deduplicationNotice}>
+                ⚠️{" "}
+                <Hyperlink href="https://support.passport.xyz/passport-knowledge-base/common-questions/why-am-i-receiving-zero-points-for-a-verified-stamp">
+                  Already claimed elsewhere
+                </Hyperlink>
+              </div>
+            )}
+            {platform.description}
+          </div>
         )}
       </ScrollableDiv>
       <Button
@@ -121,9 +115,6 @@ export const PlatformVerification = ({
         invert={true}
         disabled={isQuerying || claimed}
         onClick={async () => {
-          //
-
-          console.log("DEBUG  THIS ON CLICK VERIFY CREDENTIALS platform");
           let signature, credential;
           if (platform.requiresSignature) {
             // get the challenge and  sign it
@@ -135,11 +126,7 @@ export const PlatformVerification = ({
             }
 
             const challengeEndpoint = `${queryProps.embedServiceUrl}/embed/challenge`;
-            const challenge = await getChallenge(
-              challengeEndpoint,
-              queryProps.address,
-              platform.name
-            );
+            const challenge = await getChallenge(challengeEndpoint, queryProps.address, platform.name);
             credential = challenge.credential;
             const _challenge = challenge.credential.credentialSubject.challenge;
 
@@ -148,27 +135,17 @@ export const PlatformVerification = ({
 
           if (platform.requiresPopup && platform.popupUrl) {
             // open the popup
-            const oAuthPopUpUrl = `${
-              platform.popupUrl
-            }?address=${encodeURIComponent(
+            const oAuthPopUpUrl = `${platform.popupUrl}?address=${encodeURIComponent(
               queryProps.address || ""
-            )}&scorerId=${encodeURIComponent(
-              queryProps.scorerId || ""
-            )}&platform=${encodeURIComponent(
+            )}&scorerId=${encodeURIComponent(queryProps.scorerId || "")}&platform=${encodeURIComponent(
               platform.name
-            )}&providers=${encodeURIComponent(
-              JSON.stringify(platformCredentialIds)
-            )}&signature=${encodeURIComponent(
+            )}&providers=${encodeURIComponent(JSON.stringify(platformCredentialIds))}&signature=${encodeURIComponent(
               signature || ""
             )}&credential=${encodeURIComponent(
               JSON.stringify(credential)
             )}&apiKey=${encodeURIComponent(queryProps.apiKey || "")}`;
 
-            const popup = window.open(
-              oAuthPopUpUrl,
-              "passportPopup",
-              "width=600,height=700"
-            );
+            const popup = window.open(oAuthPopUpUrl, "passportPopup", "width=600,height=700");
 
             if (!popup) {
               console.error("Failed to open pop-up");
@@ -180,22 +157,18 @@ export const PlatformVerification = ({
               if (popup.closed) {
                 clearInterval(checkPopupClosed);
                 console.log("Pop-up closed");
-                // Refresh stamps
-                refetch();
+                // Verify platform credentials
+                verifyCredentials(platformCredentialIds);
               }
             }, 100);
           } else {
-            refetch();
+            verifyCredentials(platformCredentialIds);
             setFailedVerification(false);
             setInitiatedVerification(true);
           }
         }}
       >
-        {failedVerification
-          ? "Try Again"
-          : claimed
-          ? "Already Verified"
-          : `Verify${isQuerying ? "ing..." : ""}`}
+        {failedVerification ? "Try Again" : claimed ? "Already Verified" : `Verify${isQuerying ? "ing..." : ""}`}
       </Button>
     </div>
   );
