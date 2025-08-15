@@ -70,19 +70,19 @@ describe("ScoreTooLowBody Component", () => {
 
   it("should render initial state correctly", () => {
     mockUseWidgetPassportScore.mockReturnValue({
-      data: { threshold: 25 },
+      data: { threshold: 20 },
     });
 
     render(<ScoreTooLowBody generateSignatureCallback={mockGenerateSignature} />);
 
     expect(screen.getByText("Score too low")).toBeInTheDocument();
-    expect(screen.getByText(/Reach 25\+ by adding Stamps/i)).toBeInTheDocument();
+    expect(screen.getByText(/Reach 20\+ by adding Stamps/i)).toBeInTheDocument();
     expect(screen.getByText("Add Stamps")).toBeInTheDocument();
   });
 
   it("should transition to AddStamps when continuing", async () => {
     mockUseWidgetPassportScore.mockReturnValue({
-      data: { threshold: 25 },
+      data: { threshold: 20 },
     });
 
     render(<ScoreTooLowBody generateSignatureCallback={mockGenerateSignature} />);
