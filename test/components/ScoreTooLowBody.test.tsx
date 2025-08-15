@@ -89,7 +89,7 @@ describe("ScoreTooLowBody Component", () => {
 
     fireEvent.click(screen.getByText("Add Stamps"));
 
-    await waitFor(() => expect(screen.getByText("Choose from below and verify")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Add Stamps")).toBeInTheDocument());
   });
 });
 

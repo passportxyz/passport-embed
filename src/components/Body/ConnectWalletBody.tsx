@@ -2,7 +2,7 @@ import styles from "./Body.module.css";
 import utilStyles from "../../utilStyles.module.css";
 import { Button } from "../Button";
 import { useEffect, useState } from "react";
-import { PassportEmbedProps } from "../../hooks/usePassportScore";
+import { PassportEmbedProps, useWidgetPassportScore } from "../../hooks/usePassportScore";
 import { useHeaderControls } from "../../hooks/useHeaderControls";
 
 // TODO technically this might not have a threshold of 20, but
@@ -15,21 +15,18 @@ export const ConnectWalletBody = ({
 }: Pick<PassportEmbedProps, "connectWalletCallback"> & {}) => {
   const [isConnecting, setIsConnecting] = useState(false);
   const { setSubtitle } = useHeaderControls();
+  const { data } = useWidgetPassportScore();
 
   useEffect(() => {
-    setSubtitle("CONNECT WALLET");
+    setSubtitle("CONNECT ACCOUNT");
   });
 
   return (
     <>
       <div className={styles.textBlock}>
-        <div className={styles.heading}>Proof of Unique Humanity</div>
-        <div>
-          Your Human Passport score represents the likelihood that you’re a unique human, rather than a bot or bad
-          actor.
-        </div>
+        <div className={styles.heading}>Proof of Personhood</div>
         <div className={utilStyles.bold}>
-          {connectWalletCallback ? "Connect your wallet" : "Connect to the dapp"} and build up a score of 20 or more to
+          {connectWalletCallback ? "Connect your account" : "Connect to the dapp"} and build up a Unique Humanity Score of {data?.threshold || 20} or more to
           participate.
         </div>
       </div>
@@ -46,7 +43,7 @@ export const ConnectWalletBody = ({
             }
           }}
         >
-          {isConnecting ? "Connecting..." : "Connect Wallet"}
+          {isConnecting ? "Connecting..." : "Connect Account"}
         </Button>
       )}
     </>

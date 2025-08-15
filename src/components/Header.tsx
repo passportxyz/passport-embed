@@ -68,7 +68,7 @@ export const Header = ({
       }}
     >
       <div className={styles.titleStack}>
-        Human Passport Score
+        Human Passport
         <div className={styles.subtitle}>{subtitle}</div>
       </div>
       <ScoreDisplay />

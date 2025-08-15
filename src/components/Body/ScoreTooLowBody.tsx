@@ -116,11 +116,11 @@ export const AddStamps = ({
     [generateSignatureCallback]
   );
 
-  if (loading) return <div>Loading Stamps Metadata...</div>;
+  if (loading) return <div>Loading Stamps...</div>;
   if (error) return <div>{error}</div>;
   if (configurationError) return <div>{configurationError}</div>;
 
-  if (!page) return <div>No stamp metadata available</div>;
+  if (!page) return <div>No Stamps available</div>;
 
   const { header, platforms } = page;
 
@@ -145,7 +145,7 @@ export const AddStamps = ({
             Visit <Hyperlink href="https://app.passport.xyz">Human Passport</Hyperlink> for more Stamp options!
           </div>
         ) : (
-          <div>Choose from below and verify</div>
+          <div></div>
         )}
       </div>
       {isVisitPassportPage || (
@@ -161,7 +161,7 @@ export const AddStamps = ({
         }`}
       >
         {isFirstPage || <TextButton onClick={prevPage}>Go back</TextButton>}
-        {isLastPage || <TextButton onClick={nextPage}>Try another way</TextButton>}
+        {isLastPage || <TextButton onClick={nextPage}>Try other Stamps</TextButton>}
       </div>
     </>
   );
@@ -178,8 +178,8 @@ const InitialTooLow = ({ onContinue }: { onContinue: () => void }) => {
   return (
     <>
       <div className={styles.textBlock}>
-        <div className={styles.heading}>Your score is too low to participate.</div>
-        <div>Increase your score to {data?.threshold || 20}+ by verifying additional Stamps.</div>
+        <div className={styles.heading}>Score too low</div>
+        <div>Reach {data?.threshold || 20}+ by adding Stamps</div>
       </div>
       <Button className={utilStyles.wFull} onClick={onContinue}>
         Add Stamps
