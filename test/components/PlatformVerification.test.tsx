@@ -184,7 +184,7 @@ describe("PlatformVerification", () => {
     fireEvent.click(screen.getByRole("button", { name: /verify/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Unable to claim this Stamp/i)).toBeInTheDocument();
+      expect(screen.getByText(/Unable to claim Stamp/i)).toBeInTheDocument();
       expect(screen.getByText("Try Again")).toBeInTheDocument();
     });
   });
@@ -215,7 +215,7 @@ describe("PlatformVerification", () => {
       fireEvent.click(screen.getByRole("button", { name: /verify/i }));
 
       await waitFor(() => {
-        expect(screen.getByText(/Unable to claim this Stamp/i)).toBeInTheDocument();
+        expect(screen.getByText(/Unable to claim Stamp/i)).toBeInTheDocument();
       });
 
       expect(mockVerifyCredentials).not.toHaveBeenCalled();
@@ -235,8 +235,8 @@ describe("PlatformVerification", () => {
       );
 
       expect(screen.getByText("⚠️")).toBeInTheDocument();
-      expect(screen.getByText("Already claimed elsewhere")).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: "Already claimed elsewhere" })).toHaveAttribute(
+      expect(screen.getByText("Stamp already claimed by another account")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: "Stamp already claimed by another account" })).toHaveAttribute(
         "href",
         "https://support.passport.xyz/passport-knowledge-base/common-questions/why-am-i-receiving-zero-points-for-a-verified-stamp"
       );
@@ -253,7 +253,7 @@ describe("PlatformVerification", () => {
         />
       );
 
-      expect(screen.queryByText("Already claimed elsewhere")).not.toBeInTheDocument();
+      expect(screen.queryByText("Stamp already claimed by another account")).not.toBeInTheDocument();
     });
 
     it("should show deduplication notice in the description section", () => {
@@ -269,7 +269,7 @@ describe("PlatformVerification", () => {
 
       // Both deduplication notice and description should be in the same scrollable section
       expect(screen.getByText("⚠️")).toBeInTheDocument();
-      expect(screen.getByText("Already claimed elsewhere")).toBeInTheDocument();
+      expect(screen.getByText("Stamp already claimed by another account")).toBeInTheDocument();
       expect(screen.getByText("Verify your LinkedIn account")).toBeInTheDocument();
     });
 
@@ -288,7 +288,7 @@ describe("PlatformVerification", () => {
       );
 
       expect(screen.getByText("⚠️")).toBeInTheDocument();
-      expect(screen.getByText("Already claimed elsewhere")).toBeInTheDocument();
+      expect(screen.getByText("Stamp already claimed by another account")).toBeInTheDocument();
       expect(screen.getByText("Already Verified")).toBeInTheDocument();
     });
 
