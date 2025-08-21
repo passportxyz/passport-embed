@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "chronicler": {
+      "type": "stdio",
+      "command": "node",
+      "args": [".claude/servers/chronicler.cjs"]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    }
+  }
+}
