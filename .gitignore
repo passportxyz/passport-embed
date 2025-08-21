@@ -5,4 +5,4 @@ dist
 .yalc
 yalc.lock
 # Chronicler session knowledge (temporary, not for version control)
-.knowledge/session.md
+.claude/knowledge/session.md
