@@ -6,8 +6,12 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      // Directly map the package name to your source
-      "passport-widgets": resolve(__dirname, "../src"),
+      // Map the actual package name to the local source for hot reload
+      "@passportxyz/passport-embed": resolve(__dirname, "../src"),
     },
+  },
+  server: {
+    port: 5173,
+    open: true,
   },
 });

@@ -8,7 +8,7 @@ import "./index.css";
 const passportEmbedParams = {
   apiKey: import.meta.env.VITE_API_KEY,
   scorerId: import.meta.env.VITE_SCORER_ID,
-  // overrideEmbedServiceUrl: "http://localhost:8004",
+  overrideEmbedServiceUrl: "http://localhost:8004",
 };
 
 const connectWallet = async () => {
@@ -64,6 +64,7 @@ const generateSignature = async (message: string) => {
 const DirectPassportDataAccess = ({ address }: { address?: string }) => {
   const { data, isError, error } = usePassportScore({
     ...passportEmbedParams,
+    embedServiceUrl: passportEmbedParams.overrideEmbedServiceUrl,
     address,
   });
 
