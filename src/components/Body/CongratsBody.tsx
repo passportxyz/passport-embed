@@ -11,8 +11,8 @@ export const CongratsBody = () => {
 
   return (
     <div className={`${styles.textBlock} ${styles.extraBottomMarginForBodyWithoutButton}`}>
-      <div className={styles.heading}>Congratulations!</div>
-      <div>You have proven your unique humanity. Please proceed!</div>
+      <div className={styles.heading}>Verified!</div>
+      <div>You're a verified human -- Please proceed!</div>
     </div>
   );
 };

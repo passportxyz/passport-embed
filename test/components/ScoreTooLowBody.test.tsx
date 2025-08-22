@@ -75,21 +75,21 @@ describe("ScoreTooLowBody Component", () => {
 
     render(<ScoreTooLowBody generateSignatureCallback={mockGenerateSignature} />);
 
-    expect(screen.getByText(/Your score is too low to participate/i)).toBeInTheDocument();
-    expect(screen.getByText(/Increase your score to 25\+ by verifying/i)).toBeInTheDocument();
+    expect(screen.getByText("Score too low")).toBeInTheDocument();
+    expect(screen.getByText(/Reach 25\+ by adding Stamps/i)).toBeInTheDocument();
     expect(screen.getByText("Add Stamps")).toBeInTheDocument();
   });
 
   it("should transition to AddStamps when continuing", async () => {
     mockUseWidgetPassportScore.mockReturnValue({
-      data: { threshold: 25 },
+      data: { threshold: 20 },
     });
 
     render(<ScoreTooLowBody generateSignatureCallback={mockGenerateSignature} />);
 
     fireEvent.click(screen.getByText("Add Stamps"));
 
-    await waitFor(() => expect(screen.getByText("Choose from below and verify")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Platform 1")).toBeInTheDocument());
   });
 });
 
@@ -112,7 +112,7 @@ describe("AddStamps Component", () => {
     it("should render platform buttons correctly", async () => {
       render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-      await waitFor(() => expect(screen.queryByText("Loading Stamps Metadata...")).not.toBeInTheDocument());
+      await waitFor(() => expect(screen.queryByText("Loading Stamps...")).not.toBeInTheDocument());
 
       // Check for KYC verification section
       expect(screen.getByText("Page 1 Header")).toBeInTheDocument();
@@ -123,7 +123,7 @@ describe("AddStamps Component", () => {
     it("should handle platform selection", async () => {
       render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-      await waitFor(() => expect(screen.queryByText("Loading Stamps Metadata...")).not.toBeInTheDocument());
+      await waitFor(() => expect(screen.queryByText("Loading Stamps...")).not.toBeInTheDocument());
 
       fireEvent.click(screen.getByText("Platform 1"));
 
@@ -134,9 +134,9 @@ describe("AddStamps Component", () => {
     it("should navigate between pages", async () => {
       render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-      await waitFor(() => expect(screen.queryByText("Loading Stamps Metadata...")).not.toBeInTheDocument());
+      await waitFor(() => expect(screen.queryByText("Loading Stamps...")).not.toBeInTheDocument());
 
-      fireEvent.click(screen.getByText("Try another way"));
+      fireEvent.click(screen.getByText("Try other Stamps"));
       expect(screen.getByText("Page 2 Header")).toBeInTheDocument();
     });
   });
@@ -153,7 +153,7 @@ describe("AddStamps Component", () => {
 
     render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-    await waitFor(() => expect(screen.queryByText("Loading Stamps Metadata...")).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText("Loading Stamps...")).not.toBeInTheDocument());
 
     const p2Button = screen.getByText("Platform 2").closest("button");
     expect(p2Button).toHaveClass("platformButtonClaimed");
@@ -175,7 +175,7 @@ describe("AddStamps Component", () => {
 
       const { container } = render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-      await waitFor(() => expect(screen.queryByText("Loading Stamps Metadata...")).not.toBeInTheDocument());
+      await waitFor(() => expect(screen.queryByText("Loading Stamps...")).not.toBeInTheDocument());
 
       // Check for dedupe badge
       expect(container.querySelector(".dedupeBadge")).toBeInTheDocument();
@@ -193,7 +193,7 @@ describe("AddStamps Component", () => {
 
       const { container } = render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-      await waitFor(() => expect(screen.queryByText("Loading Stamps Metadata...")).not.toBeInTheDocument());
+      await waitFor(() => expect(screen.queryByText("Loading Stamps...")).not.toBeInTheDocument());
 
       // Check that dedupe badge is not present
       expect(container.querySelector(".dedupeBadge")).not.toBeInTheDocument();
@@ -213,7 +213,7 @@ describe("AddStamps Component", () => {
 
       render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-      await waitFor(() => expect(screen.queryByText("Loading Stamps Metadata...")).not.toBeInTheDocument());
+      await waitFor(() => expect(screen.queryByText("Loading Stamps...")).not.toBeInTheDocument());
 
       // Find Platform 2 button which has both cred2 and anotherCred
       const platform2Button = screen.getByText("Platform 2").closest("button");
@@ -233,7 +233,7 @@ describe("AddStamps Component", () => {
 
       const { container } = render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
 
-      await waitFor(() => expect(screen.queryByText("Loading Stamps Metadata...")).not.toBeInTheDocument());
+      await waitFor(() => expect(screen.queryByText("Loading Stamps...")).not.toBeInTheDocument());
 
       // Check that dedupe badge is not present (dedup is true but score is not 0)
       expect(container.querySelector(".dedupeBadge")).not.toBeInTheDocument();

@@ -53,7 +53,7 @@ describe("Body Routing", () => {
     });
 
     render(<Body {...defaultProps} />);
-    expect(screen.getByText("You have proven your unique humanity. Please proceed!")).toBeInTheDocument();
+    expect(screen.getByText("You're a verified human -- Please proceed!")).toBeInTheDocument();
   });
 
   it("renders ScoreTooLowBody when score is not passing", () => {
@@ -65,7 +65,7 @@ describe("Body Routing", () => {
     });
 
     render(<Body {...defaultProps} />);
-    expect(screen.getByText("Your score is too low to participate.")).toBeInTheDocument();
+    expect(screen.getByText("Score too low")).toBeInTheDocument();
   });
 
   it("renders CheckingBody when showLoading is true", () => {
@@ -91,9 +91,9 @@ describe("Body Routing", () => {
 
       render(<Body {...defaultProps} connectWalletCallback={async () => {}} />);
 
-      expect(screen.getByText("Connect your wallet", { exact: false })).toBeInTheDocument();
+      expect(screen.getByText("Connect your account", { exact: false })).toBeInTheDocument();
 
-      const button = screen.getByRole("button", { name: "Connect Wallet" });
+      const button = screen.getByRole("button", { name: "Connect Account" });
       expect(button).toBeInTheDocument();
 
       fireEvent.click(button);

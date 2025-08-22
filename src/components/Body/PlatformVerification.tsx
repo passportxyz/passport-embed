@@ -93,8 +93,7 @@ export const PlatformVerification = ({
       <ScrollableDiv className={styles.description} invertScrollIconColor={true}>
         {failedVerification ? (
           <div>
-            Unable to claim this Stamp. Find <Hyperlink href={platform.documentationLink}>instructions here</Hyperlink>{" "}
-            and come back after.
+            Unable to claim Stamp. <Hyperlink href={platform.documentationLink}>Learn more</Hyperlink>{" "}
           </div>
         ) : (
           <div>
@@ -102,7 +101,7 @@ export const PlatformVerification = ({
               <div className={styles.deduplicationNotice}>
                 ⚠️{" "}
                 <Hyperlink href="https://support.passport.xyz/passport-knowledge-base/common-questions/why-am-i-receiving-zero-points-for-a-verified-stamp">
-                  Already claimed elsewhere
+                  Stamp already claimed by another account
                 </Hyperlink>
               </div>
             )}
