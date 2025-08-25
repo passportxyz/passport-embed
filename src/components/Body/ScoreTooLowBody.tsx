@@ -116,11 +116,38 @@ export const AddStamps = ({
     [generateSignatureCallback]
   );
 
-  if (loading) return <div>Loading Stamps Metadata...</div>;
-  if (error) return <div>{error}</div>;
-  if (configurationError) return <div>{configurationError}</div>;
+  if (loading) return (
+    <div className={styles.textBlock}>
+      <div>Loading Stamps Metadata...</div>
+    </div>
+  );
+  if (error) return (
+    <>
+      <div className={styles.textBlock}>
+        <div>{error}</div>
+      </div>
+      <Button className={utilStyles.wFull} onClick={() => window.location.reload()}>
+        Try Again
+      </Button>
+    </>
+  );
+  if (configurationError) return (
+    <>
+      <div className={styles.textBlock}>
+        <div>{configurationError}</div>
+      </div>
+      <Button className={utilStyles.wFull} onClick={() => setConfigurationError(undefined)}>
+        Go Back
+      </Button>
+    </>
+  );
 
-  if (!page) return <div>No stamp metadata available</div>;
+  if (!page) return (
+    <div className={styles.textBlock}>
+      <div className={styles.heading}>No Stamps Available</div>
+      <div>No stamp metadata available at this time.</div>
+    </div>
+  );
 
   const { header, platforms } = page;
 
