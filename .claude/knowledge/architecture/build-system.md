@@ -31,6 +31,20 @@ This approach ensures the widget can be dropped into any React app regardless of
 - `webpack.config.js`
 - `src/components/*.module.css`
 
+## React Query Integration
+The SDK uses @tanstack/react-query for efficient data fetching:
+
+- **QueryContextProvider**: Wraps the app with API key, address, and scorerId configuration
+- **usePassportQueryClient**: Creates singleton QueryClient with retry logic and rate limit handling
+- **Special handling for 429 errors**: No retries on rate limit responses
+- **usePassportScore hook**: Fetches passport score data from embed service API
+- **Service URL configuration**: Configurable via environment variables (defaults to DEFAULT_EMBED_SERVICE_URL)
+
+**Related files:**
+- `src/components/QueryContextProvider.tsx`
+- `src/hooks/usePassportQueryClient.tsx`
+- `src/hooks/usePassportScore.tsx`
+
 ## Passport Widget Body Component Structure
 
 The Passport widget has multiple body screens that handle different states:

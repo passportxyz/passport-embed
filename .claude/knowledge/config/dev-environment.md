@@ -35,3 +35,38 @@ These variables are used throughout the widget for:
 - `src/widgets/Widget.module.css`
 - `src/components/Body/Body.module.css`
 - `src/components/Body/PlatformVerification.module.css`
+
+## MSW Development Configuration
+
+### Environment Setup
+MSW configuration for API mocking in development:
+
+- **VITE_ENABLE_MSW**: Set to `true` to enable MSW mocking
+- **Can be set in**: `.env.mock` file or terminal environment
+- **NPM scripts**:
+  - `dev:mock`: Starts dev server with MSW enabled
+  - `dev:real`: Starts dev server with MSW disabled (real APIs)
+
+### Configuration Files
+- **msw.workerDirectory**: Set to "public" in package.json
+- **Vite alias**: Maps `@passportxyz/passport-embed` to local source for hot reload
+- **Service worker**: Located at `public/mockServiceWorker.js`
+
+### Visual Indicators
+When MSW is active:
+- **Orange badge**: "MSW Active" indicator in UI
+- **Scenario switcher**: Panel for selecting test scenarios
+- **Current scenario**: Displayed name of active scenario
+- Only visible in development mode
+
+### Scenario Control Methods
+1. **URL parameters**: `?scenario=low-score` (highest priority)
+2. **localStorage**: Set `msw-scenario` key
+3. **UI switcher**: Interactive panel in development
+
+**Related files:**
+- `example/package.json`
+- `example/vite.config.ts`
+- `src/config/environment.ts`
+- `example/.env.mock`
+- `src/components/ScenarioSwitcher.tsx`

@@ -26,3 +26,33 @@ The example app uses Vite with hot module replacement (HMR) that works for both 
 - `example/vite.config.ts`
 - `example/src/index.tsx`
 - `src/components/Header.tsx`
+
+## MSW Setup Process
+
+### Initial Setup
+Step-by-step MSW initialization for API mocking:
+
+1. **Initialize service worker**: Run `npx msw init public/` to create the service worker file
+2. **Enable with environment variable**: Set `VITE_ENABLE_MSW=true` in `.env.mock` or terminal
+3. **Use convenience scripts**:
+   - `npm run dev:mock` - Starts dev server with MSW enabled
+   - `npm run dev:real` - Starts dev server with MSW disabled
+4. **Service worker registration**: File served at root URL by Vite
+
+### Important Notes
+- The `mockServiceWorker.js` is NOT automatically loaded - requires explicit registration
+- Registration happens via `worker.start()` which calls `navigator.serviceWorker.register()`
+- Service worker only intercepts requests after successful registration
+- Acts as network proxy between app and APIs
+
+### Configuration Files
+- **msw.workerDirectory**: Set to "public" in package.json
+- **Environment variable**: VITE_ENABLE_MSW controls activation
+- **Scenarios**: Defined in `src/mocks/scenarios.ts`
+- **Handlers**: API endpoints mocked in `src/mocks/handlers.ts`
+
+**Related files:**
+- `example/src/setupMocks.ts`
+- `src/mocks/browser.ts`
+- `example/public/mockServiceWorker.js`
+- `example/.env.mock`

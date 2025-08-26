@@ -197,4 +197,11 @@ Flexible mock data architecture for testing:
   - Backend API availability
   - Actual wallet signatures
 - Scenarios persist across reloads via localStorage or URL params
+
+### MSW Service Worker Registration (2025-08-26)
+- **Discovery**: mockServiceWorker.js is NOT automatically loaded
+- **Important**: Requires explicit registration via `worker.start()`
+- **Process**: Calls `navigator.serviceWorker.register()` internally
+- **Behavior**: Service worker only intercepts after successful registration
+- **Function**: Acts as network proxy between app and APIs
 <!-- END CHRONICLER: recent-discoveries -->
