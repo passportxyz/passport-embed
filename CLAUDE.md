@@ -46,6 +46,8 @@ Use gather_knowledge with these parameters:
 - **CSS Modules** for self-contained styling (no parent app CSS framework requirements)
 - **Tree-shaking enabled** with sideEffects: false
 - **TypeScript declarations** generated separately using tsc
+- **Orchestrated commands** from root package.json - dev/package.json has no scripts
+- All commands use `cd dev && npx` pattern for clean separation
 
 ### Passport Widget Body Components
 - **ConnectWalletBody**: Shows "Proof of Unique Humanity" with Connect Wallet button
@@ -62,14 +64,23 @@ Use gather_knowledge with these parameters:
 The SDK uses @tanstack/react-query for efficient data fetching:
 - **QueryContextProvider** wraps the app with API key, address, and scorerId configuration
 - **usePassportQueryClient** creates singleton QueryClient with retry logic and rate limit handling
+  - Configurable retry logic: No retries for 429 errors, up to 2 retries for others
+  - Cache settings: 1 minute staleTime, 24 hour gcTime
+  - Useful for `queryClient.invalidateQueries()` in dev environment
 - **usePassportScore** hook fetches passport score data from embed service API
-- Special handling for 429 (rate limit) errors - no retries on rate limit
 - Service URL configurable via environment variables (defaults to DEFAULT_EMBED_SERVICE_URL)
 
 ### Component Structure
 - SDK provides embeddable React components for passport verification
 - Callback-based architecture for wallet integration
 - UI components handle connection, verification, and score display flows
+
+### MSW Infrastructure (Development Only)
+- **Complete separation**: All MSW code in dev/ directory, none in production bundle
+- **ScenarioManager**: Central logic for scenario switching (URL-based only)
+- **8 test scenarios**: default, low-score, high-score, no-stamps, rate-limited, verification-fails, verification-adds-stamps, near-threshold
+- **Mock wallet**: Eliminates MetaMask dependency with hardcoded address
+- **ScenarioSwitcher UI**: Visual component for switching scenarios (dev only)
 <!-- END CHRONICLER: project-architecture -->
 
 <!-- BEGIN CHRONICLER: key-patterns -->
@@ -85,13 +96,14 @@ The SDK uses @tanstack/react-query for efficient data fetching:
 - Text blocks use flexbox with `flex-grow: 1` for dynamic vertical centering
 - Consistent padding patterns across all body components
 
-### MSW Scenario System
+### MSW Scenario System (Dev Environment)
 Flexible mock data architecture for testing:
-- **Multiple scenarios** defined in `src/mocks/scenarios.ts` (low-score, high-score, rate-limited, etc.)
-- **Dynamic handler selection** based on URL params (?scenario=name) or localStorage
+- **Multiple scenarios** now in `dev/src/mocks/scenarios.js` (8 predefined test cases)
+- **Dynamic handler selection** based on URL params only (?scenario=name)
 - **Each scenario controls**: score, stamps, verification behavior, ability to add stamps
 - **Realistic delays** (300-500ms) for authentic behavior
-- **Visual indicators** show MSW status and current scenario
+- **Visual indicators** show MSW status and current scenario via ScenarioSwitcher
+- **Instant updates** via React Query cache invalidation - no page reload needed
 
 ### Wallet Callback Pattern
 - SDK doesn't directly integrate with wallet providers
@@ -122,7 +134,7 @@ Flexible mock data architecture for testing:
 
 ### Wallet Integration
 - No direct wallet dependencies - uses callback pattern
-- Mock wallet available for testing (`src/mocks/mockWallet.ts`)
+- Mock wallet now in `dev/src/mocks/mockWallet.js`
 - Returns hardcoded address (0x1234...7890) for consistent testing
 
 ### API Integration
@@ -139,19 +151,19 @@ Flexible mock data architecture for testing:
 ### Local Development Setup
 1. Run `yarn install` in root directory (installs dependencies including autoprefixer)
 2. Run `yarn build` to build the library
-3. Navigate to `example/` directory
-4. Set up `.env` file with VITE_API_KEY and VITE_SCORER_ID
-5. Run `yarn dev` to start Vite dev server with hot reload
+3. Set up `dev/.env` file with VITE_API_KEY and VITE_SCORER_ID
+4. Run `npm run dev:mock` or `npm run dev:real` from root directory
 
-### Example App Configuration
+### Dev App Configuration (formerly example/)
+- Renamed to `dev/` for clearer purpose
 - Uses Vite with React plugin
 - Alias mapping "passport-widgets" to parent src directory
 - Hot Module Replacement (HMR) enabled out of the box
 
 ### MSW Setup Process
-1. Initialize service worker: `npx msw init public/`
-2. Enable with environment variable: `VITE_ENABLE_MSW=true`
-3. Use convenience scripts:
+1. Service worker already initialized in `dev/public/`
+2. Enable with USE_MOCKS environment variable
+3. Use orchestrated scripts from root:
    - `npm run dev:mock` - Enables MSW
    - `npm run dev:real` - Disables MSW
 4. Service worker file served at root URL by Vite
@@ -160,9 +172,16 @@ Flexible mock data architecture for testing:
 1. Start dev server with MSW: `npm run dev:mock`
 2. Select scenario via:
    - URL param: `?scenario=low-score`
-   - UI switcher component (visible when MSW active)
-   - localStorage: Set `msw-scenario` key
+   - ScenarioSwitcher UI component (visible when MSW active)
 3. Test different user journeys without real blockchain/APIs
+
+### E2E Testing with Playwright
+From project root:
+- `npm run test:e2e` - Run all tests headless
+- `npm run test:e2e:ui` - Open Playwright UI
+- `npm run test:e2e:debug` - Run with debugger
+- `npm run test:e2e:headed` - Run with visible browser
+- Tests automatically start dev server with MSW if not running
 
 ### Development Environment
 - Visual indicators: Orange "MSW Active" badge when mocking enabled
@@ -196,7 +215,22 @@ Flexible mock data architecture for testing:
   - Real blockchain connection
   - Backend API availability
   - Actual wallet signatures
-- Scenarios persist across reloads via localStorage or URL params
+- Scenarios persist across reloads via URL params
+
+### Missing ScenarioSwitcher Component (2025-08-27)
+- **Issue**: ScenarioSwitcher.tsx mentioned in refactor plans didn't exist
+- **Discovery**: Task agent incorrectly reported it exists
+- **Resolution**: Created from scratch at `dev/src/components/ScenarioSwitcher.jsx`
+
+### MSW Refactor Complete (2025-08-27)
+- **Achievement**: Complete separation of testing infrastructure from production SDK
+- **Key changes**:
+  - Renamed example/ to dev/ for clarity
+  - Moved all MSW files to dev/src/mocks/
+  - Converted TypeScript MSW files to JavaScript
+  - Created ScenarioManager for centralized logic
+  - SDK builds clean without MSW dependencies
+- **Result**: Production bundle contains no testing code
 
 ### MSW Service Worker Registration (2025-08-26)
 - **Discovery**: mockServiceWorker.js is NOT automatically loaded
