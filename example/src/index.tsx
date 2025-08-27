@@ -3,8 +3,7 @@ import { useState } from "react";
 import { Buffer } from "buffer";
 import { PassportScoreWidget, usePassportScore, CollapseMode } from "@passportxyz/passport-embed";
 import { setupMocks } from "./setupMocks";
-// Import scenario switcher - will compile from source via alias
-import { ScenarioSwitcher } from "@passportxyz/passport-embed/src/components/ScenarioSwitcher";
+import { ScenarioSwitcher } from "../../src/components/ScenarioSwitcher";
 
 import "./index.css";
 
