@@ -12,7 +12,7 @@ Dual mocking approach combining mock wallet implementation and MSW API mocking f
 - **No dependencies**: No need for MetaMask or other wallet extensions
 
 ### Integration
-- Mock wallet available at `src/mocks/mockWallet.ts`
+- Mock wallet available at `dev/src/mocks/mockWallet.ts/js`
 - Wallet switcher UI visible only when MSW enabled
 - Toggle between MetaMask and mock wallet in development
 
@@ -41,8 +41,8 @@ Available test user states:
 - **Verification failures**: Error states
 
 ### Persistence
-- Scenarios persist via localStorage (`msw-scenario` key)
-- URL parameters for sharing test states (`?scenario=name`)
+- Scenarios controlled via URL parameters (`?scenario=name`)
+- URL-based approach for sharing test states
 - Consistent behavior across page reloads
 
 ## Usage in Development
@@ -53,7 +53,7 @@ Available test user states:
 4. Test complete user flows without external services
 
 **Related files:**
-- `example/src/index.tsx`
-- `src/mocks/mockWallet.ts`
-- `tests/scenarios.spec.ts`
-- `src/components/WalletSwitcher.tsx`
+- `dev/src/index.tsx/jsx`
+- `dev/src/mocks/mockWallet.ts/js`
+- `tests/scenarios.spec.ts/js`
+- `dev/src/components/WalletSwitcher.tsx/jsx`
