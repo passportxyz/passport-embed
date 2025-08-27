@@ -6,7 +6,7 @@ Flexible mock data architecture for testing different user states and API respon
 ## Key Features
 
 ### Multiple Scenarios
-- **Pre-defined scenarios** in `src/mocks/scenarios.ts`:
+- **Pre-defined scenarios** in `dev/src/mocks/scenarios.ts/js`:
   - `low-score`: User with score below threshold
   - `high-score`: User with passing score
   - `rate-limited`: API returning 429 status
@@ -14,9 +14,8 @@ Flexible mock data architecture for testing different user states and API respon
   - `new-user`: No existing passport score
 
 ### Dynamic Handler Selection
-- **URL parameter priority**: `?scenario=low-score` overrides all other settings
-- **localStorage fallback**: `msw-scenario` key persists selection across reloads
-- **Default scenario**: Falls back to configured default if no override specified
+- **URL parameter control**: `?scenario=low-score` sets the active scenario
+- **Default scenario**: Falls back to configured default if no URL parameter specified
 
 ### Scenario Controls
 Each scenario configuration includes:
@@ -35,10 +34,9 @@ When MSW is active:
 
 ## Implementation
 
-### Priority Order
-1. URL parameters (`?scenario=name`)
-2. localStorage (`msw-scenario` key)
-3. Default scenario in configuration
+### Control Method
+- URL parameters (`?scenario=name`) for scenario selection
+- Default scenario in configuration as fallback
 
 ### Benefits
 - Rapid testing of different user journeys
@@ -47,6 +45,6 @@ When MSW is active:
 - Persistence across page reloads
 
 **Related files:**
-- `src/mocks/handlers.ts`
-- `src/mocks/scenarios.ts`
-- `src/components/ScenarioSwitcher.tsx`
+- `dev/src/mocks/handlers.ts/js`
+- `dev/src/mocks/scenarios.ts/js`
+- `dev/src/components/ScenarioSwitcher.tsx/jsx`

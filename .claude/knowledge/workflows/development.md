@@ -1,21 +1,21 @@
 # Development Workflows
 
 ## Local Development Workflow
-The main package has a 'dev' script that runs 'cd example && yarn dev', which starts the Vite dev server. The library uses webpack for building and has a 'localpub' script that builds and uses yalc for local publishing.
+The main package has a 'dev' script that runs 'cd dev && yarn dev', which starts the Vite dev server. The library uses webpack for building and has a 'localpub' script that builds and uses yalc for local publishing.
 
-The example app has been configured with a Vite alias that maps '@passportxyz/passport-embed' to the parent src folder, enabling local development with hot reload.
+The dev app has been configured with a Vite alias that maps '@passportxyz/passport-embed' to the parent src folder, enabling local development with hot reload.
 
 **Related files:**
 - `package.json`
-- `example/vite.config.ts`
+- `dev/vite.config.ts/js`
 
 ## Hot Reload Development Setup
-The example app uses Vite with hot module replacement (HMR) that works for both example app files and the parent library source files.
+The dev app uses Vite with hot module replacement (HMR) that works for both dev app files and the parent library source files.
 
 ### Configuration:
 - The `vite.config.ts` aliases '@passportxyz/passport-embed' to the parent '../src' directory
 - Server is configured to run on port 5173 and auto-open the browser
-- Changes to both example/src files and parent src/ files trigger immediate updates in the browser without manual refresh
+- Changes to both dev/src files and parent src/ files trigger immediate updates in the browser without manual refresh
 
 ### Benefits:
 - Instant feedback when editing library components
@@ -23,9 +23,9 @@ The example app uses Vite with hot module replacement (HMR) that works for both 
 - Preserves React component state during hot updates
 
 **Related files:**
-- `example/vite.config.ts`
-- `example/src/index.tsx`
-- `src/components/Header.tsx`
+- `dev/vite.config.ts/js`
+- `dev/src/index.tsx/jsx`
+- `src/components/Header.tsx/jsx`
 
 ## MSW Setup Process
 
@@ -48,11 +48,11 @@ Step-by-step MSW initialization for API mocking:
 ### Configuration Files
 - **msw.workerDirectory**: Set to "public" in package.json
 - **Environment variable**: VITE_ENABLE_MSW controls activation
-- **Scenarios**: Defined in `src/mocks/scenarios.ts`
-- **Handlers**: API endpoints mocked in `src/mocks/handlers.ts`
+- **Scenarios**: Defined in `dev/src/mocks/scenarios.ts/js`
+- **Handlers**: API endpoints mocked in `dev/src/mocks/handlers.ts/js`
 
 **Related files:**
-- `example/src/setupMocks.ts`
-- `src/mocks/browser.ts`
-- `example/public/mockServiceWorker.js`
-- `example/.env.mock`
+- `dev/src/setupMocks.ts/js`
+- `dev/src/mocks/browser.ts/js`
+- `dev/public/mockServiceWorker.js`
+- `dev/.env.mock`

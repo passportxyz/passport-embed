@@ -1,22 +1,22 @@
 # Development Environment Configuration
 
-## Example App Dev Setup
-The example app uses Vite for development with React plugin. It has an alias mapping "passport-widgets" to the parent src directory for local development. The dev script runs vite which should provide hot module replacement (HMR) out of the box.
+## Dev App Setup
+The dev app uses Vite for development with React plugin. It has an alias mapping "passport-widgets" to the parent src directory for local development. The dev script runs vite which should provide hot module replacement (HMR) out of the box.
 
 **Related files:**
-- `example/vite.config.ts`
-- `example/package.json`
+- `dev/vite.config.ts/js`
+- `dev/package.json`
 
 ## Environment Variables for Passport Widget
-The example app requires environment variables to work with the PassportScoreWidget:
+The dev app requires environment variables to work with the PassportScoreWidget:
 - `VITE_API_KEY`: API key for the Passport service
 - `VITE_SCORER_ID`: Scorer ID for the Passport service
 
 These are loaded via Vite's `import.meta.env`.
 
 **Related files:**
-- `example/.env-example`
-- `example/src/index.tsx`
+- `dev/.env-example`
+- `dev/src/index.tsx/jsx`
 
 ## Widget CSS Variables Configuration
 
@@ -60,13 +60,12 @@ When MSW is active:
 - Only visible in development mode
 
 ### Scenario Control Methods
-1. **URL parameters**: `?scenario=low-score` (highest priority)
-2. **localStorage**: Set `msw-scenario` key
-3. **UI switcher**: Interactive panel in development
+1. **URL parameters**: `?scenario=low-score` (primary method)
+2. **UI switcher**: Interactive panel in development
 
 **Related files:**
-- `example/package.json`
-- `example/vite.config.ts`
-- `src/config/environment.ts`
-- `example/.env.mock`
-- `src/components/ScenarioSwitcher.tsx`
+- `dev/package.json`
+- `dev/vite.config.ts/js`
+- `src/config/environment.ts/js`
+- `dev/.env.mock`
+- `dev/src/components/ScenarioSwitcher.tsx/jsx`
