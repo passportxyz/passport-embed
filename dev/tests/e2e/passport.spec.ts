@@ -1,4 +1,4 @@
-import { test, expect, mockWalletScenario, waitForQuery } from './utils/mockSetup';
+import { test, expect, mockWalletScenario, waitForQuery } from '../utils/mockSetup';
 
 test.describe('Passport Widget', () => {
   test.beforeEach(async ({ page, worker }) => {
