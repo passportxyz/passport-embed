@@ -1,30 +1,5 @@
 // Define different test scenarios for MSW
-export type ScenarioName = 
-  | 'default'
-  | 'low-score'
-  | 'high-score'
-  | 'no-stamps'
-  | 'rate-limited'
-  | 'verification-fails'
-  | 'verification-adds-stamps'
-  | 'near-threshold';
-
-export interface Scenario {
-  name: ScenarioName;
-  description: string;
-  passportScore: {
-    address: string;
-    score: number;
-    passingScore: boolean;
-    threshold: number;
-    stamps: Record<string, { score: number; dedup: boolean; expirationDate: Date }>;
-  };
-  verificationBehavior?: 'success' | 'failure' | 'rate-limit';
-  canAddStamps?: boolean;
-}
-
-// Define all available scenarios
-export const scenarios: Record<ScenarioName, Scenario> = {
+export const scenarios = {
   default: {
     name: 'default',
     description: 'Normal user with good score',
@@ -171,32 +146,3 @@ export const scenarios: Record<ScenarioName, Scenario> = {
     canAddStamps: true,
   },
 };
-
-// Helper to get current scenario from localStorage or URL
-export function getCurrentScenario(): Scenario {
-  // Check URL parameter first
-  if (typeof window !== 'undefined') {
-    const urlParams = new URLSearchParams(window.location.search);
-    const scenarioName = urlParams.get('scenario') as ScenarioName;
-    if (scenarioName && scenarios[scenarioName]) {
-      return scenarios[scenarioName];
-    }
-    
-    // Check localStorage
-    const stored = localStorage.getItem('msw-scenario') as ScenarioName;
-    if (stored && scenarios[stored]) {
-      return scenarios[stored];
-    }
-  }
-  
-  return scenarios.default;
-}
-
-// Helper to set scenario
-export function setScenario(name: ScenarioName) {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem('msw-scenario', name);
-    // Optionally reload to apply new scenario
-    window.location.reload();
-  }
-}

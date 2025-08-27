@@ -2,7 +2,7 @@
 export async function setupMocks() {
   // Only start MSW if explicitly enabled via env variable
   if (import.meta.env.VITE_ENABLE_MSW === 'true') {
-    const { worker } = await import('../../src/mocks/browser');
+    const { worker } = await import('./mocks/browser');
     
     // Start the worker
     await worker.start({

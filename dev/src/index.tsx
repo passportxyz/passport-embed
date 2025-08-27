@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Buffer } from "buffer";
 import { PassportScoreWidget, usePassportScore, CollapseMode } from "@passportxyz/passport-embed";
 import { setupMocks } from "./setupMocks";
-import { ScenarioSwitcher } from "../../src/components/ScenarioSwitcher";
+import { ScenarioSwitcher } from "./components/ScenarioSwitcher";
 
 import "./index.css";
 
@@ -179,12 +179,16 @@ const Dashboard = () => {
   );
 };
 
-export const App = () => (
-  <>
-    <Dashboard />
-    <ScenarioSwitcher />
-  </>
-);
+export const App = () => {
+  const showMocks = import.meta.env.VITE_ENABLE_MSW === 'true';
+  
+  return (
+    <>
+      <Dashboard />
+      {showMocks && <ScenarioSwitcher />}
+    </>
+  );
+};
 
 const rootElement = document.getElementById("root");
 if (rootElement) {
