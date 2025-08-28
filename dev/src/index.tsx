@@ -93,13 +93,31 @@ const DirectPassportDataAccess = ({ address }: { address?: string }) => {
 // Mock wallet that just returns a hardcoded address
 const mockWallet = {
   connect: async () => {
+    console.log('%c🔐 [Mock Wallet] Simulating wallet connection...', 'color: #4CAF50; font-weight: bold');
+    console.log(`%c   → User would normally see MetaMask popup here`, 'color: #888');
+    
     // Simulate a tiny delay like a real wallet
     await new Promise(resolve => setTimeout(resolve, 300));
-    return "0x1234567890123456789012345678901234567890";
+    
+    const address = "0x1234567890123456789012345678901234567890";
+    console.log(`%c✅ [Mock Wallet] Connected with address: ${address}`, 'color: #4CAF50');
+    console.log(`%c   → Simulated user clicking "Connect" in wallet popup`, 'color: #888');
+    
+    return address;
   },
   sign: async (message: string) => {
+    console.log('%c🖊️ [Mock Wallet] Signature request received', 'color: #FF9800; font-weight: bold');
+    console.log(`%c   → Message to sign: "${message.substring(0, 50)}${message.length > 50 ? '...' : ''}"`, 'color: #888');
+    console.log(`%c   → User would see MetaMask signature popup here`, 'color: #888');
+    
     await new Promise(resolve => setTimeout(resolve, 200));
-    return `0xmocked_signature_for_${message}`;
+    
+    const signature = `0xmocked_signature_for_${message}`;
+    console.log(`%c✅ [Mock Wallet] Signature generated`, 'color: #4CAF50');
+    console.log(`%c   → Simulated user clicking "Sign" in wallet popup`, 'color: #888');
+    console.log(`%c   → Mock signature: ${signature.substring(0, 30)}...`, 'color: #888');
+    
+    return signature;
   }
 };
 

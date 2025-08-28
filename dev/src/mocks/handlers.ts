@@ -18,12 +18,20 @@ export const handlers = [
   }),
 
   http.post(`${API_BASE}/embed/verify/:scorerId/:address`, async ({ request, params }) => {
+    const body = await request.json() as { credentialIds: string[] };
+    
+    console.log('%c🎯 [Stamp Verify] Manual stamp verification requested', 'color: #2196F3; font-weight: bold');
+    console.log(`%c   → Verifying stamps: ${body.credentialIds.join(', ')}`, 'color: #888');
+    console.log(`%c   → This would normally validate credentials with external services`, 'color: #888');
+    
     await delay(500);
+    
     try {
-      const body = await request.json() as { credentialIds: string[] };
       const response = scenarioManager.getVerifyResponse(params.address as string, body.credentialIds);
+      console.log(`%c✅ [Stamp Verify] Stamps successfully added`, 'color: #4CAF50');
       return HttpResponse.json(response);
     } catch (error) {
+      console.log(`%c❌ [Stamp Verify] Verification failed`, 'color: #f44336');
       if (error instanceof HttpResponse) return error;
       throw error;
     }
@@ -31,14 +39,25 @@ export const handlers = [
 
   // Mock platform verification endpoints (for individual stamp verification)
   http.post(`${API_BASE}/api/v1/platform/:platform/verify`, async ({ params }) => {
+    const platform = params.platform as string;
+    
+    console.log(`%c🔗 [OAuth Platform] ${platform} verification initiated`, 'color: #FF5722; font-weight: bold');
+    console.log(`%c   → User would be redirected to ${platform} OAuth page`, 'color: #888');
+    console.log(`%c   → Simulating user authorizing app on ${platform}`, 'color: #888');
+    
     await delay(400);
     
     const scenario = scenarioManager.getCurrentScenario();
-    const platform = params.platform as string;
     
     if (scenario.verificationBehavior === 'failure') {
+      console.log(`%c❌ [OAuth Platform] ${platform} verification failed`, 'color: #f44336');
+      console.log(`%c   → User might have denied permission or verification failed`, 'color: #888');
       return new HttpResponse(null, { status: 400 });
     }
+    
+    console.log(`%c✅ [OAuth Platform] ${platform} verification successful`, 'color: #4CAF50');
+    console.log(`%c   → User successfully authenticated with ${platform}`, 'color: #888');
+    console.log(`%c   → Platform stamp will be added to passport`, 'color: #888');
     
     return HttpResponse.json({
       platform,
@@ -133,16 +152,25 @@ export const handlers = [
 
   // Mock auto-verify endpoint - attempts to verify credentials automatically
   http.post(`${API_BASE}/embed/auto-verify`, async ({ request }) => {
-    await delay(400);
-    
     const body = await request.json() as { address: string; scorerId: string; credentialIds?: string[] };
+    const credentialIds = body.credentialIds || ['eth-balance'];
+    
+    console.log('%c🔍 [Auto-Verify] Simulating automatic verification...', 'color: #9C27B0; font-weight: bold');
+    console.log(`%c   → Checking onchain data for address: ${body.address.substring(0, 10)}...`, 'color: #888');
+    console.log(`%c   → Credentials being verified: ${credentialIds.join(', ')}`, 'color: #888');
+    console.log(`%c   → This would normally query blockchain/APIs in background`, 'color: #888');
+    
+    await delay(400);
     
     // Auto-verify with the specified credentials (if any)
     // This mimics the behavior of trying to automatically add stamps
     try {
-      const response = scenarioManager.getVerifyResponse(body.address, body.credentialIds || ['eth-balance']);
+      const response = scenarioManager.getVerifyResponse(body.address, credentialIds);
+      console.log(`%c✅ [Auto-Verify] Verification complete`, 'color: #4CAF50');
+      console.log(`%c   → Found ${credentialIds.length} valid stamp(s)`, 'color: #888');
       return HttpResponse.json(response);
     } catch (error) {
+      console.log(`%c❌ [Auto-Verify] Verification failed`, 'color: #f44336');
       if (error instanceof HttpResponse) return error;
       throw error;
     }
