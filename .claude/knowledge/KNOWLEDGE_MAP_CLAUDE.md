@@ -27,7 +27,11 @@
 ## 🧪 Testing
 - @testing/framework-setup.md - Complete test framework setup with detailed MSW scenarios and testing flow
 - @testing/mock-wallet-strategy.md - Dual mocking approach for wallet and API testing without external dependencies
+- @testing/msw-dev-environment.md - MSW development environment testing states and UI displays
 
 ## 🔄 Workflows
 - @workflows/development.md - Local development setup, hot reload configuration, MSW setup process, Playwright MCP testing workflow on Fedora, widget user flow states
 - @workflows/playwright-automation.md - Playwright MCP browser automation best practices and critical warnings
+
+## 🎨 UI Components
+- @ui/devtools-panel.md - Unified MSW development controls panel with dark theme styling
