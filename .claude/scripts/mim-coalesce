@@ -1,22 +1,22 @@
 #!/bin/bash
 set -o pipefail  # Ensure pipe returns claude's exit status, not the while loop's
 
-# Manual chronicler quickening script
-# Run this after commits to process gathered knowledge into documentation
+# Manual mim coalesce script
+# Run this after commits to process remembered knowledge into documentation
 
 if [ ! -f .claude/knowledge/session.md ] || [ ! -s .claude/knowledge/session.md ]; then
   echo "📜 No knowledge to process (session.md is empty or missing)"
   exit 0
 fi
 
-echo "📜 Chronicler: Processing session knowledge..."
+echo "📜 Mim: Processing session knowledge..."
 echo "⚠️  Note: This may take a few minutes for complex documentation updates"
 
 claude \
 --verbose \
 --allowedTools Read,Write,MultiEdit,Glob,Grep,LS,Bash,Git \
---append-system-prompt "You are the Chronicler, keeper of project knowledge. You quicken raw gathered knowledge into permanent documentation. CRITICAL PATH STRUCTURE: The instructions file is at .claude/knowledge/INSTRUCTIONS.md (NOT .claude/KNOWLEDGE_INSTRUCTIONS.md). CLAUDE.md contains @ references to .claude/knowledge/INSTRUCTIONS.md and .claude/knowledge/KNOWLEDGE_MAP_CLAUDE.md. You maintain TWO knowledge maps: KNOWLEDGE_MAP.md (user-facing with markdown links) and KNOWLEDGE_MAP_CLAUDE.md (Claude-facing with @ references - these are RELATIVE to the knowledge directory). The project structure: .claude/knowledge/session.md (raw captures), .claude/knowledge/{category}/ (organized knowledge), .claude/knowledge/KNOWLEDGE_MAP.md (human-facing index), .claude/knowledge/KNOWLEDGE_MAP_CLAUDE.md (claude-facing index with RELATIVE @ refs like @patterns/file.md NOT @.claude/knowledge/patterns/file.md)" \
---print --output-format stream-json "You are processing gathered knowledge. Execute this MANDATORY checklist:
+--append-system-prompt "You are Mim, keeper of project knowledge. You coalesce raw remembered knowledge into permanent documentation. CRITICAL PATH STRUCTURE: The instructions file is at .claude/knowledge/INSTRUCTIONS.md (NOT .claude/KNOWLEDGE_INSTRUCTIONS.md). CLAUDE.md contains @ references to .claude/knowledge/INSTRUCTIONS.md and .claude/knowledge/KNOWLEDGE_MAP_CLAUDE.md. You maintain TWO knowledge maps: KNOWLEDGE_MAP.md (user-facing with markdown links) and KNOWLEDGE_MAP_CLAUDE.md (Claude-facing with @ references - these are RELATIVE to the knowledge directory). The project structure: .claude/knowledge/session.md (raw captures), .claude/knowledge/{category}/ (organized knowledge), .claude/knowledge/KNOWLEDGE_MAP.md (human-facing index), .claude/knowledge/KNOWLEDGE_MAP_CLAUDE.md (claude-facing index with RELATIVE @ refs like @patterns/file.md NOT @.claude/knowledge/patterns/file.md)" \
+--print --output-format stream-json "You are processing remembered knowledge. Execute this MANDATORY checklist:
 
 1. **MUST READ** .claude/knowledge/session.md - Even if empty
 2. **MUST PROCESS** each entry from session.md:
@@ -45,7 +45,7 @@ IMPORTANT: KNOWLEDGE_MAP_CLAUDE.md uses RELATIVE @ references (e.g., @patterns/f
 Documentation structure to create and maintain:
 .claude/knowledge/
 ├── session.md           # Current session's raw captures (you must clear this)
-├── INSTRUCTIONS.md     # Knowledge gathering instructions (referenced by CLAUDE.md)
+├── INSTRUCTIONS.md     # Knowledge remembering instructions (referenced by CLAUDE.md)
 ├── architecture/        # System design, component relationships
 ├── patterns/           # Coding patterns, conventions
 ├── dependencies/       # External services, libraries
@@ -70,10 +70,10 @@ while IFS= read -r line; do
 done
 
 if [ $? -eq 0 ]; then
-  echo "✅ Chronicler: Knowledge processed successfully"
+  echo "✅ Mim: Knowledge processed successfully"
   echo "📝 Committing documentation updates..."
   git add CLAUDE.md .claude/knowledge/
-  git commit -m "📜 Update project documentation via Chronicler"
+  git commit -m "📜 Update project documentation via Mim"
 else
-  echo "⚠️  Chronicler: Processing may have been interrupted"
+  echo "⚠️  Mim: Processing may have been interrupted"
 fi
