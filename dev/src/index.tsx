@@ -1,9 +1,9 @@
 import { createRoot } from "react-dom/client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Buffer } from "buffer";
 import { PassportScoreWidget, usePassportScore, CollapseMode } from "@passportxyz/passport-embed";
 import { setupMocks } from "./setupMocks";
-import { ScenarioSwitcher } from "./components/ScenarioSwitcher";
+import { DevToolsPanel } from "./components/DevToolsPanel";
 
 import "./index.css";
 
@@ -103,10 +103,9 @@ const mockWallet = {
   }
 };
 
-const Dashboard = () => {
+const Dashboard = ({ walletMode, onWalletModeChange }: { walletMode: "metamask" | "mock", onWalletModeChange: (mode: "metamask" | "mock") => void }) => {
   const [address, setAddress] = useState<string | undefined>();
   const [collapseMode, setCollapseMode] = useState<CollapseMode>("shift");
-  const [walletMode, setWalletMode] = useState<"metamask" | "mock">("metamask");
 
   const handleConnect = async () => {
     if (walletMode === "mock") {
@@ -126,30 +125,16 @@ const Dashboard = () => {
     }
   };
 
+  // Reset address when wallet mode changes
+  useEffect(() => {
+    setAddress(undefined);
+  }, [walletMode]);
+
   return (
     <div className="container">
       <h1>Passport Widgets Example</h1>
       <h3>Check your Passport score</h3>
       
-      <div style={{ marginBottom: "1rem", padding: "1rem", background: "#f0f0f0", borderRadius: "8px" }}>
-        <label style={{ marginRight: "0.5rem", fontWeight: "bold" }}>Wallet Mode:</label>
-        <select 
-          value={walletMode} 
-          onChange={(e) => {
-            setWalletMode(e.target.value as "metamask" | "mock");
-            setAddress(undefined); // Reset address when switching
-          }}
-          style={{ marginRight: "1rem" }}
-        >
-          <option value="metamask">MetaMask (Real)</option>
-          <option value="mock">Mock Wallet (Testing)</option>
-        </select>
-        {walletMode === "mock" && (
-          <span style={{ color: "orange", fontSize: "0.9em" }}>
-            🔧 Using mock wallet - no real transactions
-          </span>
-        )}
-      </div>
 
       <div style={{ marginBottom: "1rem" }}>
         <label style={{ marginRight: "0.5rem" }}>Collapse Mode:</label>
@@ -181,11 +166,17 @@ const Dashboard = () => {
 
 export const App = () => {
   const showMocks = import.meta.env.VITE_ENABLE_MSW === 'true';
+  const [walletMode, setWalletMode] = useState<"metamask" | "mock">("mock");
   
   return (
     <>
-      <Dashboard />
-      {showMocks && <ScenarioSwitcher />}
+      <Dashboard walletMode={walletMode} onWalletModeChange={setWalletMode} />
+      {showMocks && (
+        <DevToolsPanel 
+          walletMode={walletMode} 
+          onWalletModeChange={setWalletMode}
+        />
+      )}
     </>
   );
 };
