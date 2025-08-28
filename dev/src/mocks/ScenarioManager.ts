@@ -19,6 +19,7 @@ interface ScoreResponse {
 
 class ScenarioManager {
   private current: string;
+  private accumulatedStamps: Map<string, Record<string, Stamp>> = new Map();
 
   constructor() {
     // Only check URL params - simpler!
@@ -41,6 +42,8 @@ class ScenarioManager {
       return;
     }
     this.current = name;
+    // Clear accumulated stamps when switching scenarios
+    this.accumulatedStamps.clear();
     // No reload needed - we'll invalidate React Query cache instead
     const url = new URL(window.location.href);
     url.searchParams.set('scenario', name);
@@ -64,9 +67,16 @@ class ScenarioManager {
       });
     }
     
+    // Get the accumulated stamps for this scenario, or use base stamps
+    const scenarioKey = `${this.current}_${address}`;
+    const currentStamps = this.accumulatedStamps.get(scenarioKey) || scenario.passportScore.stamps;
+    
+    // Calculate the total score from current stamps
+    const totalScore = Object.values(currentStamps).reduce((sum, stamp) => sum + stamp.score, 0);
+    
     // Convert stamps to API format with snake_case
     const apiStamps: Record<string, any> = {};
-    Object.entries(scenario.passportScore.stamps).forEach(([key, stamp]) => {
+    Object.entries(currentStamps).forEach(([key, stamp]) => {
       apiStamps[key] = {
         score: stamp.score.toString(),
         expiration_date: stamp.expirationDate.toISOString(),
@@ -77,8 +87,8 @@ class ScenarioManager {
     // Return score data in API format (snake_case)
     return {
       address,
-      score: scenario.passportScore.score.toString(),
-      passing_score: scenario.passportScore.passingScore,
+      score: totalScore.toString(),
+      passing_score: totalScore >= scenario.passportScore.threshold,
       last_score_timestamp: new Date().toISOString(),
       expiration_timestamp: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       threshold: scenario.passportScore.threshold.toString(),
@@ -115,20 +125,27 @@ class ScenarioManager {
           return this.getScoreResponse(address);
         }
         
+        // Get existing accumulated stamps or start with base stamps
+        const scenarioKey = `${this.current}_${address}`;
+        const existingStamps = this.accumulatedStamps.get(scenarioKey) || scenario.passportScore.stamps;
+        
         // Add new stamps logic
         const newStamps = credentialIds?.reduce((acc, id) => ({
           ...acc,
-          [id]: { score: 3.5, dedup: true, expirationDate: new Date() }
+          [id]: { score: 3.5, dedup: true, expirationDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000) }
         }), {} as Record<string, Stamp>) || {};
         
-        const newStampScore = Object.values(newStamps).reduce((sum, stamp) => sum + stamp.score, 0);
-        const updatedScore = scenario.passportScore.score + newStampScore;
-        
-        // Combine all stamps
+        // Combine existing and new stamps
         const allStamps = {
-          ...scenario.passportScore.stamps,
+          ...existingStamps,
           ...newStamps
         };
+        
+        // Save the accumulated stamps for future requests
+        this.accumulatedStamps.set(scenarioKey, allStamps);
+        
+        // Calculate the total score from all stamps
+        const updatedScore = Object.values(allStamps).reduce((sum, stamp) => sum + stamp.score, 0);
         
         // Convert stamps to API format with snake_case
         const apiStamps: Record<string, any> = {};

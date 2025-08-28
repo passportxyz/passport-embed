@@ -6,10 +6,18 @@ export class MockWalletProvider {
   constructor(private defaultAccount = '0x1234567890123456789012345678901234567890') {}
 
   async connect(): Promise<string[]> {
+    console.log('%c🔐 [Mock Wallet] Simulating wallet connection...', 'color: #4CAF50; font-weight: bold');
+    console.log(`%c   → User would normally see MetaMask popup here`, 'color: #888');
+    
     // Simulate connection delay
     await new Promise(resolve => setTimeout(resolve, 500));
+    
     this.connected = true;
     this.accounts = [this.defaultAccount];
+    
+    console.log(`%c✅ [Mock Wallet] Connected with address: ${this.defaultAccount}`, 'color: #4CAF50');
+    console.log(`%c   → Simulated user clicking "Connect" in wallet popup`, 'color: #888');
+    
     return this.accounts;
   }
 
@@ -29,8 +37,21 @@ export class MockWalletProvider {
     if (!this.connected) {
       throw new Error('Wallet not connected');
     }
+    
+    console.log('%c🖊️ [Mock Wallet] Signature request received', 'color: #FF9800; font-weight: bold');
+    console.log(`%c   → Message to sign: "${message.substring(0, 50)}${message.length > 50 ? '...' : ''}"`, 'color: #888');
+    console.log(`%c   → User would see MetaMask signature popup here`, 'color: #888');
+    
+    // Simulate signature delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    const signature = `0xmock_signature_for_${message}`;
+    console.log(`%c✅ [Mock Wallet] Signature generated`, 'color: #4CAF50');
+    console.log(`%c   → Simulated user clicking "Sign" in wallet popup`, 'color: #888');
+    console.log(`%c   → Mock signature: ${signature.substring(0, 30)}...`, 'color: #888');
+    
     // Return a mock signature
-    return `0xmock_signature_for_${message}`;
+    return signature;
   }
 
   isConnected(): boolean {
