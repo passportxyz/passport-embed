@@ -1,13 +1,31 @@
-import { scenarios } from './scenarios';
+import { scenarios, Scenario } from './scenarios';
 import { HttpResponse } from 'msw';
 
+interface Stamp {
+  score: number;
+  dedup: boolean;
+  expirationDate: Date;
+}
+
+interface ScoreResponse {
+  address: string;
+  score: number;
+  passingScore: boolean;
+  threshold: number;
+  stamps: Record<string, Stamp>;
+  lastScoreTimestamp: Date;
+  expirationTimestamp: Date;
+}
+
 class ScenarioManager {
+  private current: string;
+
   constructor() {
     // Only check URL params - simpler!
     this.current = this.detectScenario();
   }
   
-  detectScenario() {
+  detectScenario(): string {
     // URL params only - no localStorage complexity
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
@@ -17,24 +35,24 @@ class ScenarioManager {
     return 'default';
   }
   
-  switchScenario(name) {
+  switchScenario(name: string): void {
     if (!scenarios[name]) {
       console.warn(`Unknown scenario: ${name}`);
       return;
     }
     this.current = name;
     // No reload needed - we'll invalidate React Query cache instead
-    const url = new URL(window.location);
+    const url = new URL(window.location.href);
     url.searchParams.set('scenario', name);
     window.history.pushState({}, '', url);
   }
   
-  getCurrentScenario() {
+  getCurrentScenario(): Scenario {
     return scenarios[this.current];
   }
   
   // Encapsulate all response generation logic
-  getScoreResponse(address) {
+  getScoreResponse(address: string): ScoreResponse {
     const scenario = this.getCurrentScenario();
     
     // Handle rate limiting
@@ -55,7 +73,7 @@ class ScenarioManager {
     };
   }
   
-  getVerifyResponse(address, credentialIds) {
+  getVerifyResponse(address: string, credentialIds?: string[]): ScoreResponse {
     const scenario = this.getCurrentScenario();
     
     // Handle different verification behaviors
@@ -88,7 +106,7 @@ class ScenarioManager {
         const newStamps = credentialIds?.reduce((acc, id) => ({
           ...acc,
           [id]: { score: 3.5, dedup: true, expirationDate: new Date() }
-        }), {}) || {};
+        }), {} as Record<string, Stamp>) || {};
         
         const newStampScore = Object.values(newStamps).reduce((sum, stamp) => sum + stamp.score, 0);
         const updatedScore = scenario.passportScore.score + newStampScore;

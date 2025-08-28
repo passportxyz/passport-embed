@@ -1,5 +1,28 @@
 // Define different test scenarios for MSW
-export const scenarios = {
+
+interface Stamp {
+  score: number;
+  dedup: boolean;
+  expirationDate: Date;
+}
+
+interface PassportScore {
+  address: string;
+  score: number;
+  passingScore: boolean;
+  threshold: number;
+  stamps: Record<string, Stamp>;
+}
+
+export interface Scenario {
+  name: string;
+  description: string;
+  passportScore: PassportScore;
+  verificationBehavior: 'success' | 'failure' | 'rate-limit';
+  canAddStamps: boolean;
+}
+
+export const scenarios: Record<string, Scenario> = {
   default: {
     name: 'default',
     description: 'Normal user with good score',
