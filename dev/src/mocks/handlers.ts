@@ -6,7 +6,7 @@ const API_BASE = 'http://localhost:8004';
 
 export const handlers = [
   // Clean handler - no scenario logic
-  http.get(`${API_BASE}/api/v1/score/:scorerId/:address`, async ({ params }) => {
+  http.get(`${API_BASE}/embed/score/:scorerId/:address`, async ({ params }) => {
     await delay(300); // Realistic delay
     try {
       const response = scenarioManager.getScoreResponse(params.address as string);
@@ -17,7 +17,7 @@ export const handlers = [
     }
   }),
 
-  http.post(`${API_BASE}/api/v1/verify/:scorerId/:address`, async ({ request, params }) => {
+  http.post(`${API_BASE}/embed/verify/:scorerId/:address`, async ({ request, params }) => {
     await delay(500);
     try {
       const body = await request.json() as { credentialIds: string[] };
