@@ -2,33 +2,39 @@
 
 ## Score Endpoint
 
-### GET `/api/v1/score/{scorerId}/{address}`
+### GET `/embed/score/{scorerId}/{address}`
 Fetches the current passport score for a given address.
 
-**Response Type**: `PassportScore`
+**Important**: The actual API path is `/embed/score`, NOT `/api/v1/score`
+
+**Response Format**: All fields use snake_case (not camelCase)
 ```typescript
 {
   address: string
-  score: string
-  passingScore: string
-  lastScoreTimestamp: string
-  expirationTimestamp: string
-  threshold: string
-  stamps: Array<{
+  score: string  // numeric value as string
+  passing_score: boolean  // NOT passingScore
+  last_score_timestamp: string  // ISO timestamp
+  expiration_timestamp: string  // ISO timestamp
+  threshold: string  // numeric value as string
+  stamps: {
     score: string
     dedup: boolean
-    expirationDate: string
-  }>
+    expiration_date: string  // ISO timestamp
+  }[]
 }
 ```
 
+**Note**: The widget's `usePassportScore` hook internally converts these snake_case fields to camelCase for component usage.
+
 ## Verification Endpoints
 
-### POST `/api/v1/verify/{scorerId}/{address}`
+### POST `/embed/verify/{scorerId}/{address}`
 Verifies and adds new credentials/stamps to a passport.
 
+**Important**: The actual API path is `/embed/verify`, NOT `/api/v1/verify`
+
 **Purpose**: Bulk verification of multiple stamps
-**Returns**: Updated passport score with new stamps
+**Returns**: Updated passport score with new stamps (same format as score endpoint)
 
 ### POST `/api/v1/platform/{platform}/verify`
 Individual platform verification endpoint.
@@ -62,5 +68,6 @@ Individual platform verification endpoint.
 
 **Related files:**
 - `src/hooks/usePassportScore.tsx`
-- `src/mocks/handlers.ts`
+- `dev/src/mocks/handlers.ts`
+- `dev/src/mocks/ScenarioManager.ts`
 - `src/config/environment.ts`
