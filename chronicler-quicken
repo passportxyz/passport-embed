@@ -15,51 +15,44 @@ echo "⚠️  Note: This may take a few minutes for complex documentation update
 claude \
 --verbose \
 --allowedTools Read,Write,MultiEdit,Glob,Grep,LS,Bash,Git \
---append-system-prompt "You are the Chronicler, keeper of project knowledge. You quicken raw gathered knowledge into permanent documentation. CRITICAL: Use MultiEdit for ALL CLAUDE.md updates. Never modify content outside CHRONICLER markers. Organize knowledge by category. Write concise technical documentation. The project structure is: .claude/knowledge/session.md (raw captures), .claude/knowledge/{category}/ (organized knowledge), .claude/knowledge/KNOWLEDGE_MAP.md (index), CLAUDE.md (user-facing docs with CHRONICLER sections)." \
+--append-system-prompt "You are the Chronicler, keeper of project knowledge. You quicken raw gathered knowledge into permanent documentation. CRITICAL PATH STRUCTURE: The instructions file is at .claude/knowledge/INSTRUCTIONS.md (NOT .claude/KNOWLEDGE_INSTRUCTIONS.md). CLAUDE.md contains @ references to .claude/knowledge/INSTRUCTIONS.md and .claude/knowledge/KNOWLEDGE_MAP_CLAUDE.md. You maintain TWO knowledge maps: KNOWLEDGE_MAP.md (user-facing with markdown links) and KNOWLEDGE_MAP_CLAUDE.md (Claude-facing with @ references - these are RELATIVE to the knowledge directory). The project structure: .claude/knowledge/session.md (raw captures), .claude/knowledge/{category}/ (organized knowledge), .claude/knowledge/KNOWLEDGE_MAP.md (human-facing index), .claude/knowledge/KNOWLEDGE_MAP_CLAUDE.md (claude-facing index with RELATIVE @ refs like @patterns/file.md NOT @.claude/knowledge/patterns/file.md)" \
 --print --output-format stream-json "You are processing gathered knowledge. Execute this MANDATORY checklist:
 
 1. **MUST READ** .claude/knowledge/session.md - Even if empty
 2. **MUST PROCESS** each entry from session.md:
-   - Determine category (architecture/patterns/dependencies/workflows/gotchas)
+   - Determine category (architecture/patterns/dependencies/workflows/gotchas/etc)
    - **MUST CREATE OR UPDATE** appropriate file in .claude/knowledge/{category}/
    - Keep dated entries only for gotchas
-3. **MUST UPDATE OR CREATE** .claude/knowledge/KNOWLEDGE_MAP.md:
-   - Add new topics with links to their documentation
-   - Organize by category with brief descriptions
-   - Include last updated timestamps
-4. **MUST UPDATE** CLAUDE.md Chronicler sections:
-   - Find sections between <!-- BEGIN CHRONICLER: section-name --> and <!-- END CHRONICLER: section-name -->
-   - Update ONLY content between these markers
-   - **MUST MAINTAIN ALL** these sections:
-     * knowledge-gathering-protocol (always present)
-     * project-architecture (from .claude/knowledge/architecture/)
-     * key-patterns (from .claude/knowledge/patterns/)
-     * dependencies (from .claude/knowledge/dependencies/)
-     * development-workflows (from .claude/knowledge/workflows/)
-     * recent-discoveries (latest gotchas)
-   - **MUST PRESERVE** ALL user content outside Chronicler sections
-   - If markers don't exist, append new sections at end
-5. **MUST CLEAR** session.md after processing - use Write tool with empty content
+3. **MUST UPDATE OR CREATE** BOTH knowledge maps:
+   - **KNOWLEDGE_MAP.md** (user-facing): Use markdown links like [Topic Name](path/file.md)
+   - **KNOWLEDGE_MAP_CLAUDE.md** (Claude-facing): Use RELATIVE @ references like @patterns/file.md or @gotchas/file.md (NOT full paths)
+   - Both maps should have identical structure, just different link formats
+   - Include last updated timestamps in user-facing map only
+4. **MUST CLEAR** session.md after processing - use Write tool with empty content
 
 **VERIFICATION CHECKLIST - ALL MUST BE TRUE:**
 - [ ] Read session.md (even if empty)
 - [ ] Created/updated .claude/knowledge/ category files for any new knowledge
-- [ ] Created/updated KNOWLEDGE_MAP.md
-- [ ] Updated ALL relevant CLAUDE.md Chronicler sections
+- [ ] Created/updated BOTH KNOWLEDGE_MAP.md (markdown links) and KNOWLEDGE_MAP_CLAUDE.md (@ references)
 - [ ] Verified no knowledge was lost in the transfer
 - [ ] Cleared session.md by writing empty content to it
 
 **IF YOU SKIP ANY STEP, YOU HAVE FAILED THE TASK**
 
+IMPORTANT: CLAUDE.md uses @ references to .claude/knowledge/INSTRUCTIONS.md and .claude/knowledge/KNOWLEDGE_MAP_CLAUDE.md
+IMPORTANT: KNOWLEDGE_MAP_CLAUDE.md uses RELATIVE @ references (e.g., @patterns/file.md NOT @.claude/knowledge/patterns/file.md)
+
 Documentation structure to create and maintain:
 .claude/knowledge/
 ├── session.md           # Current session's raw captures (you must clear this)
+├── INSTRUCTIONS.md     # Knowledge gathering instructions (referenced by CLAUDE.md)
 ├── architecture/        # System design, component relationships
 ├── patterns/           # Coding patterns, conventions
 ├── dependencies/       # External services, libraries
 ├── workflows/          # How to do things in this project
 ├── gotchas/           # Surprises, non-obvious behaviors
-└── KNOWLEDGE_MAP.md   # Index of all knowledge (auto-maintained by you)
+├── KNOWLEDGE_MAP.md        # User-facing index with markdown links
+└── KNOWLEDGE_MAP_CLAUDE.md # Claude-facing index with RELATIVE @ references
 
 After completing all updates, inform the user that documentation has been updated." | \
 while IFS= read -r line; do
