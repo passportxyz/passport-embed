@@ -27,26 +27,6 @@ npm run test:e2e   # E2E tests with Playwright
 npm run test:all   # Both unit and e2e tests
 ```
 
-## 📁 Structure
-
-```
-dev/
-├── src/
-│   ├── index.tsx              # Main dev app entry
-│   ├── mocks/
-│   │   ├── ScenarioManager.js # Centralized scenario logic
-│   │   ├── handlers.js        # MSW request handlers
-│   │   ├── scenarios.js       # Test scenario definitions
-│   │   └── browser.js         # MSW setup
-│   └── components/
-│       └── ScenarioSwitcher.jsx # UI for switching scenarios
-├── tests/
-│   └── e2e/                   # Playwright E2E tests
-├── public/
-│   └── mockServiceWorker.js  # MSW service worker
-└── package.json               # Dependencies only (no scripts!)
-```
-
 ## 🎭 MSW Testing Scenarios
 
 ### Available Scenarios
