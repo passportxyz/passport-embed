@@ -49,25 +49,33 @@ The dev app provides a complete MSW testing environment:
 
 ### Available Test Scenarios
 8 test scenarios available:
-- `default` - Standard user flow
-- `low-score` - User with score below threshold
-- `high-score` - User with passing score
-- `no-stamps` - User with no verification stamps
+- `default` - Normal user with score 25.5 (passing)
+- `low-score` - User with score 12.5 (below threshold)
+- `high-score` - Power user with score 45.5 (many stamps)
+- `no-stamps` - New user with no verification stamps
 - `rate-limited` - API returning 429 errors
 - `verification-fails` - Verification attempts fail
-- `verification-adds-stamps` - Successful stamp addition
+- `verification-adds-stamps` - Can add stamps successfully
 - `near-threshold` - Score just below passing threshold
 
 ### Scenario Features
 - **ScenarioSwitcher UI**: Orange badge visible when MSW is active
 - **URL Control**: Switch scenarios via `?scenario=name` parameter
 - **UI Dropdown**: Interactive scenario switcher panel
-- **Mock Wallet**: Returns hardcoded address `0x1234567890123456789012345678901234567890`
+- **Mock Wallet**: Dropdown selector to switch between MetaMask and Mock Wallet
+  - Mock returns hardcoded address `0x1234567890123456789012345678901234567890`
 - **No Reload Needed**: React Query cache invalidation for instant updates
-- **API Mocking**: MSW handlers mock Passport API endpoints at `http://localhost:8004`
+- **API Mocking**: MSW handlers mock Passport API endpoints at `/embed/score` and `/embed/verify`
+  - **Important**: Must use exact API paths, not `/api/v1/` paths
 - **Service Worker**: Located at `/mockServiceWorker.js` intercepts API calls
+- **Testing Flow**: 
+  1. Run `npm run dev:mock` to start server with MSW
+  2. Select Mock Wallet from dropdown
+  3. Click Connect
+  4. Instantly test any scenario
 
 **Related files:**
 - `dev/src/mocks/scenarios.ts`
 - `dev/src/mocks/handlers.ts`
 - `dev/src/components/ScenarioSwitcher.tsx`
+- `dev/src/index.tsx`
