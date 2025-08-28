@@ -9,7 +9,7 @@ export const handlers = [
   http.get(`${API_BASE}/api/v1/score/:scorerId/:address`, async ({ params }) => {
     await delay(300); // Realistic delay
     try {
-      const response = scenarioManager.getScoreResponse(params.address);
+      const response = scenarioManager.getScoreResponse(params.address as string);
       return HttpResponse.json(response);
     } catch (error) {
       if (error instanceof HttpResponse) return error;
@@ -20,8 +20,8 @@ export const handlers = [
   http.post(`${API_BASE}/api/v1/verify/:scorerId/:address`, async ({ request, params }) => {
     await delay(500);
     try {
-      const body = await request.json();
-      const response = scenarioManager.getVerifyResponse(params.address, body.credentialIds);
+      const body = await request.json() as { credentialIds: string[] };
+      const response = scenarioManager.getVerifyResponse(params.address as string, body.credentialIds);
       return HttpResponse.json(response);
     } catch (error) {
       if (error instanceof HttpResponse) return error;
@@ -34,7 +34,7 @@ export const handlers = [
     await delay(400);
     
     const scenario = scenarioManager.getCurrentScenario();
-    const platform = params.platform;
+    const platform = params.platform as string;
     
     if (scenario.verificationBehavior === 'failure') {
       return new HttpResponse(null, { status: 400 });

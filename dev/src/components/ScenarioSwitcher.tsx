@@ -4,10 +4,10 @@ import { scenarioManager } from '../mocks/ScenarioManager';
 import { scenarios } from '../mocks/scenarios';
 
 export function ScenarioSwitcher() {
-  const [currentScenario, setCurrentScenario] = useState(scenarioManager.current);
+  const [currentScenario, setCurrentScenario] = useState(scenarioManager.getCurrentScenario().name);
   const queryClient = usePassportQueryClient();
 
-  const handleScenarioChange = (name) => {
+  const handleScenarioChange = (name: string) => {
     setCurrentScenario(name);
     scenarioManager.switchScenario(name);
     // Invalidate all queries to refetch with new scenario data
