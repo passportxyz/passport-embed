@@ -1,6 +1,16 @@
+import {
+  initHumanID,
+  getKycSBTByAddress,
+  getPhoneSBTByAddress,
+  getBiometricsSBTByAddress,
+  getCleanHandsSPAttestationByAddress,
+  type CredentialType,
+  type HubV3SBT,
+  // setOptimismRpcUrl,
+} from "@holonym-foundation/human-id-sdk";
 import styles from "./PlatformVerification.module.css";
 import utilStyles from "../../utilStyles.module.css";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "../Button";
 import { Hyperlink } from "./ScoreTooLowBody";
 import { ScrollableDiv } from "../ScrollableDiv";
@@ -77,6 +87,101 @@ export const PlatformVerification = ({
       }
     }
   }, [initiatedVerification, isQuerying, claimed, onClose]);
+
+  const getHasHumanIDSBT = useCallback(async (address: string) => {
+    const addressAsHex = address as `0x${string}`
+
+    // TODO: What's the best way to set the RPC URL?
+    // const rpcUrl = process.env.NEXT_PUBLIC_PASSPORT_OP_RPC_URL;
+    // if (!rpcUrl) {
+    //   console.warn("Optimism RPC URL not configured for frontend SBT check");
+    //   return false;
+    // }
+    // setOptimismRpcUrl(rpcUrl);
+
+    const validateSBT = (sbt: HubV3SBT) => {  
+      if (sbt && typeof sbt === "object" && "expiry" in sbt) {
+        // Check if SBT is not expired
+        const currentTime = BigInt(Math.floor(Date.now() / 1000));
+        if (sbt.expiry > currentTime && !sbt.revoked) {
+          return true;
+        }
+      }
+      return false
+    }
+    try {
+      if (platform.name === "HumanIdKyc") {
+        const sbt = await getKycSBTByAddress(addressAsHex)
+        return validateSBT(sbt)
+      } else if (platform.name === "HumanIdPhone") {
+        const sbt = await getPhoneSBTByAddress(addressAsHex)
+        return validateSBT(sbt)
+      } else if (platform.name === "Biometrics") {
+        const sbt = await getBiometricsSBTByAddress(addressAsHex)
+        return validateSBT(sbt)
+      } else if (platform.name === "CleanHands") {
+        const attestation = await getCleanHandsSPAttestationByAddress(addressAsHex)
+        // getCleanHandsSPAttestationByAddress validates the attestation
+        return !!attestation
+      } else {
+        throw new Error(`Unsupported Human ID platform: ${platform.name}`)
+      }
+    } catch (err) {
+      /* SBT query fns throw if the address is not found */
+      console.log("getHasSBT err", err)
+      return false
+    }
+  }, [platform.name])
+
+  const handleVerifyHumanID = useCallback(async () => {
+    // Human ID initialization is idempotent, so we can initialize multiple times
+    // without worrying about side effects like increasing event listeners or
+    // adding multiple iframe elements to the document.
+    const provider = initHumanID()
+    let sbtType: CredentialType
+    switch (platform.name) {
+      case "HumanIdKyc":
+        sbtType = "kyc"
+        break
+      case "HumanIdPhone":
+        sbtType = "phone"
+        break
+      case "Biometrics":
+        sbtType = "biometrics"
+        break
+      case "CleanHands":
+        sbtType = "clean-hands"
+        break
+      default:
+        throw new Error(`Unsupported Human ID platform: ${platform.name}`)
+    }
+
+    const onSuccess = () => {
+      verifyCredentials(platformCredentialIds);
+      setFailedVerification(false);
+      setInitiatedVerification(true);
+    }
+
+    try {
+      console.log("queryProps.address", queryProps.address)
+      if (!queryProps.address) {
+        throw new Error("No address found")
+      }
+      // First, check if the user already has the SBT
+      const hasHumanIDSBT = await getHasHumanIDSBT(queryProps.address)
+      if (hasHumanIDSBT) {
+        onSuccess()
+        return
+      }
+      // If the user doesn't have the SBT, request it
+      const result = await provider.requestSBT(sbtType)
+      console.log("requestSBT result", result)
+      onSuccess()
+    } catch (err) {
+      console.log("requestSBT err", err)
+      setFailedVerification(true)
+    }
+  }, [platform.name]);
 
   return (
     <div className={styles.container}>
@@ -171,6 +276,8 @@ export const PlatformVerification = ({
                 verifyCredentials(platformCredentialIds);
               }
             }, 100);
+          } else if (["HumanIdKyc", "HumanIdPhone", "Biometrics", "CleanHands"].includes(platform.name)) {
+            handleVerifyHumanID();
           } else {
             verifyCredentials(platformCredentialIds);
             setFailedVerification(false);
