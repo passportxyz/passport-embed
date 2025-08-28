@@ -1,4 +1,4 @@
-## 📚 Chronicler Knowledge System
+## 📚 Mim Knowledge System
 
 @.claude/knowledge/INSTRUCTIONS.md
 
