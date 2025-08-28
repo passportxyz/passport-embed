@@ -1,0 +1,4 @@
+# Chronicler: Merge strategy for knowledge session files
+# This prevents merge conflicts when multiple people gather knowledge
+.claude/knowledge/session.md merge=union
+.claude/knowledge/session-*.md merge=union
