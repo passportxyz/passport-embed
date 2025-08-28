@@ -6,37 +6,46 @@ test.describe('Passport Widget with MSW Mocks', () => {
     
     // Wait for the page to load
     await page.waitForSelector('h1:has-text("Passport Widgets Example")');
+    
+    // Wait for MSW Dev Tools panel to be visible
+    await page.waitForSelector('text=🛠 MSW Dev Tools', { timeout: 5000 });
   });
 
   test('should display MSW active indicator', async ({ page }) => {
-    // Check that MSW is active
-    await expect(page.locator('text=🔧 MSW Active')).toBeVisible();
+    // Check that MSW Dev Tools panel is active
+    await expect(page.locator('text=🛠 MSW Dev Tools')).toBeVisible();
+    await expect(page.locator('text=Active').first()).toBeVisible();
   });
 
   test('should allow switching between wallet modes', async ({ page }) => {
-    // Check wallet mode selector exists
-    const walletSelector = page.locator('select').first();
+    // Find the wallet mode selector (second select on page - first is collapse mode)
+    const walletSelector = page.locator('select').nth(1);
     await expect(walletSelector).toBeVisible();
     
     // Switch to mock wallet
     await walletSelector.selectOption('mock');
     
     // Should show mock wallet indicator
-    await expect(page.locator('text=🔧 Using mock wallet')).toBeVisible();
+    await expect(page.locator('text=🔧 Using mock wallet - no real transactions')).toBeVisible();
     
     // Switch back to MetaMask
     await walletSelector.selectOption('metamask');
     
     // Mock wallet indicator should disappear
-    await expect(page.locator('text=🔧 Using mock wallet')).not.toBeVisible();
+    await expect(page.locator('text=🔧 Using mock wallet - no real transactions')).not.toBeVisible();
   });
 
   test('should connect with mock wallet and display passport score', async ({ page }) => {
-    // Switch to mock wallet mode
-    await page.locator('select').first().selectOption('mock');
+    // Wait for and switch to mock wallet mode (second select on page)
+    const walletSelector = page.locator('select').nth(1);
+    await walletSelector.waitFor({ state: 'visible' });
+    await walletSelector.selectOption('mock');
     
-    // Click connect wallet button in the widget
-    const connectButton = page.locator('button:has-text("Connect Wallet")');
+    // Set collapse mode to 'off' to avoid button overlap
+    await page.locator('select').first().selectOption('off');
+    
+    // Click connect wallet button in the widget body (not the collapsed header)
+    const connectButton = page.locator('button:has-text("Connect Wallet")').last();
     await connectButton.click();
     
     // Wait for connection (mock wallet has 300ms delay)
@@ -48,16 +57,21 @@ test.describe('Passport Widget with MSW Mocks', () => {
     // Check threshold is displayed
     await expect(page.locator('text=20').first()).toBeVisible();
     
-    // Check passing status
-    await expect(page.locator('text=/Pass/i')).toBeVisible();
+    // Check passing status (look for "True" in passing status field)
+    await expect(page.locator('text=Is passing threshold: True')).toBeVisible();
   });
 
   test('should display stamps from mock data', async ({ page }) => {
-    // Switch to mock wallet
-    await page.locator('select').first().selectOption('mock');
+    // Wait for and switch to mock wallet (second select on page)
+    const walletSelector = page.locator('select').nth(1);
+    await walletSelector.waitFor({ state: 'visible' });
+    await walletSelector.selectOption('mock');
     
-    // Connect wallet
-    await page.locator('button:has-text("Connect Wallet")').click();
+    // Set collapse mode to 'off' to avoid button overlap
+    await page.locator('select').first().selectOption('off');
+    
+    // Connect wallet (use last() to get widget body button, not header)
+    await page.locator('button:has-text("Connect Wallet")').last().click();
     await page.waitForTimeout(500);
     
     // Wait for data to load
@@ -71,8 +85,8 @@ test.describe('Passport Widget with MSW Mocks', () => {
   });
 
   test('should handle collapse mode changes', async ({ page }) => {
-    // Find collapse mode selector (second select element)
-    const collapseModeSelector = page.locator('select').nth(1);
+    // Find collapse mode selector (first select element)
+    const collapseModeSelector = page.locator('select').first();
     
     // Test different collapse modes
     await collapseModeSelector.selectOption('shift');

@@ -6,10 +6,13 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: 'html',
+  reporter: 'list',
+  timeout: 10000, // 10 seconds per test
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
+    actionTimeout: 3000, // 3 seconds for actions
+    navigationTimeout: 5000, // 5 seconds for navigation
   },
 
   projects: [
@@ -20,8 +23,9 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'npm run dev:mock',
+    command: 'cd .. && yarn dev:mock',
     url: 'http://localhost:5173',
     reuseExistingServer: !process.env.CI,
+    timeout: 10000, // 10 seconds to start
   },
 });
