@@ -27,9 +27,13 @@ _Last updated: 2025-08-28_
 - [Wallet Callback Pattern](./patterns/wallet-callback-pattern.md) - Framework-agnostic wallet integration through callbacks
 
 ## 🧪 Testing
-- [Framework Setup](./testing/framework-setup.md) - Complete test framework setup with detailed MSW scenarios and testing flow *(Updated)*
+- [Framework Setup](./testing/framework-setup.md) - Complete test framework setup with detailed MSW scenarios and testing flow
 - [Mock Wallet Strategy](./testing/mock-wallet-strategy.md) - Dual mocking approach for wallet and API testing without external dependencies
+- [MSW Dev Environment](./testing/msw-dev-environment.md) - MSW development environment testing states and UI displays *(New)*
 
 ## 🔄 Workflows
 - [Development](./workflows/development.md) - Local development setup, hot reload configuration, MSW setup process, Playwright MCP testing workflow on Fedora, widget user flow states
-- [Playwright Automation](./workflows/playwright-automation.md) - Playwright MCP browser automation best practices and critical warnings *(New)*
+- [Playwright Automation](./workflows/playwright-automation.md) - Playwright MCP browser automation best practices and critical warnings
+
+## 🎨 UI Components
+- [DevTools Panel](./ui/devtools-panel.md) - Unified MSW development controls panel with dark theme styling *(New)*
