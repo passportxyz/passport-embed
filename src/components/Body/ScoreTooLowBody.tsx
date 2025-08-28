@@ -88,6 +88,7 @@ export const AddStamps = ({
   generateSignatureCallback: ((message: string) => Promise<string | undefined>) | undefined;
 }) => {
   const { setSubtitle } = useHeaderControls();
+  const { data } = useWidgetPassportScore();
   const queryProps = useQueryContext();
   const { scorerId, apiKey, embedServiceUrl } = queryProps;
   const { page, nextPage, prevPage, isFirstPage, isLastPage, loading, error } = usePaginatedStampPages({
@@ -169,27 +170,36 @@ export const AddStamps = ({
         <div className={styles.heading}>{header}</div>
         {isVisitPassportPage ? (
           <div>
-            Visit <Hyperlink href="https://app.passport.xyz">Human Passport</Hyperlink> for more Stamp options!
+            Need more Stamps? Verify more on the Passport App, and return here once you've built up a score greater than {data?.threshold || 20}.
           </div>
         ) : (
           <div>Choose from below and verify</div>
         )}
       </div>
-      {isVisitPassportPage || (
-        <ScrollableDiv className={styles.platformButtonGroup}>
-          {platforms.map((platform) => (
-            <PlatformButton key={platform.name} platform={platform} setOpenPlatform={setOpenPlatform} />
-          ))}
-        </ScrollableDiv>
+      {isVisitPassportPage ? (
+        <Button 
+          className={utilStyles.wFull} 
+          onClick={() => window.open("https://app.passport.xyz", "_blank")}
+        >
+          Visit the App
+        </Button>
+      ) : (
+        <>
+          <ScrollableDiv className={styles.platformButtonGroup}>
+            {platforms.map((platform) => (
+              <PlatformButton key={platform.name} platform={platform} setOpenPlatform={setOpenPlatform} />
+            ))}
+          </ScrollableDiv>
+          <div
+            className={`${styles.navigationButtons} ${
+              isFirstPage || isLastPage ? utilStyles.justifyCenter : utilStyles.justifyBetween
+            }`}
+          >
+            {isFirstPage || <TextButton onClick={prevPage}>Go back</TextButton>}
+            {isLastPage || <TextButton onClick={nextPage}>Try another way</TextButton>}
+          </div>
+        </>
       )}
-      <div
-        className={`${styles.navigationButtons} ${
-          isFirstPage || isLastPage ? utilStyles.justifyCenter : utilStyles.justifyBetween
-        }`}
-      >
-        {isFirstPage || <TextButton onClick={prevPage}>Go back</TextButton>}
-        {isLastPage || <TextButton onClick={nextPage}>Try another way</TextButton>}
-      </div>
     </>
   );
 };
