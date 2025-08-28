@@ -48,3 +48,24 @@ When MSW is active:
 - `dev/src/mocks/handlers.ts/js`
 - `dev/src/mocks/scenarios.ts/js`
 - `dev/src/components/ScenarioSwitcher.tsx/jsx`
+
+## MSW TypeScript File Structure
+
+All MSW mock files must be TypeScript (.ts) not JavaScript (.js):
+
+### Required TypeScript Files
+- `dev/src/mocks/scenarios.ts` - Test scenario definitions with typed interfaces
+- `dev/src/mocks/handlers.ts` - MSW request handlers
+- `dev/src/mocks/ScenarioManager.ts` - Scenario switching logic
+- `dev/src/mocks/mockWallet.ts` - Mock wallet provider
+- `dev/src/mocks/browser.ts` - MSW service worker setup
+- `dev/src/components/ScenarioSwitcher.tsx` - UI component for switching scenarios
+
+### Important Notes
+- The project uses TypeScript throughout
+- Mixing JS files causes type issues
+- All mock-related files should maintain TypeScript consistency
+
+**Related files:**
+- `dev/src/mocks/*.ts`
+- `dev/src/components/ScenarioSwitcher.tsx`
