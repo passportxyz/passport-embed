@@ -52,7 +52,7 @@ class ScenarioManager {
   }
   
   // Encapsulate all response generation logic
-  getScoreResponse(address: string): ScoreResponse {
+  getScoreResponse(address: string): any {
     const scenario = this.getCurrentScenario();
     
     // Handle rate limiting
@@ -64,16 +64,29 @@ class ScenarioManager {
       });
     }
     
-    // Return score data
+    // Convert stamps to API format with snake_case
+    const apiStamps: Record<string, any> = {};
+    Object.entries(scenario.passportScore.stamps).forEach(([key, stamp]) => {
+      apiStamps[key] = {
+        score: stamp.score.toString(),
+        expiration_date: stamp.expirationDate.toISOString(),
+        dedup: stamp.dedup
+      };
+    });
+    
+    // Return score data in API format (snake_case)
     return {
-      ...scenario.passportScore,
       address,
-      lastScoreTimestamp: new Date(),
-      expirationTimestamp: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      score: scenario.passportScore.score.toString(),
+      passing_score: scenario.passportScore.passingScore,
+      last_score_timestamp: new Date().toISOString(),
+      expiration_timestamp: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      threshold: scenario.passportScore.threshold.toString(),
+      stamps: apiStamps
     };
   }
   
-  getVerifyResponse(address: string, credentialIds?: string[]): ScoreResponse {
+  getVerifyResponse(address: string, credentialIds?: string[]): any {
     const scenario = this.getCurrentScenario();
     
     // Handle different verification behaviors
@@ -111,17 +124,31 @@ class ScenarioManager {
         const newStampScore = Object.values(newStamps).reduce((sum, stamp) => sum + stamp.score, 0);
         const updatedScore = scenario.passportScore.score + newStampScore;
         
+        // Combine all stamps
+        const allStamps = {
+          ...scenario.passportScore.stamps,
+          ...newStamps
+        };
+        
+        // Convert stamps to API format with snake_case
+        const apiStamps: Record<string, any> = {};
+        Object.entries(allStamps).forEach(([key, stamp]) => {
+          apiStamps[key] = {
+            score: stamp.score.toString(),
+            expiration_date: stamp.expirationDate.toISOString(),
+            dedup: stamp.dedup
+          };
+        });
+        
+        // Return updated score data in API format (snake_case)
         return {
-          ...scenario.passportScore,
           address,
-          score: updatedScore,
-          passingScore: updatedScore >= scenario.passportScore.threshold,
-          stamps: {
-            ...scenario.passportScore.stamps,
-            ...newStamps
-          },
-          lastScoreTimestamp: new Date(),
-          expirationTimestamp: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          score: updatedScore.toString(),
+          passing_score: updatedScore >= scenario.passportScore.threshold,
+          last_score_timestamp: new Date().toISOString(),
+          expiration_timestamp: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+          threshold: scenario.passportScore.threshold.toString(),
+          stamps: apiStamps
         };
     }
   }
