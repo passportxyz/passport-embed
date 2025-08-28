@@ -56,3 +56,39 @@ Step-by-step MSW initialization for API mocking:
 - `dev/src/mocks/browser.ts/js`
 - `dev/public/mockServiceWorker.js`
 - `dev/.env.mock`
+
+## Playwright MCP Testing Workflow on Fedora
+
+Successfully configured Playwright MCP to work on Fedora systems:
+
+### Key Steps
+1. **Update .mcp.json**: Use `--browser chromium --headless` instead of Chrome
+2. **Install dependencies**: Run `fedora-install-playwright-deps.sh` script to install required system libraries
+3. **Create dev/.env**: Add dummy API key and scorer ID for MSW testing
+4. **Start dev server**: Run `npm run dev:mock` on changing ports (5173, 5174, etc)
+5. **Launch Playwright MCP**: Works in headless Chromium mode and can interact with the dev app
+6. **Mock wallet mode**: Eliminates need for MetaMask during development
+
+**Related files:**
+- `.mcp.json`
+- `fedora-install-playwright-deps.sh`
+- `dev/.env`
+
+## Widget User Flow States
+
+The PassportScoreWidget progresses through different body components based on user state:
+
+### State Progression
+1. **ConnectWalletBody** - Initial state showing "Connect Wallet" button
+2. **CheckingBody** - Shows "Verifying onchain activity..." after wallet connection
+3. **ScoreTooLowBody** - Shown if score < threshold (has InitialTooLow and AddStamps states)
+4. **CongratsBody** - Final success state when score >= threshold
+
+### Styling Notes
+- Each state uses consistent CSS with `--widget-padding-x/y` variables (20px)
+- Flex layouts for vertical centering
+- Consistent visual hierarchy throughout flow
+
+**Related files:**
+- `src/widgets/PassportScoreWidget.tsx`
+- `src/components/widget-body/*.tsx`

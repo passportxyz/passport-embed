@@ -69,3 +69,22 @@ When MSW is active:
 - `src/config/environment.ts/js`
 - `dev/.env.mock`
 - `dev/src/components/ScenarioSwitcher.tsx/jsx`
+
+## Playwright MCP Configuration for Fedora
+
+Playwright MCP server configuration needs special settings for Fedora systems since Chrome isn't easily available:
+
+### Configuration Requirements
+- **Browser**: Must specify `--browser chromium` instead of Chrome
+- **Mode**: Use `--headless` for Fedora systems
+- **Dependencies**: Requires system libraries installed via `fedora-install-playwright-deps.sh`
+
+### Installation Script
+Created `fedora-install-playwright-deps.sh` script to install all required system dependencies for running Playwright browsers on Fedora/RHEL systems. The script installs libraries for:
+- Chromium support
+- Firefox support
+- WebKit support
+
+**Related files:**
+- `.mcp.json`
+- `fedora-install-playwright-deps.sh`
