@@ -3,6 +3,7 @@ import type { JestConfigWithTsJest } from "ts-jest";
 const config: JestConfigWithTsJest = {
   preset: "ts-jest",
   testEnvironment: "jsdom",
+  testRegex: "test/.*\.test\.tsx?$",
   transform: {
     "^.+\\.(ts|tsx)$": ["ts-jest", {}],
   },
