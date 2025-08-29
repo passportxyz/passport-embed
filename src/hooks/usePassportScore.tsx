@@ -18,6 +18,7 @@ export type PassportEmbedProps = {
   connectWalletCallback?: () => Promise<void>;
   generateSignatureCallback?: (message: string) => Promise<string | undefined>;
   overrideEmbedServiceUrl?: string;
+  opRPCURL?: string;
 };
 
 export type PassportQueryProps = Pick<PassportEmbedProps, "apiKey" | "address" | "scorerId"> & {

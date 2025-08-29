@@ -6,7 +6,6 @@ import {
   getCleanHandsSPAttestationByAddress,
   type CredentialType,
   type HubV3SBT,
-  // setOptimismRpcUrl,
 } from "@holonym-foundation/human-id-sdk";
 import styles from "./PlatformVerification.module.css";
 import utilStyles from "../../utilStyles.module.css";
@@ -90,15 +89,6 @@ export const PlatformVerification = ({
 
   const getHasHumanIDSBT = useCallback(async (address: string) => {
     const addressAsHex = address as `0x${string}`
-
-    // TODO: What's the best way to set the RPC URL?
-    // const rpcUrl = process.env.NEXT_PUBLIC_PASSPORT_OP_RPC_URL;
-    // if (!rpcUrl) {
-    //   console.warn("Optimism RPC URL not configured for frontend SBT check");
-    //   return false;
-    // }
-    // setOptimismRpcUrl(rpcUrl);
-
     const validateSBT = (sbt: HubV3SBT) => {  
       if (sbt && typeof sbt === "object" && "expiry" in sbt) {
         // Check if SBT is not expired
