@@ -110,7 +110,7 @@ const Dashboard = () => {
           setAddress(address);
         }}
         generateSignatureCallback={generateSignature}
-
+        opRPCURL={import.meta.env.VITE_OP_RPC_URL as string}
         /*
         theme={{
           colors: {
