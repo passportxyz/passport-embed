@@ -54,7 +54,7 @@ export const PlatformVerification = ({
 }: {
   platform: Platform;
   onClose: () => void;
-  generateSignatureCallback: (message: string) => Promise<string | undefined>;
+  generateSignatureCallback?: (message: string) => Promise<string | undefined>;
 }) => {
   const { claimed } = usePlatformStatus({ platform });
   const isDeduped = usePlatformDeduplication({ platform });
@@ -65,6 +65,8 @@ export const PlatformVerification = ({
   const queryProps = useQueryContext();
   const { verifyCredentials } = useWidgetVerifyCredentials();
   const platformCredentialIds = platform.credentials.map(({ id }) => id);
+
+  const hasConfigurationError = platform.requiresSignature && !generateSignatureCallback;
 
   useEffect(() => {
     if (initiatedVerification && !isQuerying) {
@@ -91,7 +93,11 @@ export const PlatformVerification = ({
       </div>
 
       <ScrollableDiv className={styles.description} invertScrollIconColor={true}>
-        {failedVerification ? (
+        {hasConfigurationError ? (
+          <div>
+            Something's missing! This Stamp needs an extra setup step to work properly. If you're the site owner, please add a generateSignatureCallback to the widget configuration.
+          </div>
+        ) : failedVerification ? (
           <div>
             Unable to claim this Stamp. Find <Hyperlink href={platform.documentationLink}>instructions here</Hyperlink>{" "}
             and come back after.
@@ -115,6 +121,10 @@ export const PlatformVerification = ({
         invert={true}
         disabled={isQuerying || claimed}
         onClick={async () => {
+          if (hasConfigurationError) {
+            onClose();
+            return;
+          }
           let signature, credential;
           if (platform.requiresSignature) {
             // get the challenge and  sign it
@@ -130,7 +140,7 @@ export const PlatformVerification = ({
             credential = challenge.credential;
             const _challenge = challenge.credential.credentialSubject.challenge;
 
-            signature = await generateSignatureCallback(_challenge);
+            signature = await generateSignatureCallback!(_challenge);
           }
 
           if (platform.requiresPopup && platform.popupUrl) {
@@ -168,7 +178,7 @@ export const PlatformVerification = ({
           }
         }}
       >
-        {failedVerification ? "Try Again" : claimed ? "Already Verified" : `Verify${isQuerying ? "ing..." : ""}`}
+        {hasConfigurationError ? "Go Back" : failedVerification ? "Try Again" : claimed ? "Already Verified" : `Verify${isQuerying ? "ing..." : ""}`}
       </Button>
     </div>
   );

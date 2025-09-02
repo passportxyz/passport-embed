@@ -1,13 +1,15 @@
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { usePaginatedStampPages } from "../../src/hooks/useStampPages";
 import { fetchStampPages } from "../../src/utils/stampDataApi";
-import { mockExpectedConsoleErrorLog } from "../testUtils";
+import { setupTestQueryClient } from "../testUtils";
 
 jest.mock("../../src/utils/stampDataApi");
 
 const mockFetchStampPages = fetchStampPages as jest.MockedFunction<typeof fetchStampPages>;
 
 describe("usePaginatedStampPages", () => {
+  setupTestQueryClient();
+  
   const mockProps = {
     apiKey: "test-api-key",
     scorerId: "test-scorer-id",
@@ -58,13 +60,13 @@ describe("usePaginatedStampPages", () => {
     const { result } = renderHook(() => usePaginatedStampPages(mockProps));
 
     // Initial state
-    expect(result.current.loading).toBe(true);
+    expect(result.current.isLoading).toBe(true);
     expect(result.current.error).toBeNull();
     expect(result.current.page).toBeNull();
     expect(result.current.isFirstPage).toBe(true);
-    expect(result.current.isLastPage).toBe(false);
+    expect(result.current.isLastPage).toBe(true); // Before data loads, we assume 1 page
 
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     // State after data load
     expect(result.current.error).toBeNull();
@@ -76,6 +78,7 @@ describe("usePaginatedStampPages", () => {
         }),
       ]),
     });
+    expect(result.current.isLastPage).toBe(false); // Now we know there are 2 pages
   });
 
   it("should handle pagination correctly", async () => {
@@ -83,7 +86,7 @@ describe("usePaginatedStampPages", () => {
 
     const { result } = renderHook(() => usePaginatedStampPages(mockProps));
 
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     // Test next page
     act(() => {
@@ -109,7 +112,7 @@ describe("usePaginatedStampPages", () => {
 
     const { result } = renderHook(() => usePaginatedStampPages(mockProps));
 
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     // Try to go past the last page
     act(() => {
@@ -142,22 +145,101 @@ describe("usePaginatedStampPages", () => {
 
     expect(mockFetchStampPages).toHaveBeenCalledWith(propsWithIamUrl);
 
-    await waitFor(() => expect(result.current.loading).toBe(false));
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+  });
+
+  it("should provide refetch function", async () => {
+    mockFetchStampPages.mockResolvedValueOnce(mockRawStampPages);
+
+    const { result } = renderHook(() => usePaginatedStampPages(mockProps));
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.refetch).toBeDefined();
+    expect(typeof result.current.refetch).toBe("function");
+
+    // Mock a new response for refetch
+    const updatedMockPages = [
+      {
+        header: "Updated Page Header",
+        platforms: [
+          {
+            name: "Updated Platform",
+            description: "<p>Updated description</p>",
+            documentationLink: "http://updated.com",
+            credentials: [{ id: "updated-cred", weight: "50" }],
+            displayWeight: "50",
+          },
+        ],
+      },
+    ];
+
+    mockFetchStampPages.mockResolvedValueOnce(updatedMockPages);
+
+    // Call refetch
+    act(() => {
+      result.current.refetch();
+    });
+
+    await waitFor(() => {
+      expect(result.current.page?.header).toBe("Updated Page Header");
+    });
+  });
+
+  it("should cache data according to staleTime and gcTime settings", async () => {
+    mockFetchStampPages.mockResolvedValueOnce(mockRawStampPages);
+
+    const { result: result1 } = renderHook(() => usePaginatedStampPages(mockProps));
+
+    await waitFor(() => expect(result1.current.isLoading).toBe(false));
+
+    // Unmount and remount the hook immediately - should use cached data
+    const { result: result2 } = renderHook(() => usePaginatedStampPages(mockProps));
+
+    // Should not be loading since data is cached
+    expect(result2.current.isLoading).toBe(false);
+    expect(result2.current.page?.header).toBe("Page 1 Header");
+
+    // fetchStampPages should only have been called once
+    expect(mockFetchStampPages).toHaveBeenCalledTimes(1);
   });
 
   describe("Errors", () => {
-    mockExpectedConsoleErrorLog();
-
     it("should handle error cases", async () => {
       const errorMessage = "Network error";
       mockFetchStampPages.mockRejectedValueOnce(new Error(errorMessage));
 
       const { result } = renderHook(() => usePaginatedStampPages(mockProps));
 
-      await waitFor(() => expect(result.current.loading).toBe(false));
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      expect(result.current.error).toBe("Failed to load stamp pages");
+      expect(result.current.error).toBeDefined();
+      expect(result.current.error?.message).toBe(errorMessage);
       expect(result.current.page).toBeNull();
+    });
+
+    it("should be able to refetch after error", async () => {
+      const errorMessage = "Network error";
+      mockFetchStampPages.mockRejectedValueOnce(new Error(errorMessage));
+
+      const { result } = renderHook(() => usePaginatedStampPages(mockProps));
+
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      expect(result.current.error).toBeDefined();
+
+      // Now mock a successful response
+      mockFetchStampPages.mockResolvedValueOnce(mockRawStampPages);
+
+      // Call refetch
+      act(() => {
+        result.current.refetch();
+      });
+
+      await waitFor(() => {
+        expect(result.current.error).toBeNull();
+        expect(result.current.page?.header).toBe("Page 1 Header");
+      });
     });
   });
 });
