@@ -78,7 +78,7 @@ describe("usePaginatedStampPages", () => {
         }),
       ]),
     });
-    expect(result.current.isLastPage).toBe(false); // Now we know there are 2 pages
+    expect(result.current.isLastPage).toBe(false); // Now we know there are 3 pages (2 + More Options)
   });
 
   it("should handle pagination correctly", async () => {
@@ -95,9 +95,27 @@ describe("usePaginatedStampPages", () => {
 
     expect(result.current.page?.header).toBe("Page 2 Header");
     expect(result.current.isFirstPage).toBe(false);
+    expect(result.current.isLastPage).toBe(false); // Now there's a "More Options" page after this
+
+    // Test next page again to reach "More Options"
+    act(() => {
+      result.current.nextPage();
+    });
+
+    expect(result.current.page?.header).toBe("More Options");
+    expect(result.current.isFirstPage).toBe(false);
     expect(result.current.isLastPage).toBe(true);
 
     // Test prev page
+    act(() => {
+      result.current.prevPage();
+    });
+
+    expect(result.current.page?.header).toBe("Page 2 Header");
+    expect(result.current.isFirstPage).toBe(false);
+    expect(result.current.isLastPage).toBe(false);
+
+    // Test prev page again
     act(() => {
       result.current.prevPage();
     });
@@ -114,19 +132,21 @@ describe("usePaginatedStampPages", () => {
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-    // Try to go past the last page
+    // Try to go past the last page (now includes "More Options")
     act(() => {
-      result.current.nextPage();
-      result.current.nextPage();
+      result.current.nextPage(); // To Page 2
+      result.current.nextPage(); // To More Options
+      result.current.nextPage(); // Should stay on More Options
     });
 
     expect(result.current.isLastPage).toBe(true);
-    expect(result.current.page?.header).toBe("Page 2 Header");
+    expect(result.current.page?.header).toBe("More Options");
 
     // Try to go before the first page
     act(() => {
-      result.current.prevPage();
-      result.current.prevPage();
+      result.current.prevPage(); // To Page 2
+      result.current.prevPage(); // To Page 1
+      result.current.prevPage(); // Should stay on Page 1
     });
 
     expect(result.current.isFirstPage).toBe(true);
@@ -202,6 +222,24 @@ describe("usePaginatedStampPages", () => {
 
     // fetchStampPages should only have been called once
     expect(mockFetchStampPages).toHaveBeenCalledTimes(1);
+  });
+
+  it("should include 'More Options' page as the last page", async () => {
+    mockFetchStampPages.mockResolvedValueOnce(mockRawStampPages);
+
+    const { result } = renderHook(() => usePaginatedStampPages(mockProps));
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    // Navigate to the last page
+    act(() => {
+      result.current.nextPage(); // To Page 2
+      result.current.nextPage(); // To More Options
+    });
+
+    expect(result.current.page?.header).toBe("More Options");
+    expect(result.current.page?.platforms).toEqual([]);
+    expect(result.current.isLastPage).toBe(true);
   });
 
   describe("Errors", () => {

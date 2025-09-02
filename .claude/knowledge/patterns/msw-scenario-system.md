@@ -69,3 +69,47 @@ All MSW mock files must be TypeScript (.ts) not JavaScript (.js):
 **Related files:**
 - `dev/src/mocks/*.ts`
 - `dev/src/components/ScenarioSwitcher.tsx`
+
+## MSW Error Scenario Testing Pattern
+
+### Implementation Strategy
+To test error scenarios with MSW effectively:
+
+1. **Add behavior flags to scenarios** (e.g., `stampPagesBehavior`)
+2. **Check flags in MSW handlers** and return appropriate error responses
+3. **ScenarioManager.getCurrentScenario()** should always re-detect from URL to handle navigation
+4. **Error messages from axios** are standardized: "Request failed with status code XXX" (not custom messages)
+5. **Test with Playwright MCP first** to verify scenarios work before writing E2E tests
+
+### Example Pattern
+```typescript
+// In scenarios.ts
+export const scenarios = {
+  'stamp-pages-error': {
+    stampPagesBehavior: 'error-500',
+    // ... other scenario data
+  }
+};
+
+// In handlers.ts
+http.get('*/embed/stamps/metadata', () => {
+  const scenario = ScenarioManager.getCurrentScenario();
+  if (scenario.stampPagesBehavior === 'error-500') {
+    return new Response(null, { status: 500 });
+  }
+  // ... normal response
+});
+```
+
+### Testing Workflow
+1. Create scenario with error behavior flag
+2. Implement handler logic to check flag
+3. Test manually with Playwright MCP
+4. Write E2E test with proper waits for React Query retries
+5. Verify error message appears after retries complete
+
+**Related files:**
+- `dev/src/mocks/scenarios.ts`
+- `dev/src/mocks/handlers.ts`
+- `dev/src/mocks/ScenarioManager.ts`
+- `dev/tests/e2e/stamp-errors.spec.ts`
