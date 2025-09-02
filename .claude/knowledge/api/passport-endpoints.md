@@ -43,6 +43,30 @@ Individual platform verification endpoint.
 **Parameters**: Platform name in URL path
 **Body**: Platform-specific verification data
 
+## Stamp Pages Endpoint
+
+### GET `/embed/stamps/metadata`
+Fetches available stamp pages and their metadata.
+
+**Purpose**: Get list of available stamp verification options
+**Response**: Array of stamp page configurations
+
+**Error Responses**:
+- **500**: Server error - "Request failed with status code 500"
+- **401**: Invalid API key - "Request failed with status code 401"
+- **404**: Scorer not found - "Request failed with status code 404"
+- **429**: Rate limited - "Request failed with status code 429"
+
+**UI Behavior**:
+- Shows axios error message in UI
+- Displays "Try Again" button that calls `refetch()` from React Query
+- Uses React Query with 1 hour stale time
+- No refetch on mount/focus
+
+**Related files:**
+- `src/hooks/useStampPages.tsx`
+- `src/components/Body/ScoreTooLowBody.tsx`
+
 ## Rate Limiting
 
 ### HTTP 429 Responses

@@ -2,7 +2,7 @@
 
 ## 📁 API
 - @api/public-exports.md - Library's public API including components, hooks (with usePassportQueryClient details), themes, and types
-- @api/passport-endpoints.md - API endpoints with correct paths (/embed/score) and snake_case response format
+- @api/passport-endpoints.md - API endpoints with correct paths (/embed/score), snake_case response format, and stamp pages endpoint
 
 ## 🏗️ Architecture
 - @architecture/build-system.md - Webpack configuration, build philosophy, React Query integration, and Passport widget body component structure
@@ -19,15 +19,17 @@
 - @gotchas/ui-alignment.md - Text alignment issues in Passport widget, padding impacts on Stamp flow, and solutions
 - @gotchas/missing-components.md - ScenarioSwitcher component didn't exist, MSW files JavaScript conversion error, dev environment API key requirements
 - @gotchas/msw-handler-issues.md - MSW handler URL mismatch and bash process termination issues
+- @gotchas/playwright-test-issues.md - Test timeouts and beforeEach navigation issues
 
 ## 🎯 Patterns
-- @patterns/msw-scenario-system.md - Flexible mock data architecture and TypeScript file structure for testing different user states
+- @patterns/msw-scenario-system.md - Flexible mock data architecture, TypeScript file structure, and error scenario testing patterns
 - @patterns/wallet-callback-pattern.md - Framework-agnostic wallet integration through callbacks
 
 ## 🧪 Testing
 - @testing/framework-setup.md - Complete test framework setup with detailed MSW scenarios and testing flow
 - @testing/mock-wallet-strategy.md - Dual mocking approach for wallet and API testing without external dependencies
 - @testing/msw-dev-environment.md - MSW development environment testing states and UI displays
+- @testing/e2e-test-configuration.md - Playwright E2E test setup, selectors, and React Query behavior
 
 ## 🔄 Workflows
 - @workflows/development.md - Local development setup, hot reload configuration, MSW setup process, Playwright MCP testing workflow on Fedora, widget user flow states
