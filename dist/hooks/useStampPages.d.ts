@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { PassportQueryProps } from "./usePassportScore";
+export declare const VISIT_PASSPORT_HEADER = "More Options";
 export type Credential = {
     id: string;
     weight: string;
@@ -26,12 +27,13 @@ type RawStampPageData = Omit<StampPage, "platforms"> & {
 };
 export type StampsMetadataResponse = RawStampPageData[];
 export declare const usePaginatedStampPages: ({ apiKey, scorerId, embedServiceUrl }: PassportQueryProps) => {
-    page: StampPage;
+    page: StampPage | null;
     nextPage: () => void;
     prevPage: () => void;
     isFirstPage: boolean;
     isLastPage: boolean;
-    loading: boolean;
-    error: string | null;
+    isLoading: boolean;
+    error: Error | null;
+    refetch: (options?: import("@tanstack/react-query").RefetchOptions) => Promise<import("@tanstack/react-query").QueryObserverResult<StampPage[], Error>>;
 };
 export {};
