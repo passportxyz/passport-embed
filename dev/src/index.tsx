@@ -121,7 +121,7 @@ const mockWallet = {
   }
 };
 
-const Dashboard = ({ walletMode, onWalletModeChange }: { walletMode: "metamask" | "mock", onWalletModeChange: (mode: "metamask" | "mock") => void }) => {
+const Dashboard = ({ walletMode }: { walletMode: "metamask" | "mock" }) => {
   const [address, setAddress] = useState<string | undefined>();
   const [collapseMode, setCollapseMode] = useState<CollapseMode>("shift");
 
@@ -188,7 +188,7 @@ export const App = () => {
   
   return (
     <>
-      <Dashboard walletMode={walletMode} onWalletModeChange={setWalletMode} />
+      <Dashboard walletMode={walletMode} />
       {showMocks && (
         <DevToolsPanel 
           walletMode={walletMode} 

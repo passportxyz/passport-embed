@@ -7,15 +7,7 @@ interface Stamp {
   expirationDate: Date;
 }
 
-interface ScoreResponse {
-  address: string;
-  score: number;
-  passingScore: boolean;
-  threshold: number;
-  stamps: Record<string, Stamp>;
-  lastScoreTimestamp: Date;
-  expirationTimestamp: Date;
-}
+// Removed unused interface - ScoreResponse
 
 class ScenarioManager {
   private current: string;
@@ -57,7 +49,7 @@ class ScenarioManager {
   }
   
   // Encapsulate all response generation logic
-  getScoreResponse(address: string): any {
+  getScoreResponse(address: string): Record<string, unknown> {
     const scenario = this.getCurrentScenario();
     
     // Handle rate limiting
@@ -77,7 +69,7 @@ class ScenarioManager {
     const totalScore = Object.values(currentStamps).reduce((sum, stamp) => sum + stamp.score, 0);
     
     // Convert stamps to API format with snake_case
-    const apiStamps: Record<string, any> = {};
+    const apiStamps: Record<string, { score: string; expiration_date: string; dedup: boolean }> = {};
     Object.entries(currentStamps).forEach(([key, stamp]) => {
       apiStamps[key] = {
         score: stamp.score.toString(),
@@ -98,7 +90,7 @@ class ScenarioManager {
     };
   }
   
-  getVerifyResponse(address: string, credentialIds?: string[]): any {
+  getVerifyResponse(address: string, credentialIds?: string[]): Record<string, unknown> {
     const scenario = this.getCurrentScenario();
     
     // Handle different verification behaviors
@@ -122,7 +114,7 @@ class ScenarioManager {
         );
         
       case 'success':
-      default:
+      default: {
         if (!scenario.canAddStamps) {
           return this.getScoreResponse(address);
         }
@@ -150,7 +142,7 @@ class ScenarioManager {
         const updatedScore = Object.values(allStamps).reduce((sum, stamp) => sum + stamp.score, 0);
         
         // Convert stamps to API format with snake_case
-        const apiStamps: Record<string, any> = {};
+        const apiStamps: Record<string, { score: string; expiration_date: string; dedup: boolean }> = {};
         Object.entries(allStamps).forEach(([key, stamp]) => {
           apiStamps[key] = {
             score: stamp.score.toString(),
@@ -169,6 +161,7 @@ class ScenarioManager {
           threshold: scenario.passportScore.threshold.toString(),
           stamps: apiStamps
         };
+      }
     }
   }
 }

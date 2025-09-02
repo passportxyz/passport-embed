@@ -13,7 +13,7 @@ export const test = base.extend<{
 export { expect };
 
 // Helper to mock different wallet scenarios
-export async function mockWalletScenario(page: any, scenario: 'connected' | 'disconnected' | 'low-score') {
+export async function mockWalletScenario(page: { evaluate: (fn: (address: string | null) => void, arg: string | null) => Promise<void> }, scenario: 'connected' | 'disconnected' | 'low-score') {
   const addresses = {
     connected: '0x1234567890123456789012345678901234567890',
     disconnected: null,
@@ -27,7 +27,7 @@ export async function mockWalletScenario(page: any, scenario: 'connected' | 'dis
 }
 
 // Helper to wait for React Query to settle
-export async function waitForQuery(page: any) {
+export async function waitForQuery(page: { waitForFunction: (fn: () => boolean) => Promise<void> }) {
   await page.waitForFunction(() => {
     const queryClient = window.__REACT_QUERY_CLIENT__;
     if (!queryClient) return true;

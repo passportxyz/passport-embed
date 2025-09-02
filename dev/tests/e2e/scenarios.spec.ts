@@ -70,12 +70,9 @@ test.describe('MSW Scenarios', () => {
     // Should show rate limit error or retry behavior
     // The actual UI behavior depends on how the app handles 429 errors
     // Check that we got a 429 error in the console or network
-    const hasRateLimitError = consoleErrors.some(err => 
-      err.includes('429') || err.includes('rate') || err.includes('Rate')
-    );
-    
     // The app might show an error state or retry
     // This is where you'd check for your specific error UI
+    // Note: consoleErrors will contain any errors that occurred
   });
 
   test('should switch scenarios using the UI switcher', async ({ page }) => {
