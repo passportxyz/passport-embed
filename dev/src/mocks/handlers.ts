@@ -69,7 +69,50 @@ export const handlers = [
 
   // Mock stamps metadata endpoint - returns available stamps for verification
   http.get(`${API_BASE}/embed/stamps/metadata`, async () => {
+    console.log('%c📍 [Stamp Pages] Handler called', 'color: #4CAF50');
     await delay(300);
+    
+    const scenario = scenarioManager.getCurrentScenario();
+    console.log('%c📍 [Stamp Pages] Current scenario:', 'color: #4CAF50', scenario.name);
+    console.log('%c📍 [Stamp Pages] stampPagesBehavior:', 'color: #4CAF50', scenario.stampPagesBehavior);
+    
+    // Handle error scenarios for stamp pages
+    if (scenario.stampPagesBehavior === 'error') {
+      console.log('%c❌ [Stamp Pages] Server error fetching stamp metadata', 'color: #f44336');
+      return new HttpResponse(
+        JSON.stringify({ error: 'Internal server error', message: 'Failed to fetch stamp metadata' }),
+        { status: 500 }
+      );
+    }
+    
+    if (scenario.stampPagesBehavior === 'config-error') {
+      console.log('%c❌ [Stamp Pages] Invalid API key', 'color: #f44336');
+      return new HttpResponse(
+        JSON.stringify({ error: 'Unauthorized', message: 'Invalid API key provided' }),
+        { status: 401 }
+      );
+    }
+    
+    if (scenario.stampPagesBehavior === 'not-found') {
+      console.log('%c❌ [Stamp Pages] Scorer not found', 'color: #f44336');
+      return new HttpResponse(
+        JSON.stringify({ error: 'Not found', message: 'Scorer configuration not found' }),
+        { status: 404 }
+      );
+    }
+    
+    if (scenario.stampPagesBehavior === 'rate-limit') {
+      console.log('%c❌ [Stamp Pages] Rate limited', 'color: #f44336');
+      return new HttpResponse(
+        JSON.stringify({ error: 'Too many requests', message: 'Rate limit exceeded. Please try again later.' }),
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': '60'
+          }
+        }
+      );
+    }
     
     // Return mock stamp pages with available platforms
     return HttpResponse.json([

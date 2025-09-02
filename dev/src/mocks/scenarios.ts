@@ -20,6 +20,7 @@ export interface Scenario {
   passportScore: PassportScore;
   verificationBehavior: 'success' | 'failure' | 'rate-limit';
   canAddStamps: boolean;
+  stampPagesBehavior?: 'success' | 'error' | 'config-error' | 'not-found' | 'rate-limit';
 }
 
 export const scenarios: Record<string, Scenario> = {
@@ -167,5 +168,80 @@ export const scenarios: Record<string, Scenario> = {
     },
     verificationBehavior: 'success',
     canAddStamps: true,
+  },
+  
+  'stamps-fetch-error': {
+    name: 'stamps-fetch-error',
+    description: 'Server error fetching stamp pages',
+    passportScore: {
+      address: '0x1234567890123456789012345678901234567890',
+      score: 12.5,
+      passingScore: false,
+      threshold: 20,
+      stamps: {
+        'Google': { score: 5.0, dedup: true, expirationDate: new Date() },
+        'Twitter': { score: 4.5, dedup: true, expirationDate: new Date() },
+        'GitHub': { score: 3.0, dedup: false, expirationDate: new Date() },
+      }
+    },
+    verificationBehavior: 'success',
+    canAddStamps: true,
+    stampPagesBehavior: 'error',
+  },
+  
+  'stamps-config-error': {
+    name: 'stamps-config-error',
+    description: 'Invalid API key for stamp pages',
+    passportScore: {
+      address: '0x1234567890123456789012345678901234567890',
+      score: 15,
+      passingScore: false,
+      threshold: 20,
+      stamps: {
+        'Google': { score: 5.0, dedup: true, expirationDate: new Date() },
+        'Twitter': { score: 4.5, dedup: true, expirationDate: new Date() },
+        'GitHub': { score: 5.5, dedup: false, expirationDate: new Date() },
+      }
+    },
+    verificationBehavior: 'success',
+    canAddStamps: true,
+    stampPagesBehavior: 'config-error',
+  },
+  
+  'stamps-not-found': {
+    name: 'stamps-not-found',
+    description: 'Scorer not found for stamp pages',
+    passportScore: {
+      address: '0x1234567890123456789012345678901234567890',
+      score: 10,
+      passingScore: false,
+      threshold: 20,
+      stamps: {
+        'Google': { score: 5.0, dedup: true, expirationDate: new Date() },
+        'Twitter': { score: 5.0, dedup: true, expirationDate: new Date() },
+      }
+    },
+    verificationBehavior: 'success',
+    canAddStamps: true,
+    stampPagesBehavior: 'not-found',
+  },
+  
+  'stamps-rate-limited': {
+    name: 'stamps-rate-limited',
+    description: 'Rate limited on stamp pages endpoint',
+    passportScore: {
+      address: '0x1234567890123456789012345678901234567890',
+      score: 14,
+      passingScore: false,
+      threshold: 20,
+      stamps: {
+        'Google': { score: 5.0, dedup: true, expirationDate: new Date() },
+        'Twitter': { score: 4.5, dedup: true, expirationDate: new Date() },
+        'GitHub': { score: 4.5, dedup: false, expirationDate: new Date() },
+      }
+    },
+    verificationBehavior: 'success',
+    canAddStamps: false,
+    stampPagesBehavior: 'rate-limit',
   },
 };

@@ -51,6 +51,8 @@ class ScenarioManager {
   }
   
   getCurrentScenario(): Scenario {
+    // Always re-detect the scenario from URL to handle navigation
+    this.current = this.detectScenario();
     return scenarios[this.current];
   }
   
