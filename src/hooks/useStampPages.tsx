@@ -5,6 +5,9 @@ import { fetchStampPages } from "../utils/stampDataApi";
 import { PassportQueryProps } from "./usePassportScore";
 import { usePassportQueryClient } from "./usePassportQueryClient";
 
+const INCLUDE_VISIT_PASSPORT_PAGE = true;
+export const VISIT_PASSPORT_HEADER = "More Options";
+
 export type Credential = {
   id: string;
   weight: string;
@@ -45,31 +48,40 @@ export const usePaginatedStampPages = ({ apiKey, scorerId, embedServiceUrl }: Pa
     isLoading,
     error,
     refetch,
-  } = useQuery({
-    queryKey: ['stampPages', apiKey, scorerId, embedServiceUrl],
-    queryFn: async () => {
-      const data = await fetchStampPages({
-        apiKey,
-        scorerId,
-        embedServiceUrl,
-      });
+  } = useQuery(
+    {
+      queryKey: ["stampPages", apiKey, scorerId, embedServiceUrl],
+      queryFn: async () => {
+        const data = await fetchStampPages({
+          apiKey,
+          scorerId,
+          embedServiceUrl,
+        });
 
-      const formattedData: StampPage[] = data.map((page: RawStampPageData) => ({
-        ...page,
-        platforms: page.platforms.map((platform) => ({
-          ...platform,
-          description: <SanitizedHTMLComponent html={platform.description || ""} />,
-          displayWeight: platform.displayWeight,
-        })),
-      }));
+        const formattedData: StampPage[] = data.map((page: RawStampPageData) => ({
+          ...page,
+          platforms: page.platforms.map((platform) => ({
+            ...platform,
+            description: <SanitizedHTMLComponent html={platform.description || ""} />,
+            displayWeight: platform.displayWeight,
+          })),
+        }));
 
-      return formattedData;
+        if (INCLUDE_VISIT_PASSPORT_PAGE)
+          formattedData.push({
+            header: VISIT_PASSPORT_HEADER,
+            platforms: [],
+          });
+
+        return formattedData;
+      },
+      staleTime: 1000 * 60 * 60, // Consider data fresh for 1 hour
+      gcTime: 1000 * 60 * 60 * 2, // Keep in cache for 2 hours
+      refetchOnWindowFocus: false, // Don't refetch when tab regains focus
+      refetchOnMount: false, // Don't refetch if data exists in cache
     },
-    staleTime: 1000 * 60 * 60, // Consider data fresh for 1 hour
-    gcTime: 1000 * 60 * 60 * 2, // Keep in cache for 2 hours
-    refetchOnWindowFocus: false, // Don't refetch when tab regains focus
-    refetchOnMount: false, // Don't refetch if data exists in cache
-  }, queryClient);
+    queryClient
+  );
 
   // Pagination controls
   const nextPage = () => setIdx((prev) => Math.min(prev + 1, (stampPages?.length ?? 1) - 1));
@@ -80,14 +92,14 @@ export const usePaginatedStampPages = ({ apiKey, scorerId, embedServiceUrl }: Pa
 
   const page = stampPages?.[idx] ?? null;
 
-  return { 
-    page, 
-    nextPage, 
-    prevPage, 
-    isFirstPage, 
-    isLastPage, 
-    isLoading, 
+  return {
+    page,
+    nextPage,
+    prevPage,
+    isFirstPage,
+    isLastPage,
+    isLoading,
     error,
-    refetch
+    refetch,
   };
 };
