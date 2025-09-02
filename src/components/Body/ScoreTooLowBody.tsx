@@ -143,7 +143,7 @@ export const AddStamps = ({
       <div className={styles.textBlock}>
         <div className={styles.heading}>{header}</div>
         {isVisitPassportPage ? (
-          <div>
+          <div className={styles.innerText}>
             Visit <Hyperlink href="https://app.passport.xyz">Human Passport</Hyperlink> for more Stamp options!
           </div>
         ) : (
