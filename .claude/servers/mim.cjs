@@ -14,8 +14,8 @@ function respondError(id, code, message) {
     console.log(JSON.stringify(response));
 }
 
-// The actual gathering function
-function gatherKnowledge(args) {
+// The actual remembering function
+function remember(args) {
     const { category, topic, details, files } = args;
     
     // Ensure knowledge directory exists
@@ -44,7 +44,7 @@ function gatherKnowledge(args) {
     // Atomic append
     fs.appendFileSync(sessionFile, entry);
     
-    return `✓ Gathered to .claude/knowledge/session.md: [${category}] ${topic}`;
+    return `✓ Remembered in .claude/knowledge/session.md: [${category}] ${topic}`;
 }
 
 // Set up stdin reader for JSON-RPC
@@ -62,7 +62,7 @@ rl.on('line', (line) => {
         if (request.method === 'initialize') {
             respond(request.id, {
                 protocolVersion: '2024-11-05',
-                serverInfo: { name: 'chronicler', version: '1.0.0' },
+                serverInfo: { name: 'mim', version: '1.0.0' },
                 capabilities: {
                     tools: {}
                 }
@@ -70,7 +70,7 @@ rl.on('line', (line) => {
         } else if (request.method === 'tools/list') {
             respond(request.id, {
                 tools: [{
-                    name: 'gather_knowledge',
+                    name: 'remember',
                     description: `Capture learned information about the project for automatic documentation. Use PROACTIVELY when discovering architecture, patterns, dependencies, workflows, configurations, or surprising behaviors.
 
 ⚠️ MANDATORY TRIGGERS - Use this tool IMMEDIATELY when:
@@ -83,7 +83,7 @@ rl.on('line', (line) => {
 • You realize your initial assumption was wrong
 
 ❌ BAD: Saying "for future reference, use yarn not npm" without using this tool
-✅ GOOD: Immediately gathering this knowledge when you realize it`,
+✅ GOOD: Immediately remembering this knowledge when you realize it`,
                     inputSchema: {
                         type: 'object',
                         properties: {
@@ -111,14 +111,14 @@ rl.on('line', (line) => {
                 }]
             });
         } else if (request.method === 'tools/call') {
-            if (request.params.name === 'gather_knowledge') {
+            if (request.params.name === 'remember') {
                 try {
-                    const result = gatherKnowledge(request.params.arguments);
+                    const result = remember(request.params.arguments);
                     respond(request.id, {
                         content: [{ type: 'text', text: result }]
                     });
                 } catch (error) {
-                    respondError(request.id, -32603, `Gathering failed: ${error.message}`);
+                    respondError(request.id, -32603, `Remembering failed: ${error.message}`);
                 }
             } else {
                 respondError(request.id, -32601, `Unknown tool: ${request.params.name}`);

@@ -1,0 +1,73 @@
+# Passport API Endpoints
+
+## Score Endpoint
+
+### GET `/embed/score/{scorerId}/{address}`
+Fetches the current passport score for a given address.
+
+**Important**: The actual API path is `/embed/score`, NOT `/api/v1/score`
+
+**Response Format**: All fields use snake_case (not camelCase)
+```typescript
+{
+  address: string
+  score: string  // numeric value as string
+  passing_score: boolean  // NOT passingScore
+  last_score_timestamp: string  // ISO timestamp
+  expiration_timestamp: string  // ISO timestamp
+  threshold: string  // numeric value as string
+  stamps: {
+    score: string
+    dedup: boolean
+    expiration_date: string  // ISO timestamp
+  }[]
+}
+```
+
+**Note**: The widget's `usePassportScore` hook internally converts these snake_case fields to camelCase for component usage.
+
+## Verification Endpoints
+
+### POST `/embed/verify/{scorerId}/{address}`
+Verifies and adds new credentials/stamps to a passport.
+
+**Important**: The actual API path is `/embed/verify`, NOT `/api/v1/verify`
+
+**Purpose**: Bulk verification of multiple stamps
+**Returns**: Updated passport score with new stamps (same format as score endpoint)
+
+### POST `/api/v1/platform/{platform}/verify`
+Individual platform verification endpoint.
+
+**Purpose**: Verify a single platform credential
+**Parameters**: Platform name in URL path
+**Body**: Platform-specific verification data
+
+## Rate Limiting
+
+### HTTP 429 Responses
+- **Status**: 429 Too Many Requests
+- **Header**: `Retry-After` (seconds to wait)
+- **React Query handling**: Automatically handled without retries
+- **User experience**: Shows rate limit message in UI
+
+## Error Handling
+
+- **400**: Bad request - invalid parameters
+- **401**: Unauthorized - invalid API key
+- **404**: Not found - scorer or address not found
+- **429**: Rate limited - too many requests
+- **500**: Internal server error
+
+## Environment Configuration
+
+- **Service URL**: Configurable via `VITE_EMBED_SERVICE_URL`
+- **Default**: Uses `DEFAULT_EMBED_SERVICE_URL` constant
+- **API Key**: Required via `VITE_API_KEY`
+- **Scorer ID**: Required via `VITE_SCORER_ID`
+
+**Related files:**
+- `src/hooks/usePassportScore.tsx`
+- `dev/src/mocks/handlers.ts`
+- `dev/src/mocks/ScenarioManager.ts`
+- `src/config/environment.ts`
