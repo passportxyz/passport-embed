@@ -4,7 +4,7 @@ import { Button } from "../Button";
 import { useEffect, useState } from "react";
 import { useHeaderControls } from "../../hooks/useHeaderControls";
 import { useWidgetPassportScore } from "../../hooks/usePassportScore";
-import { usePaginatedStampPages, Platform } from "../../hooks/useStampPages";
+import { usePaginatedStampPages, Platform, VISIT_PASSPORT_HEADER } from "../../hooks/useStampPages";
 import { TextButton } from "../TextButton";
 import { RightArrow } from "../../assets/rightArrow";
 import { ScrollableDiv } from "../ScrollableDiv";
@@ -26,8 +26,6 @@ export const Hyperlink = ({
     {children}
   </a>
 );
-
-const VISIT_PASSPORT_HEADER = "More Options";
 
 export const ScoreTooLowBody = ({
   generateSignatureCallback,
@@ -101,28 +99,30 @@ export const AddStamps = ({
     setSubtitle("VERIFY STAMPS");
   }, [setSubtitle]);
 
-
-  if (isLoading) return (
-    <div className={styles.textBlock}>
-      <div>Loading Stamps Metadata...</div>
-    </div>
-  );
-  if (error) return (
-    <>
+  if (isLoading)
+    return (
       <div className={styles.textBlock}>
-        <div>{error instanceof Error ? error.message : "Failed to load stamp pages"}</div>
+        <div>Loading Stamps Metadata...</div>
       </div>
-      <Button className={utilStyles.wFull} onClick={() => refetch()}>
-        Try Again
-      </Button>
-    </>
-  );
-  if (!page) return (
-    <div className={styles.textBlock}>
-      <div className={styles.heading}>No Stamps Available</div>
-      <div>No stamp metadata available at this time.</div>
-    </div>
-  );
+    );
+  if (error)
+    return (
+      <>
+        <div className={styles.textBlock}>
+          <div>{error instanceof Error ? error.message : "Failed to load stamp pages"}</div>
+        </div>
+        <Button className={utilStyles.wFull} onClick={() => refetch()}>
+          Try Again
+        </Button>
+      </>
+    );
+  if (!page)
+    return (
+      <div className={styles.textBlock}>
+        <div className={styles.heading}>No Stamps Available</div>
+        <div>No stamp metadata available at this time.</div>
+      </div>
+    );
 
   const { header, platforms } = page;
 
