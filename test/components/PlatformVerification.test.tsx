@@ -222,6 +222,69 @@ describe("PlatformVerification", () => {
     });
   });
 
+  describe("Configuration Error", () => {
+    it("should show configuration error when signature is required but callback is not provided", () => {
+      render(
+        <PlatformVerification
+          platform={mockPlatform}
+          onClose={mockOnClose}
+          generateSignatureCallback={undefined}
+        />
+      );
+
+      expect(
+        screen.getByText(/Something's missing! This Stamp needs an extra setup step to work properly/)
+      ).toBeInTheDocument();
+      expect(screen.getByText("Go Back")).toBeInTheDocument();
+    });
+
+    it("should handle Go Back button click when configuration error is shown", () => {
+      render(
+        <PlatformVerification
+          platform={mockPlatform}
+          onClose={mockOnClose}
+          generateSignatureCallback={undefined}
+        />
+      );
+
+      fireEvent.click(screen.getByText("Go Back"));
+      expect(mockOnClose).toHaveBeenCalled();
+    });
+
+    it("should not show configuration error when signature is not required", () => {
+      render(
+        <PlatformVerification
+          platform={{
+            ...mockPlatform,
+            requiresSignature: false,
+          }}
+          onClose={mockOnClose}
+          generateSignatureCallback={undefined}
+        />
+      );
+
+      expect(
+        screen.queryByText(/Something's missing! This Stamp needs an extra setup step to work properly/)
+      ).not.toBeInTheDocument();
+      expect(screen.getByText("Verify your LinkedIn account")).toBeInTheDocument();
+    });
+
+    it("should not show configuration error when callback is provided", () => {
+      render(
+        <PlatformVerification
+          platform={mockPlatform}
+          onClose={mockOnClose}
+          generateSignatureCallback={mockGenerateSignature}
+        />
+      );
+
+      expect(
+        screen.queryByText(/Something's missing! This Stamp needs an extra setup step to work properly/)
+      ).not.toBeInTheDocument();
+      expect(screen.getByText("Verify your LinkedIn account")).toBeInTheDocument();
+    });
+  });
+
   describe("Platform Deduplication", () => {
     it("should show deduplication notice when platform has deduplicated stamps", () => {
       (usePlatformDeduplication.usePlatformDeduplication as jest.Mock).mockReturnValue(true);

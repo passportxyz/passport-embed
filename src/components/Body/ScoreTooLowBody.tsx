@@ -1,7 +1,7 @@
 import styles from "./Body.module.css";
 import utilStyles from "../../utilStyles.module.css";
 import { Button } from "../Button";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useHeaderControls } from "../../hooks/useHeaderControls";
 import { useWidgetPassportScore } from "../../hooks/usePassportScore";
 import { usePaginatedStampPages, Platform } from "../../hooks/useStampPages";
@@ -90,41 +90,43 @@ export const AddStamps = ({
   const { setSubtitle } = useHeaderControls();
   const queryProps = useQueryContext();
   const { scorerId, apiKey, embedServiceUrl } = queryProps;
-  const { page, nextPage, prevPage, isFirstPage, isLastPage, loading, error } = usePaginatedStampPages({
+  const { page, nextPage, prevPage, isFirstPage, isLastPage, isLoading, error, refetch } = usePaginatedStampPages({
     apiKey,
     scorerId,
     embedServiceUrl,
   });
-  const [configurationError, setConfigurationError] = useState<string | undefined>();
-  const [openPlatform, _setOpenPlatform] = useState<Platform | null>(null);
+  const [openPlatform, setOpenPlatform] = useState<Platform | null>(null);
 
   useEffect(() => {
     setSubtitle("VERIFY STAMPS");
   }, [setSubtitle]);
 
-  const setOpenPlatform = useCallback(
-    (openPlatform: Platform | null) => {
-      if (openPlatform && openPlatform.requiresSignature && !generateSignatureCallback) {
-        // This is a misconfiguration, the 'generateSignatureCallback' was not provided
-        setConfigurationError(
-          "Something's missing! This Stamp needs an extra setup step to work properly. If you're the site owner, please add a generateSignatureCallback to the widget configuration."
-        );
-      } else {
-        _setOpenPlatform(openPlatform);
-      }
-    },
-    [generateSignatureCallback]
+
+  if (isLoading) return (
+    <div className={styles.textBlock}>
+      <div>Loading Stamps Metadata...</div>
+    </div>
   );
-
-  if (loading) return <div>Loading Stamps Metadata...</div>;
-  if (error) return <div>{error}</div>;
-  if (configurationError) return <div>{configurationError}</div>;
-
-  if (!page) return <div>No stamp metadata available</div>;
+  if (error) return (
+    <>
+      <div className={styles.textBlock}>
+        <div>{error instanceof Error ? error.message : "Failed to load stamp pages"}</div>
+      </div>
+      <Button className={utilStyles.wFull} onClick={() => refetch()}>
+        Try Again
+      </Button>
+    </>
+  );
+  if (!page) return (
+    <div className={styles.textBlock}>
+      <div className={styles.heading}>No Stamps Available</div>
+      <div>No stamp metadata available at this time.</div>
+    </div>
+  );
 
   const { header, platforms } = page;
 
-  if (openPlatform && generateSignatureCallback) {
+  if (openPlatform) {
     return (
       <PlatformVerification
         platform={openPlatform}
