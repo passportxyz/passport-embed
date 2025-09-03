@@ -1,15 +1,6 @@
-import {
-  initHumanID,
-  getKycSBTByAddress,
-  getPhoneSBTByAddress,
-  getBiometricsSBTByAddress,
-  getCleanHandsSPAttestationByAddress,
-  type CredentialType,
-  type HubV3SBT,
-} from "@holonym-foundation/human-id-sdk";
 import styles from "./PlatformVerification.module.css";
 import utilStyles from "../../utilStyles.module.css";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../Button";
 import { Hyperlink } from "./ScoreTooLowBody";
 import { ScrollableDiv } from "../ScrollableDiv";
@@ -18,6 +9,7 @@ import { useQueryContext } from "../../hooks/useQueryContext";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
 import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
 import { Platform } from "../../hooks/useStampPages";
+import { useHumanIDVerification } from "../../hooks/useHumanIDVerification";
 
 const CloseIcon = () => (
   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -69,6 +61,8 @@ export const PlatformVerification = ({
   const isDeduped = usePlatformDeduplication({ platform });
   const [initiatedVerification, setInitiatedVerification] = useState(false);
   const [failedVerification, setFailedVerification] = useState(false);
+  const [isOAuthPopupOpen, setIsOAuthPopupOpen] = useState(false);
+  const [wasQuerying, setWasQuerying] = useState(false);
 
   const isQuerying = useWidgetIsQuerying();
   const queryProps = useQueryContext();
@@ -77,104 +71,42 @@ export const PlatformVerification = ({
 
   const hasConfigurationError = platform.requiresSignature && !generateSignatureCallback;
 
+  // Human ID verification hook
+  const { isHumanIDPlatform, verifyHumanID, isVerifying: isVerifyingHumanID } = useHumanIDVerification({
+    platform,
+    address: queryProps.address,
+    enabled: false, // We'll trigger manually
+  });
+
+  // Combined pending state for cleaner code
+  const isPending = isQuerying || isVerifyingHumanID || isOAuthPopupOpen;
+
+  // Track when query starts after initiation
   useEffect(() => {
-    if (initiatedVerification && !isQuerying) {
+    if (initiatedVerification && isQuerying) {
+      setWasQuerying(true);
+    }
+  }, [initiatedVerification, isQuerying]);
+
+  // Check completion and result
+  useEffect(() => {
+    const isFullyComplete = 
+      initiatedVerification && 
+      wasQuerying &&  // Ensures query actually ran
+      !isPending;
+      
+    if (isFullyComplete) {
       if (claimed) {
         onClose();
       } else {
         setFailedVerification(true);
       }
+      // Reset for next attempt
+      setInitiatedVerification(false);
+      setWasQuerying(false);
     }
-  }, [initiatedVerification, isQuerying, claimed, onClose]);
+  }, [initiatedVerification, wasQuerying, isPending, claimed, onClose]);
 
-  const getHasHumanIDSBT = useCallback(
-    async (address: string) => {
-      const addressAsHex = address as `0x${string}`;
-      const validateSBT = (sbt: HubV3SBT) => {
-        if (sbt && typeof sbt === "object" && "expiry" in sbt) {
-          // Check if SBT is not expired
-          const currentTime = BigInt(Math.floor(Date.now() / 1000));
-          if (sbt.expiry > currentTime && !sbt.revoked) {
-            return true;
-          }
-        }
-        return false;
-      };
-      try {
-        if (platform.platformId === "HumanIdKyc") {
-          const sbt = await getKycSBTByAddress(addressAsHex);
-          return validateSBT(sbt);
-        } else if (platform.platformId === "HumanIdPhone") {
-          const sbt = await getPhoneSBTByAddress(addressAsHex);
-          return validateSBT(sbt);
-        } else if (platform.platformId === "Biometrics") {
-          const sbt = await getBiometricsSBTByAddress(addressAsHex);
-          return validateSBT(sbt);
-        } else if (platform.platformId === "CleanHands") {
-          const attestation = await getCleanHandsSPAttestationByAddress(addressAsHex);
-          // getCleanHandsSPAttestationByAddress validates the attestation
-          return !!attestation;
-        } else {
-          throw new Error(`Unsupported Human ID platform: ${platform.platformId}`);
-        }
-      } catch (err) {
-        /* SBT query fns throw if the address is not found */
-        console.log("getHasSBT err", err);
-        return false;
-      }
-    },
-    [platform.platformId]
-  );
-
-  const handleVerifyHumanID = useCallback(async () => {
-    // Human ID initialization is idempotent, so we can initialize multiple times
-    // without worrying about side effects like increasing event listeners or
-    // adding multiple iframe elements to the document.
-    const provider = initHumanID();
-    let sbtType: CredentialType;
-    switch (platform.platformId) {
-      case "HumanIdKyc":
-        sbtType = "kyc";
-        break;
-      case "HumanIdPhone":
-        sbtType = "phone";
-        break;
-      case "Biometrics":
-        sbtType = "biometrics";
-        break;
-      case "CleanHands":
-        sbtType = "clean-hands";
-        break;
-      default:
-        throw new Error(`Unsupported Human ID platform: ${platform.name}`);
-    }
-
-    const onSuccess = () => {
-      verifyCredentials(platformCredentialIds);
-      setFailedVerification(false);
-      setInitiatedVerification(true);
-    };
-
-    try {
-      console.log("queryProps.address", queryProps.address);
-      if (!queryProps.address) {
-        throw new Error("No address found");
-      }
-      // First, check if the user already has the SBT
-      const hasHumanIDSBT = await getHasHumanIDSBT(queryProps.address);
-      if (hasHumanIDSBT) {
-        onSuccess();
-        return;
-      }
-      // If the user doesn't have the SBT, request it
-      const result = await provider.requestSBT(sbtType);
-      console.log("requestSBT result", result);
-      onSuccess();
-    } catch (err) {
-      console.log("requestSBT err", err);
-      setFailedVerification(true);
-    }
-  }, [platform.platformId]);
 
   return (
     <div className={styles.container}>
@@ -183,7 +115,7 @@ export const PlatformVerification = ({
         <button
           onClick={onClose}
           className={styles.closeButton}
-          disabled={isQuerying}
+          disabled={isPending}
           data-testid="close-platform-button"
         >
           <CloseIcon />
@@ -218,12 +150,33 @@ export const PlatformVerification = ({
       <Button
         className={utilStyles.wFull}
         invert={true}
-        disabled={isQuerying || claimed}
+        disabled={isPending || claimed}
         onClick={async () => {
           if (hasConfigurationError) {
             onClose();
             return;
           }
+          
+          // Reset states for new attempt
+          setInitiatedVerification(true);
+          setFailedVerification(false);
+          setWasQuerying(false);
+          
+          // Handle Human ID platforms first
+          if (isHumanIDPlatform) {
+            try {
+              await verifyHumanID();
+              // Now verify the credentials with the backend
+              verifyCredentials(platformCredentialIds);
+            } catch (error) {
+              console.log("Human ID verification error:", error);
+              setFailedVerification(true);
+              setInitiatedVerification(false); // Reset since we're not continuing
+            }
+            return;
+          }
+
+          // Handle signature-required platforms
           let signature, credential;
           if (platform.requiresSignature) {
             // get the challenge and  sign it
@@ -242,6 +195,7 @@ export const PlatformVerification = ({
             signature = await generateSignatureCallback!(_challenge);
           }
 
+          // Handle popup-required platforms
           if (platform.requiresPopup && platform.popupUrl) {
             // open the popup
             const oAuthPopUpUrl = `${platform.popupUrl}?address=${encodeURIComponent(
@@ -258,24 +212,25 @@ export const PlatformVerification = ({
 
             if (!popup) {
               console.error("Failed to open pop-up");
+              setInitiatedVerification(false); // Reset since we're not continuing
               return;
             }
 
+            setIsOAuthPopupOpen(true);
+            
             // Check if the pop-up is closed every 100ms
             const checkPopupClosed = setInterval(() => {
               if (popup.closed) {
                 clearInterval(checkPopupClosed);
                 console.log("Pop-up closed");
+                setIsOAuthPopupOpen(false);
                 // Verify platform credentials
                 verifyCredentials(platformCredentialIds);
               }
             }, 100);
-          } else if (["HumanIdKyc", "HumanIdPhone", "Biometrics", "CleanHands"].includes(platform.platformId)) {
-            handleVerifyHumanID();
           } else {
+            // Default verification
             verifyCredentials(platformCredentialIds);
-            setFailedVerification(false);
-            setInitiatedVerification(true);
           }
         }}
       >
@@ -285,7 +240,7 @@ export const PlatformVerification = ({
             ? "Try Again"
             : claimed
               ? "Already Verified"
-              : `Verify${isQuerying ? "ing..." : ""}`}
+              : `Verify${isPending ? "ing..." : ""}`}
       </Button>
     </div>
   );
