@@ -153,7 +153,7 @@ export const AddStamps = ({
       {isVisitPassportPage || (
         <ScrollableDiv className={styles.platformButtonGroup}>
           {platforms.map((platform) => (
-            <PlatformButton key={platform.name} platform={platform} setOpenPlatform={setOpenPlatform} />
+            <PlatformButton key={platform.platformId} platform={platform} setOpenPlatform={setOpenPlatform} />
           ))}
         </ScrollableDiv>
       )}

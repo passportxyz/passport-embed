@@ -120,6 +120,7 @@ export const handlers = [
         header: "Web3 & DeFi",
         platforms: [
           {
+            platformId: "ETH",
             name: "ETH",
             description: "Hold at least 0.01 ETH",
             documentationLink: "https://docs.passport.xyz/stamps/eth",
@@ -135,6 +136,7 @@ export const handlers = [
             displayWeight: "1"
           },
           {
+            platformId: "NFT",
             name: "NFT",
             description: "Own an NFT",
             documentationLink: "https://docs.passport.xyz/stamps/nft",
@@ -155,6 +157,7 @@ export const handlers = [
         header: "Social & Community",
         platforms: [
           {
+            platformId: "Discord",
             name: "Discord",
             description: "Active Discord member",
             documentationLink: "https://docs.passport.xyz/stamps/discord",
@@ -172,6 +175,7 @@ export const handlers = [
             displayWeight: "1"
           },
           {
+            platformId: "LinkedIn",
             name: "LinkedIn",
             description: "Verified LinkedIn account",
             documentationLink: "https://docs.passport.xyz/stamps/linkedin",
@@ -184,6 +188,45 @@ export const handlers = [
                 name: "LinkedIn Verified",
                 description: "Verified profile",
                 score: 6.0
+              }
+            ],
+            displayWeight: "2"
+          }
+        ]
+      },
+      {
+        header: "Identity Verification",
+        platforms: [
+          {
+            platformId: "HumanIdKyc",
+            name: "Government ID",
+            description: "Verify with government-issued ID",
+            documentationLink: "https://docs.passport.xyz/stamps/human-id",
+            requiresSignature: false,
+            credentials: [
+              {
+                id: "humanid-kyc",
+                name: "KYC Verified",
+                description: "Government ID verified",
+                score: 10.0
+              }
+            ],
+            displayWeight: "1"
+          },
+          {
+            platformId: "Binance",
+            name: "Binance",
+            description: "Verified Binance account",
+            documentationLink: "https://docs.passport.xyz/stamps/binance",
+            requiresSignature: true,
+            requiresPopup: true,
+            popupUrl: "https://binance.com/oauth/authorize",
+            credentials: [
+              {
+                id: "binance-verified",
+                name: "Binance KYC",
+                description: "KYC verified account",
+                score: 8.0
               }
             ],
             displayWeight: "2"

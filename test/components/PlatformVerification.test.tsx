@@ -23,6 +23,7 @@ describe("PlatformVerification", () => {
 
   // Common test props
   const mockPlatform: Platform = {
+    platformId: "LinkedIn",
     name: "LinkedIn",
     description: <div>Verify your LinkedIn account</div>,
     credentials: [{ id: "linkedin", weight: "1" }],

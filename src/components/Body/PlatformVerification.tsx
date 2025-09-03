@@ -101,21 +101,21 @@ export const PlatformVerification = ({
         return false;
       };
       try {
-        if (platform.name === "HumanIdKyc") {
+        if (platform.platformId === "HumanIdKyc") {
           const sbt = await getKycSBTByAddress(addressAsHex);
           return validateSBT(sbt);
-        } else if (platform.name === "HumanIdPhone") {
+        } else if (platform.platformId === "HumanIdPhone") {
           const sbt = await getPhoneSBTByAddress(addressAsHex);
           return validateSBT(sbt);
-        } else if (platform.name === "Biometrics") {
+        } else if (platform.platformId === "Biometrics") {
           const sbt = await getBiometricsSBTByAddress(addressAsHex);
           return validateSBT(sbt);
-        } else if (platform.name === "CleanHands") {
+        } else if (platform.platformId === "CleanHands") {
           const attestation = await getCleanHandsSPAttestationByAddress(addressAsHex);
           // getCleanHandsSPAttestationByAddress validates the attestation
           return !!attestation;
         } else {
-          throw new Error(`Unsupported Human ID platform: ${platform.name}`);
+          throw new Error(`Unsupported Human ID platform: ${platform.platformId}`);
         }
       } catch (err) {
         /* SBT query fns throw if the address is not found */
@@ -123,7 +123,7 @@ export const PlatformVerification = ({
         return false;
       }
     },
-    [platform.name]
+    [platform.platformId]
   );
 
   const handleVerifyHumanID = useCallback(async () => {
@@ -132,7 +132,7 @@ export const PlatformVerification = ({
     // adding multiple iframe elements to the document.
     const provider = initHumanID();
     let sbtType: CredentialType;
-    switch (platform.name) {
+    switch (platform.platformId) {
       case "HumanIdKyc":
         sbtType = "kyc";
         break;
@@ -174,7 +174,7 @@ export const PlatformVerification = ({
       console.log("requestSBT err", err);
       setFailedVerification(true);
     }
-  }, [platform.name]);
+  }, [platform.platformId]);
 
   return (
     <div className={styles.container}>
@@ -235,7 +235,7 @@ export const PlatformVerification = ({
             }
 
             const challengeEndpoint = `${queryProps.embedServiceUrl}/embed/challenge`;
-            const challenge = await getChallenge(challengeEndpoint, queryProps.address, platform.name);
+            const challenge = await getChallenge(challengeEndpoint, queryProps.address, platform.platformId);
             credential = challenge.credential;
             const _challenge = challenge.credential.credentialSubject.challenge;
 
@@ -247,7 +247,7 @@ export const PlatformVerification = ({
             const oAuthPopUpUrl = `${platform.popupUrl}?address=${encodeURIComponent(
               queryProps.address || ""
             )}&scorerId=${encodeURIComponent(queryProps.scorerId || "")}&platform=${encodeURIComponent(
-              platform.name
+              platform.platformId
             )}&providers=${encodeURIComponent(JSON.stringify(platformCredentialIds))}&signature=${encodeURIComponent(
               signature || ""
             )}&credential=${encodeURIComponent(
@@ -270,7 +270,7 @@ export const PlatformVerification = ({
                 verifyCredentials(platformCredentialIds);
               }
             }, 100);
-          } else if (["HumanIdKyc", "HumanIdPhone", "Biometrics", "CleanHands"].includes(platform.name)) {
+          } else if (["HumanIdKyc", "HumanIdPhone", "Biometrics", "CleanHands"].includes(platform.platformId)) {
             handleVerifyHumanID();
           } else {
             verifyCredentials(platformCredentialIds);

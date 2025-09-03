@@ -14,6 +14,7 @@ export type Credential = {
 };
 
 export type Platform = {
+  platformId: string;
   name: string;
   description: ReactNode;
   documentationLink: string;

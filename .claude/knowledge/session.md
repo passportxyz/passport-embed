@@ -17,3 +17,12 @@ This tells TypeScript to use the local source files instead of the installed pac
 **Files**: dev/tsconfig.json, dev/vite.config.ts
 ---
 
+### [21:45] [api] Platform name vs platformId mismatch
+**Details**: The SDK is using platform.name for API calls and identification, but for Human ID platforms like HumanIdKyc, the display name is "Government ID" while the actual platformId that should be used for backend communication is "HumanIdKyc". The backend has added a platform.platformId field that should be used for API calls instead of platform.name. This affects:
+1. getChallenge API call - uses platform.name but should use platformId
+2. OAuth popup URL - uses platform.name but should use platformId  
+3. Platform identification in switch/if statements - currently uses platform.name
+4. PlatformButton key prop - uses platform.name but should use platformId for uniqueness
+**Files**: src/components/Body/PlatformVerification.tsx, src/components/Body/ScoreTooLowBody.tsx, src/hooks/useStampPages.tsx
+---
+
