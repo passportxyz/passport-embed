@@ -15,7 +15,10 @@ export const PassportScoreWidget = (props: PassportScoreWidgetProps) => {
     if (props.opRPCURL) {
       setOptimismRpcUrl(props.opRPCURL);
     } else {
-      console.warn("[Passport Widget] opRPCURL not provided. For better UX, please provide an RPC URL for Optimism to check Human ID SBTs.");
+      setOptimismRpcUrl("https://mainnet.optimism.io");
+      console.warn(
+        "[Passport Widget] opRPCURL not provided. For better UX, please provide an RPC URL for Optimism to check Human ID SBTs."
+      );
     }
   }, [props.opRPCURL]);
 

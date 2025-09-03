@@ -3,3 +3,17 @@
 **Files**: test/hooks/useStampPages.test.tsx, src/hooks/useStampPages.tsx
 ---
 
+### [13:40] [config] TypeScript path mapping for local development
+**Details**: When using Vite alias to override a package with local source code, TypeScript in the editor may still reference the old types from node_modules. To fix this, add path mapping in tsconfig.json:
+
+```json
+"paths": {
+  "@passportxyz/passport-embed": ["../src/index"],
+  "@passportxyz/passport-embed/*": ["../src/*"]
+}
+```
+
+This tells TypeScript to use the local source files instead of the installed package in node_modules, resolving editor type errors while maintaining the Vite alias for runtime.
+**Files**: dev/tsconfig.json, dev/vite.config.ts
+---
+
