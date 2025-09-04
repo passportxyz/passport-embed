@@ -186,7 +186,7 @@ const Dashboard = ({ walletMode }: { walletMode: "metamask" | "mock" }) => {
 
 export const App = () => {
   const showMocks = import.meta.env.VITE_ENABLE_MSW === "true";
-  const [walletMode, setWalletMode] = useState<"metamask" | "mock">("mock");
+  const [walletMode, setWalletMode] = useState<"metamask" | "mock">(showMocks ? "mock" : "metamask");
 
   return (
     <>
