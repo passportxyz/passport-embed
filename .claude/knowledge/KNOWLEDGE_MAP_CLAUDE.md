@@ -8,7 +8,7 @@
 ## 🏗️ Architecture
 - @architecture/build-system.md - Webpack configuration, build philosophy, React Query integration, and Passport widget body component structure
 - @architecture/msw-infrastructure.md - Complete MSW testing system refactored into dev/ directory with orchestrated build commands
-- @architecture/human-id-configuration.md - Human ID SDK RPC configuration for SBT validation on Optimism
+- @architecture/human-id-configuration.md - Human ID SDK configuration, external calls, and comprehensive mocking implementation
 
 ## ⚙️ Configuration
 - @config/dev-environment.md - Example app setup, Vite configuration, environment variables, MSW development setup, widget CSS variables, Playwright MCP configuration for Fedora
@@ -23,7 +23,7 @@
 - @gotchas/missing-components.md - ScenarioSwitcher component didn't exist, MSW files JavaScript conversion error, dev environment API key requirements
 - @gotchas/msw-handler-issues.md - MSW handler URL mismatch and bash process termination issues
 - @gotchas/playwright-test-issues.md - Test timeouts and beforeEach navigation issues
-- @gotchas/more-options-pagination.md - More Options feature breaking pagination tests by adding extra page
+- @gotchas/more-options-pagination.md - Pagination issues, Vite HMR errors, Human ID SDK sync behavior
 
 ## 🎯 Patterns
 - @patterns/msw-scenario-system.md - Flexible mock data architecture, TypeScript file structure, and error scenario testing patterns

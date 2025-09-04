@@ -18,5 +18,55 @@ The Human ID SDK requires an Optimism RPC URL to check for SBTs on-chain.
 ## Global Configuration
 The RPC URL is set globally for the Human ID SDK, so it only needs to be configured once when the widget mounts.
 
+## External Calls and Mocking Strategy
+The Human ID SDK makes several external calls that need to be mocked for development:
+
+1. **Optimism RPC calls** (https://mainnet.optimism.io/) - Used to check for existing SBTs on-chain
+2. **Human ID iframe** (https://id.human.tech/iframe) - Opens an iframe for identity verification
+3. **Various assets** - Loads scripts, CSS, and images from id.human.tech domain
+
+The SDK shows "Verifying..." state while these operations happen. Console shows:
+- SBT check errors (expected when not found)
+- PostMessage warnings for iframe communication
+- Failed postMessage attempts to id.human.tech domain
+
+Current partial mocking: We have HumanIdKyc platform in our MSW mocks as "Government ID" but the actual SDK verification flow still runs.
+
+## Human ID SDK Mocking Implementation
+Successfully implemented Human ID SDK mocking for development using Vite alias approach:
+
+### Implementation:
+1. **Vite Alias** - Conditionally overrides @holonym-foundation/human-id-sdk when VITE_ENABLE_MSW=true
+2. **Mock SDK** - Located at dev/src/mocks/mockHumanIdSdk.ts, mimics real SDK interface
+3. **No External Calls** - Prevents iframe loading, blockchain queries, and API calls
+4. **Scenario Control** - Mock behavior controlled by MSW scenarios (success/failure, existing SBTs)
+
+### Key Features:
+- Synchronous initHumanID() returns provider object (matches real SDK)
+- Async requestSBT() simulates 1.5s verification delay
+- BigInt handling for SBT expiry timestamps
+- Console logging for debugging mock behavior
+- Integrates with existing MSW scenario system
+
+### Benefits:
+- Zero production code changes required
+- Complete isolation of mock code in dev/
+- Hot reload works seamlessly
+- TypeScript interface maintained
+- Can test all Human ID platforms (KYC, Phone, Biometrics, CleanHands)
+
+### Console Output When Active:
+- "[Mock Human ID] Setting Optimism RPC URL"
+- "[Mock Human ID] Checking KYC SBT for address"
+- "[Mock Human ID] Initializing with config"
+- "[Mock Human ID] requestSBT called for kyc"
+- "[Mock Human ID] Verification successful"
+
 **Related files:**
 - `src/widgets/PassportScoreWidget.tsx`
+- `dev/src/mocks/handlers.ts`
+- `src/hooks/useHumanIDVerification.tsx`
+- `src/components/Body/PlatformVerification.tsx`
+- `dev/vite.config.ts`
+- `dev/src/mocks/mockHumanIdSdk.ts`
+- `dev/src/mocks/scenarios.ts`
