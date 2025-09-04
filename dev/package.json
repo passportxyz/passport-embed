@@ -4,7 +4,6 @@
   "version": "1.0.0",
   "scripts": {},
   "dependencies": {
-    "@human.tech/passport-embed": "^0.2.0",
     "@tanstack/react-query": "^5.62.11",
     "buffer": "^6.0.3",
     "react": "^18.2.0",
