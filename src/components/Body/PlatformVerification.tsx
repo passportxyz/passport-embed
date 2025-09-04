@@ -8,7 +8,7 @@ import { useWidgetIsQuerying, useWidgetVerifyCredentials } from "../../hooks/use
 import { useQueryContext } from "../../hooks/useQueryContext";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
 import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
-import { Platform } from "../../hooks/useStampPages";
+import { Platform } from "../../hooks/stampTypes";
 import { useHumanIDVerification } from "../../hooks/useHumanIDVerification";
 
 const CloseIcon = () => (

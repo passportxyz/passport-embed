@@ -7,7 +7,7 @@ import {
   getBiometricsSBTByAddress,
   getCleanHandsSPAttestationByAddress,
 } from "@holonym-foundation/human-id-sdk";
-import { Platform } from "../../src/hooks/useStampPages";
+import { Platform } from "../../src/hooks/stampTypes";
 
 // Mock the Human ID SDK
 jest.mock("@holonym-foundation/human-id-sdk", () => ({

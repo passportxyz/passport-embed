@@ -1,44 +1,15 @@
-import { useState, ReactNode } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SanitizedHTMLComponent } from "../components/SanitizedHTMLComponent";
 import { fetchStampPages } from "../utils/stampDataApi";
 import { PassportQueryProps } from "./usePassportScore";
 import { usePassportQueryClient } from "./usePassportQueryClient";
-
-const INCLUDE_VISIT_PASSPORT_PAGE = true;
-export const VISIT_PASSPORT_HEADER = "More Options";
-
-export type Credential = {
-  id: string;
-  weight: string;
-};
-
-export type Platform = {
-  platformId: string;
-  name: string;
-  description: ReactNode;
-  documentationLink: string;
-  requiresSignature?: boolean;
-  requiresPopup?: boolean;
-  popupUrl?: string;
-  credentials: Credential[];
-  displayWeight: string;
-};
-
-type RawPlatformData = Omit<Platform, "description"> & {
-  description: string;
-};
-
-export type StampPage = {
-  header: string;
-  platforms: Platform[];
-};
-
-type RawStampPageData = Omit<StampPage, "platforms"> & {
-  platforms: RawPlatformData[];
-};
-
-export type StampsMetadataResponse = RawStampPageData[];
+import {
+  INCLUDE_VISIT_PASSPORT_PAGE,
+  VISIT_PASSPORT_HEADER,
+  StampPage,
+  RawStampPageData,
+} from "./stampTypes";
 
 export const usePaginatedStampPages = ({ apiKey, scorerId, embedServiceUrl }: PassportQueryProps) => {
   const queryClient = usePassportQueryClient();

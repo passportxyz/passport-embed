@@ -7,7 +7,7 @@ import * as usePlatformStatus from "../../src/hooks/usePlatformStatus";
 import * as useQueryContext from "../../src/hooks/useQueryContext";
 import * as usePlatformDeduplication from "../../src/hooks/usePlatformDeduplication";
 import { mockExpectedConsoleErrorLog, setupTestQueryClient } from "../testUtils";
-import { Platform } from "../../src/hooks/useStampPages";
+import { Platform } from "../../src/hooks/stampTypes";
 
 // Mock the hooks
 jest.mock("../../src/hooks/usePassportScore");

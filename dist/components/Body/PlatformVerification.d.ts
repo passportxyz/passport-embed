@@ -1,4 +1,4 @@
-import { Platform } from "../../hooks/useStampPages";
+import { Platform } from "../../hooks/stampTypes";
 export declare const PlatformVerification: ({ platform, onClose, generateSignatureCallback, }: {
     platform: Platform;
     onClose: () => void;

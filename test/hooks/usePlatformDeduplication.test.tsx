@@ -1,6 +1,6 @@
 import { renderHook } from "@testing-library/react";
 import { usePlatformDeduplication } from "../../src/hooks/usePlatformDeduplication";
-import { Platform } from "../../src/hooks/useStampPages";
+import { Platform } from "../../src/hooks/stampTypes";
 import { useWidgetPassportScore } from "../../src/hooks/usePassportScore";
 
 // Mock the useWidgetPassportScore hook

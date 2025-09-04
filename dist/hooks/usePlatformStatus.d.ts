@@ -1,4 +1,4 @@
-import { Platform } from "./useStampPages";
+import { Platform } from "./stampTypes";
 export declare const usePlatformStatus: ({ platform }: {
     platform: Platform;
 }) => {

@@ -8,7 +8,7 @@ import {
   type CredentialType,
   type HubV3SBT,
 } from "@holonym-foundation/human-id-sdk";
-import { Platform } from "./useStampPages";
+import { Platform } from "./stampTypes";
 
 interface UseHumanIDVerificationParams {
   platform: Platform;
