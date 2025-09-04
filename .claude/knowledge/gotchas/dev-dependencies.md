@@ -9,5 +9,6 @@
 **Solution**: Remove the "@human.tech/passport-embed" dependency from dev/package.json since the local source is used via the vite alias.
 
 **Related files:**
+
 - `dev/package.json`
 - `dev/vite.config.ts`

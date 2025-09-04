@@ -1,6 +1,7 @@
 import path from "path";
 import { fileURLToPath } from "url";
 import TerserPlugin from "terser-webpack-plugin";
+import webpack from "webpack";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,6 +26,12 @@ const createConfig = (target) => ({
     outputModule: target === "esm",
   },
   externals: [/^react($|\/)/, "react-dom"],
+  plugins: [
+    // Force everything into a single chunk to prevent SSR issues
+    new webpack.optimize.LimitChunkCountPlugin({
+      maxChunks: 1,
+    }),
+  ],
   resolve: {
     extensions: [".ts", ".tsx", ".js", ".jsx", ".css"],
     mainFields: ["module", "main"], // Prioritize ES modules when importing this
@@ -121,6 +128,10 @@ const createConfig = (target) => ({
         parallel: true,
       }),
     ],
+    // Completely disable code splitting for library builds
+    splitChunks: false,
+    // Ensure runtime is included in the main bundle
+    runtimeChunk: false,
   },
 });
 

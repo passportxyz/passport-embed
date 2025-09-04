@@ -32,6 +32,7 @@ _Last updated: 2025-09-04_
 - [Playwright Test Issues](./gotchas/playwright-test-issues.md) - Test timeouts and beforeEach navigation issues
 - [More Options Pagination](./gotchas/more-options-pagination.md) - Pagination issues, Vite HMR errors, Human ID SDK sync behavior _(Updated 2025-09-04)_
 - [Dev Dependencies](./gotchas/dev-dependencies.md) - Dev directory yarn install failure with @human.tech/passport-embed package _(New 2025-09-04)_
+- [Webpack Chunk Splitting](./gotchas/webpack-chunk-splitting.md) - Webpack chunk splitting causes SSR errors in Next.js _(New 2025-09-04)_
 
 ## 🎯 Patterns
 
