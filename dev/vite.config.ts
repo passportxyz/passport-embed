@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       // Map the actual package name to the local source for hot reload
-      "@passportxyz/passport-embed": resolve(__dirname, "../src"),
+      "@human.tech/passport-embed": resolve(__dirname, "../src"),
       // Conditionally mock Human ID SDK when MSW is enabled
       ...(process.env.VITE_ENABLE_MSW === 'true' && {
         "@holonym-foundation/human-id-sdk": resolve(__dirname, "./src/mocks/mockHumanIdSdk.ts"),
