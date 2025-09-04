@@ -1,18 +1,19 @@
-# passport-widgets
+# passport-embed
 
 ## Installation
 
 ```bash
-yarn add passport-widgets
+yarn add @human.tech/passport-embed
 ```
 
 ## Usage
 
-See [example](./example/src/index.tsx).
+See the [dev server](./dev/src/index.tsx) for example advanced usage, although
+generally the following will suffice:
 
 ```jsx
 import React from 'react';
-import { PassportScoreWidget } from 'passport-widgets';
+import { PassportScoreWidget } from '@human.tech/passport-embed';
 
 const App = () => {
   return (
@@ -21,6 +22,9 @@ const App = () => {
       apiKey="API_KEY"
       address="0x..."
       scorerId="5"
+      collapseMode="overlay" /* or "shift" or "off" */
+      connectWalletCallback={/* your app's connect button callback */}
+      generateSignatureCallback={/* your app's wallet signature callback */}
     />
     {/* ... */}
   );
