@@ -1,11 +1,13 @@
 # MSW Scenario System
 
 ## Overview
+
 Flexible mock data architecture for testing different user states and API responses without real backend connectivity.
 
 ## Key Features
 
 ### Multiple Scenarios
+
 - **Pre-defined scenarios** in `dev/src/mocks/scenarios.ts/js`:
   - `low-score`: User with score below threshold
   - `high-score`: User with passing score
@@ -14,11 +16,14 @@ Flexible mock data architecture for testing different user states and API respon
   - `new-user`: No existing passport score
 
 ### Dynamic Handler Selection
+
 - **URL parameter control**: `?scenario=low-score` sets the active scenario
 - **Default scenario**: Falls back to configured default if no URL parameter specified
 
 ### Scenario Controls
+
 Each scenario configuration includes:
+
 - **score**: Numeric passport score value
 - **stamps**: Array of verification stamps with scores and metadata
 - **verification behavior**: Success/failure responses for verification endpoints
@@ -26,7 +31,9 @@ Each scenario configuration includes:
 - **response delays**: Realistic 300-500ms delays for authentic behavior
 
 ### Visual Indicators
+
 When MSW is active:
+
 - Orange "MSW Active" badge in top corner
 - Scenario switcher panel for quick testing
 - Current scenario name displayed
@@ -35,16 +42,19 @@ When MSW is active:
 ## Implementation
 
 ### Control Method
+
 - URL parameters (`?scenario=name`) for scenario selection
 - Default scenario in configuration as fallback
 
 ### Benefits
+
 - Rapid testing of different user journeys
 - No dependency on backend availability
 - Consistent, reproducible test scenarios
 - Persistence across page reloads
 
 **Related files:**
+
 - `dev/src/mocks/handlers.ts/js`
 - `dev/src/mocks/scenarios.ts/js`
 - `dev/src/components/ScenarioSwitcher.tsx/jsx`
@@ -54,6 +64,7 @@ When MSW is active:
 All MSW mock files must be TypeScript (.ts) not JavaScript (.js):
 
 ### Required TypeScript Files
+
 - `dev/src/mocks/scenarios.ts` - Test scenario definitions with typed interfaces
 - `dev/src/mocks/handlers.ts` - MSW request handlers
 - `dev/src/mocks/ScenarioManager.ts` - Scenario switching logic
@@ -62,17 +73,20 @@ All MSW mock files must be TypeScript (.ts) not JavaScript (.js):
 - `dev/src/components/ScenarioSwitcher.tsx` - UI component for switching scenarios
 
 ### Important Notes
+
 - The project uses TypeScript throughout
 - Mixing JS files causes type issues
 - All mock-related files should maintain TypeScript consistency
 
 **Related files:**
+
 - `dev/src/mocks/*.ts`
 - `dev/src/components/ScenarioSwitcher.tsx`
 
 ## MSW Error Scenario Testing Pattern
 
 ### Implementation Strategy
+
 To test error scenarios with MSW effectively:
 
 1. **Add behavior flags to scenarios** (e.g., `stampPagesBehavior`)
@@ -82,19 +96,20 @@ To test error scenarios with MSW effectively:
 5. **Test with Playwright MCP first** to verify scenarios work before writing E2E tests
 
 ### Example Pattern
+
 ```typescript
 // In scenarios.ts
 export const scenarios = {
-  'stamp-pages-error': {
-    stampPagesBehavior: 'error-500',
+  "stamp-pages-error": {
+    stampPagesBehavior: "error-500",
     // ... other scenario data
-  }
+  },
 };
 
 // In handlers.ts
-http.get('*/embed/stamps/metadata', () => {
+http.get("*/embed/stamps/metadata", () => {
   const scenario = ScenarioManager.getCurrentScenario();
-  if (scenario.stampPagesBehavior === 'error-500') {
+  if (scenario.stampPagesBehavior === "error-500") {
     return new Response(null, { status: 500 });
   }
   // ... normal response
@@ -102,6 +117,7 @@ http.get('*/embed/stamps/metadata', () => {
 ```
 
 ### Testing Workflow
+
 1. Create scenario with error behavior flag
 2. Implement handler logic to check flag
 3. Test manually with Playwright MCP
@@ -109,6 +125,7 @@ http.get('*/embed/stamps/metadata', () => {
 5. Verify error message appears after retries complete
 
 **Related files:**
+
 - `dev/src/mocks/scenarios.ts`
 - `dev/src/mocks/handlers.ts`
 - `dev/src/mocks/ScenarioManager.ts`

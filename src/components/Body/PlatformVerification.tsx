@@ -72,7 +72,11 @@ export const PlatformVerification = ({
   const hasConfigurationError = platform.requiresSignature && !generateSignatureCallback;
 
   // Human ID verification hook
-  const { isHumanIDPlatform, verifyHumanID, isVerifying: isVerifyingHumanID } = useHumanIDVerification({
+  const {
+    isHumanIDPlatform,
+    verifyHumanID,
+    isVerifying: isVerifyingHumanID,
+  } = useHumanIDVerification({
     platform,
     address: queryProps.address,
     enabled: false, // We'll trigger manually
@@ -90,11 +94,11 @@ export const PlatformVerification = ({
 
   // Check completion and result
   useEffect(() => {
-    const isFullyComplete = 
-      initiatedVerification && 
-      wasQuerying &&  // Ensures query actually ran
+    const isFullyComplete =
+      initiatedVerification &&
+      wasQuerying && // Ensures query actually ran
       !isPending;
-      
+
     if (isFullyComplete) {
       if (claimed) {
         onClose();
@@ -106,7 +110,6 @@ export const PlatformVerification = ({
       setWasQuerying(false);
     }
   }, [initiatedVerification, wasQuerying, isPending, claimed, onClose]);
-
 
   return (
     <div className={styles.container}>
@@ -156,12 +159,12 @@ export const PlatformVerification = ({
             onClose();
             return;
           }
-          
+
           // Reset states for new attempt
           setInitiatedVerification(true);
           setFailedVerification(false);
           setWasQuerying(false);
-          
+
           // Handle Human ID platforms first
           if (isHumanIDPlatform) {
             try {
@@ -217,7 +220,7 @@ export const PlatformVerification = ({
             }
 
             setIsOAuthPopupOpen(true);
-            
+
             // Check if the pop-up is closed every 100ms
             const checkPopupClosed = setInterval(() => {
               if (popup.closed) {
