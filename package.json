@@ -36,7 +36,6 @@
     "dist"
   ],
   "scripts": {
-    "postinstall": "cd dev && yarn install",
     "clean": "rm -rf dist node_modules dev/node_modules dev/dist",
     "fresh": "yarn clean && yarn install",
     "test": "jest",
