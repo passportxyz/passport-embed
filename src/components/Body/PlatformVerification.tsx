@@ -8,7 +8,8 @@ import { useWidgetIsQuerying, useWidgetVerifyCredentials } from "../../hooks/use
 import { useQueryContext } from "../../hooks/useQueryContext";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
 import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
-import { Platform } from "../../hooks/useStampPages";
+import { Platform } from "../../hooks/stampTypes";
+import { useHumanIDVerification } from "../../hooks/useHumanIDVerification";
 
 const CloseIcon = () => (
   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -60,6 +61,8 @@ export const PlatformVerification = ({
   const isDeduped = usePlatformDeduplication({ platform });
   const [initiatedVerification, setInitiatedVerification] = useState(false);
   const [failedVerification, setFailedVerification] = useState(false);
+  const [isOAuthPopupOpen, setIsOAuthPopupOpen] = useState(false);
+  const [wasQuerying, setWasQuerying] = useState(false);
 
   const isQuerying = useWidgetIsQuerying();
   const queryProps = useQueryContext();
@@ -68,15 +71,42 @@ export const PlatformVerification = ({
 
   const hasConfigurationError = platform.requiresSignature && !generateSignatureCallback;
 
+  // Human ID verification hook
+  const { isHumanIDPlatform, verifyHumanID, isVerifying: isVerifyingHumanID } = useHumanIDVerification({
+    platform,
+    address: queryProps.address,
+    enabled: false, // We'll trigger manually
+  });
+
+  // Combined pending state for cleaner code
+  const isPending = isQuerying || isVerifyingHumanID || isOAuthPopupOpen;
+
+  // Track when query starts after initiation
   useEffect(() => {
-    if (initiatedVerification && !isQuerying) {
+    if (initiatedVerification && isQuerying) {
+      setWasQuerying(true);
+    }
+  }, [initiatedVerification, isQuerying]);
+
+  // Check completion and result
+  useEffect(() => {
+    const isFullyComplete = 
+      initiatedVerification && 
+      wasQuerying &&  // Ensures query actually ran
+      !isPending;
+      
+    if (isFullyComplete) {
       if (claimed) {
         onClose();
       } else {
         setFailedVerification(true);
       }
+      // Reset for next attempt
+      setInitiatedVerification(false);
+      setWasQuerying(false);
     }
-  }, [initiatedVerification, isQuerying, claimed, onClose]);
+  }, [initiatedVerification, wasQuerying, isPending, claimed, onClose]);
+
 
   return (
     <div className={styles.container}>
@@ -85,7 +115,7 @@ export const PlatformVerification = ({
         <button
           onClick={onClose}
           className={styles.closeButton}
-          disabled={isQuerying}
+          disabled={isPending}
           data-testid="close-platform-button"
         >
           <CloseIcon />
@@ -95,7 +125,8 @@ export const PlatformVerification = ({
       <ScrollableDiv className={styles.description} invertScrollIconColor={true}>
         {hasConfigurationError ? (
           <div>
-            Something's missing! This Stamp needs an extra setup step to work properly. If you're the site owner, please add a generateSignatureCallback to the widget configuration.
+            Something's missing! This Stamp needs an extra setup step to work properly. If you're the site owner, please
+            add a generateSignatureCallback to the widget configuration.
           </div>
         ) : failedVerification ? (
           <div>
@@ -119,12 +150,33 @@ export const PlatformVerification = ({
       <Button
         className={utilStyles.wFull}
         invert={true}
-        disabled={isQuerying || claimed}
+        disabled={isPending || claimed}
         onClick={async () => {
           if (hasConfigurationError) {
             onClose();
             return;
           }
+          
+          // Reset states for new attempt
+          setInitiatedVerification(true);
+          setFailedVerification(false);
+          setWasQuerying(false);
+          
+          // Handle Human ID platforms first
+          if (isHumanIDPlatform) {
+            try {
+              await verifyHumanID();
+              // Now verify the credentials with the backend
+              verifyCredentials(platformCredentialIds);
+            } catch (error) {
+              console.log("Human ID verification error:", error);
+              setFailedVerification(true);
+              setInitiatedVerification(false); // Reset since we're not continuing
+            }
+            return;
+          }
+
+          // Handle signature-required platforms
           let signature, credential;
           if (platform.requiresSignature) {
             // get the challenge and  sign it
@@ -136,19 +188,20 @@ export const PlatformVerification = ({
             }
 
             const challengeEndpoint = `${queryProps.embedServiceUrl}/embed/challenge`;
-            const challenge = await getChallenge(challengeEndpoint, queryProps.address, platform.name);
+            const challenge = await getChallenge(challengeEndpoint, queryProps.address, platform.platformId);
             credential = challenge.credential;
             const _challenge = challenge.credential.credentialSubject.challenge;
 
             signature = await generateSignatureCallback!(_challenge);
           }
 
+          // Handle popup-required platforms
           if (platform.requiresPopup && platform.popupUrl) {
             // open the popup
             const oAuthPopUpUrl = `${platform.popupUrl}?address=${encodeURIComponent(
               queryProps.address || ""
             )}&scorerId=${encodeURIComponent(queryProps.scorerId || "")}&platform=${encodeURIComponent(
-              platform.name
+              platform.platformId
             )}&providers=${encodeURIComponent(JSON.stringify(platformCredentialIds))}&signature=${encodeURIComponent(
               signature || ""
             )}&credential=${encodeURIComponent(
@@ -159,26 +212,35 @@ export const PlatformVerification = ({
 
             if (!popup) {
               console.error("Failed to open pop-up");
+              setInitiatedVerification(false); // Reset since we're not continuing
               return;
             }
 
+            setIsOAuthPopupOpen(true);
+            
             // Check if the pop-up is closed every 100ms
             const checkPopupClosed = setInterval(() => {
               if (popup.closed) {
                 clearInterval(checkPopupClosed);
                 console.log("Pop-up closed");
+                setIsOAuthPopupOpen(false);
                 // Verify platform credentials
                 verifyCredentials(platformCredentialIds);
               }
             }, 100);
           } else {
+            // Default verification
             verifyCredentials(platformCredentialIds);
-            setFailedVerification(false);
-            setInitiatedVerification(true);
           }
         }}
       >
-        {hasConfigurationError ? "Go Back" : failedVerification ? "Try Again" : claimed ? "Already Verified" : `Verify${isQuerying ? "ing..." : ""}`}
+        {hasConfigurationError
+          ? "Go Back"
+          : failedVerification
+            ? "Try Again"
+            : claimed
+              ? "Already Verified"
+              : `Verify${isPending ? "ing..." : ""}`}
       </Button>
     </div>
   );

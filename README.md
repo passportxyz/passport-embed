@@ -37,9 +37,7 @@ See [PassportWidgetTheme](./src/widgets/Widget.tsx). Colors are in `R, G, B` for
 ```bash
 # Install dependencies
 yarn
-cd example
-yarn
 
 # Start the development server
-yarn dev
+yarn dev:mock
 ```

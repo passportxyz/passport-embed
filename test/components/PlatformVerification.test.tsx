@@ -7,7 +7,7 @@ import * as usePlatformStatus from "../../src/hooks/usePlatformStatus";
 import * as useQueryContext from "../../src/hooks/useQueryContext";
 import * as usePlatformDeduplication from "../../src/hooks/usePlatformDeduplication";
 import { mockExpectedConsoleErrorLog, setupTestQueryClient } from "../testUtils";
-import { Platform } from "../../src/hooks/useStampPages";
+import { Platform } from "../../src/hooks/stampTypes";
 
 // Mock the hooks
 jest.mock("../../src/hooks/usePassportScore");
@@ -23,6 +23,7 @@ describe("PlatformVerification", () => {
 
   // Common test props
   const mockPlatform: Platform = {
+    platformId: "LinkedIn",
     name: "LinkedIn",
     description: <div>Verify your LinkedIn account</div>,
     credentials: [{ id: "linkedin", weight: "1" }],
@@ -166,9 +167,16 @@ describe("PlatformVerification", () => {
     (usePassportScore.useWidgetVerifyCredentials as jest.Mock).mockReturnValue({
       verifyCredentials: mockVerifyCredentials,
     });
-    (usePassportScore.useWidgetIsQuerying as jest.Mock).mockReturnValueOnce(false);
+    
+    // Simulate query lifecycle: false -> true -> false
+    const isQueryingMock = jest.fn();
+    isQueryingMock.mockReturnValueOnce(false); // Initial state
+    isQueryingMock.mockReturnValueOnce(false); // After click
+    isQueryingMock.mockReturnValueOnce(true);  // Query starts
+    isQueryingMock.mockReturnValue(false);      // Query ends
+    (usePassportScore.useWidgetIsQuerying as jest.Mock).mockImplementation(isQueryingMock);
 
-    render(
+    const { rerender } = render(
       <PlatformVerification
         platform={{
           ...mockPlatform,
@@ -182,6 +190,19 @@ describe("PlatformVerification", () => {
 
     // Click verify button
     fireEvent.click(screen.getByRole("button", { name: /verify/i }));
+
+    // Force re-renders to trigger the useEffect with different isQuerying values
+    rerender(
+      <PlatformVerification
+        platform={{
+          ...mockPlatform,
+          requiresSignature: false,
+          requiresPopup: false,
+        }}
+        onClose={mockOnClose}
+        generateSignatureCallback={mockGenerateSignature}
+      />
+    );
 
     await waitFor(() => {
       expect(screen.getByText(/Unable to claim this Stamp/i)).toBeInTheDocument();

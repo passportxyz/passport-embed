@@ -1,5 +1,5 @@
 import axios from "axios";
-import { StampsMetadataResponse } from "../hooks/useStampPages";
+import { StampsMetadataResponse } from "../hooks/stampTypes";
 import { PassportQueryProps } from "../hooks/usePassportScore";
 
 export const fetchStampPages = async ({ apiKey, scorerId, embedServiceUrl }: PassportQueryProps) => {
