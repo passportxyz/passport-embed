@@ -1,6 +1,6 @@
 {
   "name": "@human.tech/passport-embed",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Human Passport Embeddable Widgets",
   "repository": {
     "type": "git",
@@ -36,9 +36,8 @@
     "dist"
   ],
   "scripts": {
-    "postinstall": "cd dev && yarn install",
+    "setup": "[ ! -f dev/.env ] && cp dev/.env.mock dev/.env || true; yarn install && cd dev && yarn install",
     "clean": "rm -rf dist node_modules dev/node_modules dev/dist",
-    "fresh": "yarn clean && yarn install",
     "test": "jest",
     "test:e2e": "cd dev && npx playwright test",
     "test:e2e:ui": "cd dev && npx playwright test --ui",
