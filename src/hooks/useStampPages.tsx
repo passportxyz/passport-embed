@@ -4,12 +4,7 @@ import { SanitizedHTMLComponent } from "../components/SanitizedHTMLComponent";
 import { fetchStampPages } from "../utils/stampDataApi";
 import { PassportQueryProps } from "./usePassportScore";
 import { usePassportQueryClient } from "./usePassportQueryClient";
-import {
-  INCLUDE_VISIT_PASSPORT_PAGE,
-  VISIT_PASSPORT_HEADER,
-  StampPage,
-  RawStampPageData,
-} from "./stampTypes";
+import { INCLUDE_VISIT_PASSPORT_PAGE, VISIT_PASSPORT_HEADER, StampPage, RawStampPageData } from "./stampTypes";
 
 export const usePaginatedStampPages = ({ apiKey, scorerId, embedServiceUrl }: PassportQueryProps) => {
   const queryClient = usePassportQueryClient();

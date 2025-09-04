@@ -2,19 +2,12 @@
   "mcpServers": {
     "playwright": {
       "command": "npx",
-      "args": [
-        "@playwright/mcp@latest",
-        "--browser",
-        "chromium",
-        "--headless"
-      ]
+      "args": ["@playwright/mcp@latest", "--browser", "chromium", "--headless"]
     },
     "mim": {
       "type": "stdio",
       "command": "node",
-      "args": [
-        ".claude/servers/mim.cjs"
-      ]
+      "args": [".claude/servers/mim.cjs"]
     }
   }
 }

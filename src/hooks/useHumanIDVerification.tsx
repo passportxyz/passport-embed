@@ -60,10 +60,7 @@ export const useHumanIDVerification = ({
   const [isVerifying, setIsVerifying] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  const isHumanIDPlatform = useMemo(
-    () => HUMAN_ID_PLATFORMS.includes(platform.platformId),
-    [platform.platformId]
-  );
+  const isHumanIDPlatform = useMemo(() => HUMAN_ID_PLATFORMS.includes(platform.platformId), [platform.platformId]);
 
   const checkExistingSBT = useCallback(async () => {
     if (!address || !isHumanIDPlatform) {
@@ -155,7 +152,7 @@ export const useHumanIDVerification = ({
     try {
       // Check if user already has the SBT
       const hasSBT = await checkExistingSBT();
-      
+
       if (hasSBT) {
         setHasExistingSBT(true);
         return true;
@@ -179,13 +176,7 @@ export const useHumanIDVerification = ({
     } finally {
       setIsVerifying(false);
     }
-  }, [
-    isHumanIDPlatform,
-    platform.platformId,
-    platform.name,
-    address,
-    checkExistingSBT,
-  ]);
+  }, [isHumanIDPlatform, platform.platformId, platform.name, address, checkExistingSBT]);
 
   return {
     isHumanIDPlatform,

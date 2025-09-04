@@ -9,7 +9,7 @@ const mockFetchStampPages = fetchStampPages as jest.MockedFunction<typeof fetchS
 
 describe("usePaginatedStampPages", () => {
   setupTestQueryClient();
-  
+
   const mockProps = {
     apiKey: "test-api-key",
     scorerId: "test-scorer-id",

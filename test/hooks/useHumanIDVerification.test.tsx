@@ -24,7 +24,9 @@ describe("useHumanIDVerification", () => {
   const mockGetKycSBT = getKycSBTByAddress as jest.MockedFunction<typeof getKycSBTByAddress>;
   const mockGetPhoneSBT = getPhoneSBTByAddress as jest.MockedFunction<typeof getPhoneSBTByAddress>;
   const mockGetBiometricsSBT = getBiometricsSBTByAddress as jest.MockedFunction<typeof getBiometricsSBTByAddress>;
-  const mockGetCleanHands = getCleanHandsSPAttestationByAddress as jest.MockedFunction<typeof getCleanHandsSPAttestationByAddress>;
+  const mockGetCleanHands = getCleanHandsSPAttestationByAddress as jest.MockedFunction<
+    typeof getCleanHandsSPAttestationByAddress
+  >;
 
   const createMockPlatform = (platformId: string): Platform => ({
     platformId,
@@ -129,7 +131,9 @@ describe("useHumanIDVerification", () => {
     });
 
     it("should check for existing Phone SBT when enabled", async () => {
-      mockGetPhoneSBT.mockResolvedValue(createValidSBT() as unknown as Awaited<ReturnType<typeof getPhoneSBTByAddress>>);
+      mockGetPhoneSBT.mockResolvedValue(
+        createValidSBT() as unknown as Awaited<ReturnType<typeof getPhoneSBTByAddress>>
+      );
 
       const { result } = renderHook(() =>
         useHumanIDVerification({
@@ -166,7 +170,9 @@ describe("useHumanIDVerification", () => {
     });
 
     it("should detect revoked SBT as invalid", async () => {
-      mockGetKycSBT.mockResolvedValue({ ...createValidSBT(), revoked: true } as unknown as Awaited<ReturnType<typeof getKycSBTByAddress>>);
+      mockGetKycSBT.mockResolvedValue({ ...createValidSBT(), revoked: true } as unknown as Awaited<
+        ReturnType<typeof getKycSBTByAddress>
+      >);
 
       const { result } = renderHook(() =>
         useHumanIDVerification({
@@ -220,7 +226,9 @@ describe("useHumanIDVerification", () => {
     });
 
     it("should handle CleanHands attestation checking", async () => {
-      mockGetCleanHands.mockResolvedValue({ valid: true } as unknown as Awaited<ReturnType<typeof getCleanHandsSPAttestationByAddress>>);
+      mockGetCleanHands.mockResolvedValue({ valid: true } as unknown as Awaited<
+        ReturnType<typeof getCleanHandsSPAttestationByAddress>
+      >);
 
       const { result } = renderHook(() =>
         useHumanIDVerification({
@@ -241,7 +249,7 @@ describe("useHumanIDVerification", () => {
 
   describe("verifyHumanID", () => {
     const mockRequestSBT = jest.fn();
-    
+
     beforeEach(() => {
       mockInitHumanID.mockReturnValue({
         requestSBT: mockRequestSBT,
@@ -413,9 +421,11 @@ describe("useHumanIDVerification", () => {
         await expect(result.current.verifyHumanID()).rejects.toThrow("No address provided");
       });
 
-      expect(result.current.error).toEqual(expect.objectContaining({
-        message: "No address provided",
-      }));
+      expect(result.current.error).toEqual(
+        expect.objectContaining({
+          message: "No address provided",
+        })
+      );
     });
 
     it("should not verify non-Human ID platforms", async () => {
@@ -431,9 +441,11 @@ describe("useHumanIDVerification", () => {
       });
 
       expect(mockInitHumanID).not.toHaveBeenCalled();
-      expect(result.current.error).toEqual(expect.objectContaining({
-        message: expect.stringContaining("not a Human ID platform"),
-      }));
+      expect(result.current.error).toEqual(
+        expect.objectContaining({
+          message: expect.stringContaining("not a Human ID platform"),
+        })
+      );
     });
   });
 });
