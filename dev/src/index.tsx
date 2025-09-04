@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { useState, useEffect } from "react";
 import { Buffer } from "buffer";
-import { PassportScoreWidget, usePassportScore, CollapseMode } from "@passportxyz/passport-embed";
+import { PassportScoreWidget, usePassportScore, CollapseMode } from "@human.tech/passport-embed";
 import { setupMocks } from "./setupMocks";
 import { DevToolsPanel } from "./components/DevToolsPanel";
 

@@ -1,6 +1,6 @@
 {
-  "name": "@passportxyz/passport-embed",
-  "version": "0.1.6-rc.4",
+  "name": "@human.tech/passport-embed",
+  "version": "0.2.0",
   "description": "Human Passport Embeddable Widgets",
   "repository": {
     "type": "git",

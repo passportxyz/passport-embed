@@ -14,8 +14,8 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@passportxyz/passport-embed": ["../src/index"],
-      "@passportxyz/passport-embed/*": ["../src/*"]
+      "@human.tech/passport-embed": ["../src/index"],
+      "@human.tech/passport-embed/*": ["../src/*"]
     },
     "types": ["vite/client"]
   },
