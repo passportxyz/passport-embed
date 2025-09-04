@@ -1,7 +1,7 @@
-import { test as base, expect } from '@playwright/test';
-import type { MockServiceWorker } from 'playwright-msw';
-import { createWorkerFixture } from 'playwright-msw';
-import { handlers } from '../../src/mocks/handlers';
+import { test as base, expect } from "@playwright/test";
+import type { MockServiceWorker } from "playwright-msw";
+import { createWorkerFixture } from "playwright-msw";
+import { handlers } from "../../src/mocks/handlers";
 
 // Extend Playwright test with MSW worker
 export const test = base.extend<{
@@ -13,11 +13,14 @@ export const test = base.extend<{
 export { expect };
 
 // Helper to mock different wallet scenarios
-export async function mockWalletScenario(page: { evaluate: (fn: (address: string | null) => void, arg: string | null) => Promise<void> }, scenario: 'connected' | 'disconnected' | 'low-score') {
+export async function mockWalletScenario(
+  page: { evaluate: (fn: (address: string | null) => void, arg: string | null) => Promise<void> },
+  scenario: "connected" | "disconnected" | "low-score"
+) {
   const addresses = {
-    connected: '0x1234567890123456789012345678901234567890',
+    connected: "0x1234567890123456789012345678901234567890",
     disconnected: null,
-    'low-score': '0x0000000000000000000000000000000000000000',
+    "low-score": "0x0000000000000000000000000000000000000000",
   };
 
   await page.evaluate((address) => {

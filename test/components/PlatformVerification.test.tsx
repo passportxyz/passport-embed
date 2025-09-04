@@ -167,13 +167,13 @@ describe("PlatformVerification", () => {
     (usePassportScore.useWidgetVerifyCredentials as jest.Mock).mockReturnValue({
       verifyCredentials: mockVerifyCredentials,
     });
-    
+
     // Simulate query lifecycle: false -> true -> false
     const isQueryingMock = jest.fn();
     isQueryingMock.mockReturnValueOnce(false); // Initial state
     isQueryingMock.mockReturnValueOnce(false); // After click
-    isQueryingMock.mockReturnValueOnce(true);  // Query starts
-    isQueryingMock.mockReturnValue(false);      // Query ends
+    isQueryingMock.mockReturnValueOnce(true); // Query starts
+    isQueryingMock.mockReturnValue(false); // Query ends
     (usePassportScore.useWidgetIsQuerying as jest.Mock).mockImplementation(isQueryingMock);
 
     const { rerender } = render(
@@ -246,11 +246,7 @@ describe("PlatformVerification", () => {
   describe("Configuration Error", () => {
     it("should show configuration error when signature is required but callback is not provided", () => {
       render(
-        <PlatformVerification
-          platform={mockPlatform}
-          onClose={mockOnClose}
-          generateSignatureCallback={undefined}
-        />
+        <PlatformVerification platform={mockPlatform} onClose={mockOnClose} generateSignatureCallback={undefined} />
       );
 
       expect(
@@ -261,11 +257,7 @@ describe("PlatformVerification", () => {
 
     it("should handle Go Back button click when configuration error is shown", () => {
       render(
-        <PlatformVerification
-          platform={mockPlatform}
-          onClose={mockOnClose}
-          generateSignatureCallback={undefined}
-        />
+        <PlatformVerification platform={mockPlatform} onClose={mockOnClose} generateSignatureCallback={undefined} />
       );
 
       fireEvent.click(screen.getByText("Go Back"));
