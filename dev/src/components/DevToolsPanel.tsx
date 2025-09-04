@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { usePassportQueryClient } from '@passportxyz/passport-embed';
+import { usePassportQueryClient } from '@human.tech/passport-embed';
 import { scenarioManager } from '../mocks/ScenarioManager';
 import { scenarios } from '../mocks/scenarios';
 

@@ -85,11 +85,11 @@ open "http://localhost:5173/?scenario=no-stamps"
 ## 🔧 Technical Details
 
 ### Hot Reload Setup
-The Vite config aliases `@passportxyz/passport-embed` to the SDK source:
+The Vite config aliases `@human.tech/passport-embed` to the SDK source:
 ```typescript
 // vite.config.ts
 alias: {
-  "@passportxyz/passport-embed": resolve(__dirname, "../src"),
+  "@human.tech/passport-embed": resolve(__dirname, "../src"),
 }
 ```
 This means changes to SDK source instantly reflect in the dev app!

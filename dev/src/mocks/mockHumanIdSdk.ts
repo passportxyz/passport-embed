@@ -14,12 +14,12 @@ export interface HubV3SBT {
 }
 
 // Track verification state
-let verificationInProgress = false;
+// let verificationInProgress = false; // Currently unused but may be needed for tracking state
 
 /**
  * Mock initialization - returns a mock provider with requestSBT method (synchronous like real SDK)
  */
-export const initHumanID = (config?: any) => {
+export const initHumanID = (config?: unknown) => {
   console.log('[Mock Human ID] Initializing with config:', config);
   
   // Return a mock provider that matches what the SDK expects
@@ -101,12 +101,12 @@ export const getCleanHandsSPAttestationByAddress = async (address: string): Prom
  */
 export const requestCredential = async (
   credentialType: CredentialType,
-  callback: (result: any) => void
+  callback: (result: { status: string; error?: string; sbt?: HubV3SBT }) => void
 ) => {
   console.log(`[Mock Human ID] Starting ${credentialType} verification flow`);
   
   const scenario = scenarioManager.getCurrentScenario();
-  verificationInProgress = true;
+  // verificationInProgress = true; // Currently unused
   
   // Simulate iframe opening and verification process
   await new Promise(resolve => setTimeout(resolve, 1500));
