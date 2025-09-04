@@ -1,3 +1,4 @@
+import { setOptimismRpcUrl } from "@holonym-foundation/human-id-sdk";
 import { GenericPassportWidgetProps, Widget } from "./Widget";
 import { PassportEmbedProps, useWidgetPassportScore, useWidgetVerifyCredentials } from "../hooks/usePassportScore";
 import styles from "./PassportScoreWidget.module.css";
@@ -10,6 +11,17 @@ import { useEffect, useState } from "react";
 export type PassportScoreWidgetProps = PassportEmbedProps & GenericPassportWidgetProps;
 
 export const PassportScoreWidget = (props: PassportScoreWidgetProps) => {
+  useEffect(() => {
+    if (props.opRPCURL) {
+      setOptimismRpcUrl(props.opRPCURL);
+    } else {
+      setOptimismRpcUrl("https://mainnet.optimism.io");
+      console.warn(
+        "[Passport Widget] opRPCURL not provided. For better UX, please provide an RPC URL for Optimism to check Human ID SBTs."
+      );
+    }
+  }, [props.opRPCURL]);
+
   useEffect(() => {
     if (props.apiKey === undefined) {
       console.error(

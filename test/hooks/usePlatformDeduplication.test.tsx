@@ -1,6 +1,6 @@
 import { renderHook } from "@testing-library/react";
 import { usePlatformDeduplication } from "../../src/hooks/usePlatformDeduplication";
-import { Platform } from "../../src/hooks/useStampPages";
+import { Platform } from "../../src/hooks/stampTypes";
 import { useWidgetPassportScore } from "../../src/hooks/usePassportScore";
 
 // Mock the useWidgetPassportScore hook
@@ -47,6 +47,7 @@ const createMockPassportEmbedResult = (
 
 describe("usePlatformDeduplication", () => {
   const mockPlatform: Platform = {
+    platformId: "Twitter",
     name: "Twitter",
     description: "Connect your Twitter account",
     documentationLink: "https://docs.example.com",
@@ -151,6 +152,7 @@ describe("usePlatformDeduplication", () => {
 
   it("should return true when platform has multiple credentials and one is deduplicated", () => {
     const platformWithMultipleCredentials: Platform = {
+      platformId: "MultiPlatform",
       name: "Multi Platform",
       description: "Platform with multiple credentials",
       documentationLink: "https://docs.example.com",

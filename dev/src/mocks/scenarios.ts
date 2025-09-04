@@ -21,6 +21,8 @@ export interface Scenario {
   verificationBehavior: 'success' | 'failure' | 'rate-limit';
   canAddStamps: boolean;
   stampPagesBehavior?: 'success' | 'error' | 'config-error' | 'not-found' | 'rate-limit';
+  hasExistingSBTs?: Array<'kyc' | 'phone' | 'biometrics' | 'clean-hands'>;
+  humanIdVerificationBehavior?: 'success' | 'failure';
 }
 
 export const scenarios: Record<string, Scenario> = {
@@ -149,6 +151,7 @@ export const scenarios: Record<string, Scenario> = {
     },
     verificationBehavior: 'success',
     canAddStamps: true,
+    humanIdVerificationBehavior: 'success',
   },
   
   'near-threshold': {
@@ -243,5 +246,63 @@ export const scenarios: Record<string, Scenario> = {
     verificationBehavior: 'success',
     canAddStamps: false,
     stampPagesBehavior: 'rate-limit',
+  },
+
+  'human-id-success': {
+    name: 'human-id-success',
+    description: 'Human ID verification succeeds',
+    passportScore: {
+      address: '0x1234567890123456789012345678901234567890',
+      score: 16,
+      passingScore: false,
+      threshold: 20,
+      stamps: {
+        'Google': { score: 5.0, dedup: true, expirationDate: new Date() },
+        'Twitter': { score: 4.5, dedup: true, expirationDate: new Date() },
+        'GitHub': { score: 6.5, dedup: false, expirationDate: new Date() },
+      }
+    },
+    verificationBehavior: 'success',
+    canAddStamps: true,
+    humanIdVerificationBehavior: 'success',
+  },
+
+  'human-id-failure': {
+    name: 'human-id-failure',
+    description: 'Human ID verification fails',
+    passportScore: {
+      address: '0x1234567890123456789012345678901234567890',
+      score: 14,
+      passingScore: false,
+      threshold: 20,
+      stamps: {
+        'Google': { score: 5.0, dedup: true, expirationDate: new Date() },
+        'Twitter': { score: 4.5, dedup: true, expirationDate: new Date() },
+        'GitHub': { score: 4.5, dedup: false, expirationDate: new Date() },
+      }
+    },
+    verificationBehavior: 'success',
+    canAddStamps: true,
+    humanIdVerificationBehavior: 'failure',
+  },
+
+  'human-id-existing-sbt': {
+    name: 'human-id-existing-sbt',
+    description: 'User already has Human ID SBT',
+    passportScore: {
+      address: '0x1234567890123456789012345678901234567890',
+      score: 17,
+      passingScore: false,
+      threshold: 20,
+      stamps: {
+        'Google': { score: 5.0, dedup: true, expirationDate: new Date() },
+        'Twitter': { score: 4.5, dedup: true, expirationDate: new Date() },
+        'GitHub': { score: 7.5, dedup: false, expirationDate: new Date() },
+      }
+    },
+    verificationBehavior: 'success',
+    canAddStamps: true,
+    hasExistingSBTs: ['kyc'],
+    humanIdVerificationBehavior: 'success',
   },
 };

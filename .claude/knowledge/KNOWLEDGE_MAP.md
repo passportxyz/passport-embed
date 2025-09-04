@@ -1,17 +1,20 @@
 # Knowledge Map
 
-_Last updated: 2025-09-02_
+_Last updated: 2025-09-04_
 
 ## 📁 API
-- [Public Exports](./api/public-exports.md) - Library's public API including components, hooks (with usePassportQueryClient details), themes, and types
-- [Passport Endpoints](./api/passport-endpoints.md) - API endpoints with correct paths (/embed/score), snake_case response format, and stamp pages endpoint *(Updated 2025-09-02)*
+- [Public Exports](./api/public-exports.md) - Library's public API including components, hooks (with usePassportQueryClient and useHumanIDVerification details), themes, and types *(Updated 2025-09-03)*
+- [Passport Endpoints](./api/passport-endpoints.md) - API endpoints with correct paths (/embed/score), snake_case response format, and stamp pages endpoint
+- [Platform Identification](./api/platform-identification.md) - Platform name vs platformId mismatch and migration requirements *(New 2025-09-03)*
 
 ## 🏗️ Architecture
 - [Build System and Components](./architecture/build-system.md) - Webpack configuration, build philosophy, React Query integration, and Passport widget body component structure
 - [MSW Infrastructure](./architecture/msw-infrastructure.md) - Complete MSW testing system refactored into dev/ directory with orchestrated build commands
+- [Human ID Configuration](./architecture/human-id-configuration.md) - Human ID SDK configuration, external calls, and comprehensive mocking implementation *(Updated 2025-09-04)*
 
 ## ⚙️ Configuration
 - [Dev Environment](./config/dev-environment.md) - Example app setup, Vite configuration, environment variables, MSW development setup, widget CSS variables, Playwright MCP configuration for Fedora
+- [TypeScript Path Mapping](./config/typescript-path-mapping.md) - TypeScript path mapping for local development with Vite aliases *(New 2025-09-03)*
 
 ## 📦 Dependencies
 - [Library Dependencies](./dependencies/library-dependencies.md) - Core, peer, and build dependencies
@@ -21,11 +24,13 @@ _Last updated: 2025-09-02_
 - [UI Alignment](./gotchas/ui-alignment.md) - Text alignment issues in Passport widget, padding impacts on Stamp flow, and solutions
 - [Missing Components](./gotchas/missing-components.md) - ScenarioSwitcher component didn't exist, MSW files JavaScript conversion error, dev environment API key requirements
 - [MSW Handler Issues](./gotchas/msw-handler-issues.md) - MSW handler URL mismatch and bash process termination issues
-- [Playwright Test Issues](./gotchas/playwright-test-issues.md) - Test timeouts and beforeEach navigation issues *(New 2025-09-02)*
+- [Playwright Test Issues](./gotchas/playwright-test-issues.md) - Test timeouts and beforeEach navigation issues
+- [More Options Pagination](./gotchas/more-options-pagination.md) - Pagination issues, Vite HMR errors, Human ID SDK sync behavior *(Updated 2025-09-04)*
 
 ## 🎯 Patterns
-- [MSW Scenario System](./patterns/msw-scenario-system.md) - Flexible mock data architecture, TypeScript file structure, and error scenario testing patterns *(Updated 2025-09-02)*
+- [MSW Scenario System](./patterns/msw-scenario-system.md) - Flexible mock data architecture, TypeScript file structure, and error scenario testing patterns
 - [Wallet Callback Pattern](./patterns/wallet-callback-pattern.md) - Framework-agnostic wallet integration through callbacks
+- [Human ID Integration](./patterns/human-id-integration.md) - Human ID SDK integration pattern for SBT-based credentials *(New 2025-09-03)*
 
 ## 🧪 Testing
 - [Framework Setup](./testing/framework-setup.md) - Complete test framework setup with detailed MSW scenarios and testing flow

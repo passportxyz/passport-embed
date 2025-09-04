@@ -5,3 +5,4 @@ export type { GenericPassportWidgetProps, PassportWidgetTheme, CollapseMode } fr
 export { DarkTheme, LightTheme } from "./utils/themes";
 export { usePassportScore, useVerifyCredentials } from "./hooks/usePassportScore";
 export { usePassportQueryClient } from "./hooks/usePassportQueryClient";
+export { useHumanIDVerification } from "./hooks/useHumanIDVerification";

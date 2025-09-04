@@ -10,6 +10,7 @@ const mockUseWidgetPassportScore = useWidgetPassportScore as jest.Mock;
 
 describe("usePlatformStatus Hook", () => {
   const mockPlatform = {
+    platformId: "TestPlatform",
     name: "TestPlatform",
     credentials: [
       { id: "cred1", weight: "1" },

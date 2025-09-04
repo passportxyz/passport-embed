@@ -19,6 +19,12 @@ The @passportxyz/passport-embed library exports:
     - `gcTime: 86400000` (24 hours)
     - Special retry logic: No retries for 429 errors, up to 2 retries for others
   - Useful in dev for `queryClient.invalidateQueries()` to force refetch with new MSW data
+- **useHumanIDVerification**: Hook for Human ID verification flow
+  - Encapsulates all Human ID SDK logic
+  - Detects Human ID platform types
+  - Checks for existing SBTs on-chain
+  - Handles verification flow
+  - Provides error and loading state management
 
 ## Themes
 - **DarkTheme**: Dark theme configuration
@@ -36,3 +42,4 @@ The @passportxyz/passport-embed library exports:
 **Related files:**
 - `src/index.ts`
 - `example/src/index.tsx`
+- `src/hooks/useHumanIDVerification.tsx`

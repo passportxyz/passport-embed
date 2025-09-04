@@ -21,6 +21,7 @@ describe("usePaginatedStampPages", () => {
       header: "Page 1 Header",
       platforms: [
         {
+          platformId: "Platform1",
           name: "Platform 1",
           description: '<p style="font-weight:700;">Test description 1</p>',
           documentationLink: "http://test1.com",
@@ -28,6 +29,7 @@ describe("usePaginatedStampPages", () => {
           displayWeight: "10",
         },
         {
+          platformId: "Platform2",
           name: "Platform 2",
           description: "<p>Test description 2</p>",
           documentationLink: "http://test2.com",
@@ -40,6 +42,7 @@ describe("usePaginatedStampPages", () => {
       header: "Page 2 Header",
       platforms: [
         {
+          platformId: "Platform3",
           name: "Platform 3",
           description: "<p>Test description 3</p>",
           documentationLink: "http://test3.com",
@@ -184,6 +187,7 @@ describe("usePaginatedStampPages", () => {
         header: "Updated Page Header",
         platforms: [
           {
+            platformId: "UpdatedPlatform",
             name: "Updated Platform",
             description: "<p>Updated description</p>",
             documentationLink: "http://updated.com",

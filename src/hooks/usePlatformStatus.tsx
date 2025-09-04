@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useWidgetPassportScore } from "./usePassportScore";
-import { Platform } from "./useStampPages";
+import { Platform } from "./stampTypes";
 
 export const usePlatformStatus = ({ platform }: { platform: Platform }) => {
   const { data } = useWidgetPassportScore();

@@ -4,7 +4,8 @@ import { Button } from "../Button";
 import { useEffect, useState } from "react";
 import { useHeaderControls } from "../../hooks/useHeaderControls";
 import { useWidgetPassportScore } from "../../hooks/usePassportScore";
-import { usePaginatedStampPages, Platform, VISIT_PASSPORT_HEADER } from "../../hooks/useStampPages";
+import { usePaginatedStampPages } from "../../hooks/useStampPages";
+import { Platform, VISIT_PASSPORT_HEADER } from "../../hooks/stampTypes";
 import { TextButton } from "../TextButton";
 import { RightArrow } from "../../assets/rightArrow";
 import { ScrollableDiv } from "../ScrollableDiv";
@@ -153,7 +154,7 @@ export const AddStamps = ({
       {isVisitPassportPage || (
         <ScrollableDiv className={styles.platformButtonGroup}>
           {platforms.map((platform) => (
-            <PlatformButton key={platform.name} platform={platform} setOpenPlatform={setOpenPlatform} />
+            <PlatformButton key={platform.platformId} platform={platform} setOpenPlatform={setOpenPlatform} />
           ))}
         </ScrollableDiv>
       )}
