@@ -14,7 +14,7 @@ export const PersonIcon = () => (
         <feOffset/>
         <feGaussianBlur stdDeviation="6"/>
         <feComposite in2="hardAlpha" operator="out"/>
-        <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+        <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0.831 0 0 0 0 0.667 0 0 0 0.8 0"/>
         <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_person_icon"/>
         <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_person_icon" result="shape"/>
       </filter>
@@ -24,7 +24,7 @@ export const PersonIcon = () => (
         <feOffset/>
         <feGaussianBlur stdDeviation="6"/>
         <feComposite in2="hardAlpha" operator="out"/>
-        <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0"/>
+        <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0.831 0 0 0 0 0.667 0 0 0 0.8 0"/>
         <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_person_icon"/>
         <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_person_icon" result="shape"/>
       </filter>
