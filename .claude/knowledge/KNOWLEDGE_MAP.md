@@ -55,3 +55,4 @@ _Last updated: 2025-09-04_
 ## 🎨 UI Components
 
 - [DevTools Panel](./ui/devtools-panel.md) - Unified MSW development controls panel with dark theme styling _(New)_
+- [Theme System](./ui/theme-system.md) - Flexible theme system with gradient and accent color support, widget redesign specifications _(New 2025-09-12)_
