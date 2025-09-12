@@ -33,9 +33,9 @@
 .expanded {
   opacity: 1;
   max-width: 320px;
-  min-height: 240px;
+  min-height: 280px;
   height: auto;
-  padding: var(--widget-padding-y-c6dbf459) var(--widget-padding-x-c6dbf459);
+  padding: 32px var(--widget-padding-x-c6dbf459);
 }
 
 .overlay {
@@ -58,7 +58,8 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 8px;
+  gap: 12px;
+  margin-bottom: 24px;
 }
 
 .innerText {
@@ -185,10 +186,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   color: white;
-  --badge-color: rgba(var(--color-accent-c6dbf459, var(--color-primary-c6dbf459)), 1);
-  --badge-text-color: rgba(var(--color-background-c6dbf459), 1);
+  filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.5));
 }
 
 .buttonContent {
