@@ -85,3 +85,9 @@
   font-size: 20px;
   font-weight: 700;
 }
+
+.scoreSection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}

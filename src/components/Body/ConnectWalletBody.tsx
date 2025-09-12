@@ -17,20 +17,15 @@ export const ConnectWalletBody = ({
   const { setSubtitle } = useHeaderControls();
 
   useEffect(() => {
-    setSubtitle("CONNECT WALLET");
+    setSubtitle("");  // Remove subtitle for new design
   });
 
   return (
     <>
       <div className={styles.textBlock}>
-        <div className={styles.heading}>Proof of Unique Humanity</div>
+        <div className={styles.heading}>Proof of Personhood</div>
         <div>
-          Your Human Passport score represents the likelihood that you’re a unique human, rather than a bot or bad
-          actor.
-        </div>
-        <div className={utilStyles.bold}>
-          {connectWalletCallback ? "Connect your wallet" : "Connect to the dapp"} and build up a score of 20 or more to
-          participate.
+          {connectWalletCallback ? "Connect your wallet" : "Connect to the dapp"} and build up a score greater than 20 to participate
         </div>
       </div>
       {connectWalletCallback && (
@@ -46,9 +41,12 @@ export const ConnectWalletBody = ({
             }
           }}
         >
-          {isConnecting ? "Connecting..." : "Connect Wallet"}
+          {isConnecting ? "Connecting..." : "Connect wallet"}
         </Button>
       )}
+      <div className={styles.footer}>
+        <span className={styles.footerText}>🔒 Secured by human.tech</span>
+      </div>
     </>
   );
 };

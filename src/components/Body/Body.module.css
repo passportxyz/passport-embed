@@ -168,3 +168,15 @@
 .dedupeText {
   font-family: var(--font-family-alt, monospace);
 }
+
+.footer {
+  margin-top: 8px;
+  text-align: center;
+  width: 100%;
+}
+
+.footerText {
+  font-size: 12px;
+  opacity: 0.7;
+  color: rgba(var(--color-primary-c6dbf459), 0.7);
+}

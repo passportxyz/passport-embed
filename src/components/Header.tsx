@@ -68,11 +68,13 @@ export const Header = ({
       }}
     >
       <div className={styles.titleStack}>
-        Human Passport Score
-        <div className={styles.subtitle}>{subtitle}</div>
+        Proof of Personhood
+        {subtitle && <div className={styles.subtitle}>{subtitle}</div>}
       </div>
-      <ScoreDisplay />
-      {collapsible && <CollapseToggle bodyIsOpen={bodyIsOpen} />}
+      <div className={styles.scoreSection}>
+        <ScoreDisplay />
+        {collapsible && <CollapseToggle bodyIsOpen={bodyIsOpen} />}
+      </div>
     </button>
   );
 };
