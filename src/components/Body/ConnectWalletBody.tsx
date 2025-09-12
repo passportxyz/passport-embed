@@ -4,6 +4,8 @@ import { Button } from "../Button";
 import { useEffect, useState } from "react";
 import { PassportEmbedProps } from "../../hooks/usePassportScore";
 import { useHeaderControls } from "../../hooks/useHeaderControls";
+import { PersonIcon } from "../../assets/personIcon";
+import { WalletIcon } from "../../assets/walletIcon";
 
 // TODO technically this might not have a threshold of 20, but
 // how would we know at this point before we've made a request
@@ -22,6 +24,9 @@ export const ConnectWalletBody = ({
 
   return (
     <>
+      <div className={styles.iconContainer}>
+        <PersonIcon />
+      </div>
       <div className={styles.textBlock}>
         <div className={styles.heading}>Proof of Personhood</div>
         <div>
@@ -41,7 +46,10 @@ export const ConnectWalletBody = ({
             }
           }}
         >
-          {isConnecting ? "Connecting..." : "Connect wallet"}
+          <div className={styles.buttonContent}>
+            <WalletIcon />
+            <span>{isConnecting ? "Connecting..." : "Connect wallet"}</span>
+          </div>
         </Button>
       )}
       <div className={styles.footer}>

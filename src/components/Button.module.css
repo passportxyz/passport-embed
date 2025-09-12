@@ -1,7 +1,8 @@
 .button {
   /* Use accent color if available, fallback to primary */
   background-color: rgba(var(--color-accent-c6dbf459, var(--color-primary-c6dbf459)), 1);
-  color: rgba(var(--color-background-c6dbf459), 1);
+  /* Black text for bright accent colors */
+  color: #0A0A0A;
 
   font-family: var(--font-family-alt-c6dbf459);
   font-weight: 500;

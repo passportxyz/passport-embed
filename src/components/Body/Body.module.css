@@ -180,3 +180,17 @@
   opacity: 0.7;
   color: rgba(var(--color-primary-c6dbf459), 0.7);
 }
+
+.iconContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.buttonContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
