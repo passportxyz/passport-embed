@@ -21,8 +21,8 @@
 }
 
 .invert {
-  background-color: rgba(var(--color-background-c6dbf459), 1);
-  color: rgba(var(--color-primary-c6dbf459), 1);
+  background-color: white;
+  color: #0A0A0A;
   opacity: 1;
 }
 

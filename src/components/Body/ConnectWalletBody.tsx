@@ -36,6 +36,7 @@ export const ConnectWalletBody = ({
       {connectWalletCallback && (
         <Button
           className={utilStyles.wFull}
+          invert={true}
           disabled={isConnecting}
           onClick={async () => {
             try {
