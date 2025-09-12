@@ -16,6 +16,14 @@ export type PassportWidgetTheme = {
     primary?: string;
     secondary?: string;
     background?: string;
+    accent?: string;  // NEW: For CTA buttons and highlights
+    backgroundGradient?: {  // NEW: Optional gradient support
+      angle?: string;  // e.g., "180deg", "to bottom"
+      stops: Array<{
+        color: string;  // RGB value like "3, 94, 84"
+        position?: string;  // e.g., "0%", "100%"
+      }>;
+    };
     success?: string;
     failure?: string;
   };
@@ -74,6 +82,7 @@ const setTheme = ({ theme, ref }: { theme?: PassportWidgetTheme; ref: RefObject<
     ["color-primary", colors?.primary],
     ["color-secondary", colors?.secondary],
     ["color-background", colors?.background],
+    ["color-accent", colors?.accent],  // NEW: Accent color for CTAs
     ["color-success", colors?.success],
     ["color-failure", colors?.failure],
     ["widget-padding-x", padding?.widget?.x],
@@ -88,4 +97,20 @@ const setTheme = ({ theme, ref }: { theme?: PassportWidgetTheme; ref: RefObject<
   ];
 
   propertyMap.forEach(([name, value]) => setCssProperty({ ref, name, value }));
+
+  // Handle gradient if provided
+  if (colors?.backgroundGradient) {
+    const { angle = "180deg", stops } = colors.backgroundGradient;
+    if (stops && stops.length > 0) {
+      const gradientStops = stops
+        .map(stop => {
+          const position = stop.position || "";
+          return `rgba(${stop.color}, 1) ${position}`.trim();
+        })
+        .join(", ");
+      
+      const gradientValue = `linear-gradient(${angle}, ${gradientStops})`;
+      setCssProperty({ ref, name: "background-gradient", value: gradientValue });
+    }
+  }
 };

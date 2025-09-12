@@ -9,7 +9,8 @@
   border-bottom-left-radius: var(--widget-radius-c6dbf459);
   border-bottom-right-radius: var(--widget-radius-c6dbf459);
 
-  background-color: rgba(var(--color-background-c6dbf459), 1);
+  /* Use gradient if available, fallback to solid background */
+  background: var(--background-gradient-c6dbf459, rgba(var(--color-background-c6dbf459), 1));
 
   display: flex;
   flex-direction: column;
