@@ -186,6 +186,9 @@
   justify-content: center;
   align-items: center;
   margin-bottom: 16px;
+  color: white;
+  --badge-color: rgba(var(--color-accent-c6dbf459, var(--color-primary-c6dbf459)), 1);
+  --badge-text-color: rgba(var(--color-background-c6dbf459), 1);
 }
 
 .buttonContent {
