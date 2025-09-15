@@ -2,7 +2,7 @@ import styles from "./Header.module.css";
 import { PassportLogo } from "../assets/passportLogo";
 import { CheckmarkIcon } from "../assets/checkmarkIcon";
 import { XIcon } from "../assets/xIcon";
-import { Ellipsis } from "./Ellipsis";
+import { LoadingIcon } from "../assets/loadingIcon";
 import { useHeaderControls } from "../hooks/useHeaderControls";
 import { useWidgetIsQuerying, useWidgetPassportScore } from "../hooks/usePassportScore";
 import { displayNumber } from "../utils";
@@ -15,7 +15,7 @@ const ScoreDisplay = () => {
   return (
     <>
       {(isQuerying || !data) && <PassportLogo />}
-      {isQuerying && <Ellipsis />}
+      {isQuerying && <LoadingIcon />}
       {!isQuerying && data && (
         <>
           {data.passingScore ? <CheckmarkIcon /> : <XIcon />}
@@ -68,7 +68,7 @@ export const Header = ({
       }}
     >
       <div className={styles.titleStack}>
-        Proof of Personhood
+        Human Passport Score
         {subtitle && <div className={styles.subtitle}>{subtitle}</div>}
       </div>
       <div className={styles.scoreSection}>

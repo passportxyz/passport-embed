@@ -6,6 +6,7 @@ import { PassportEmbedProps } from "../../hooks/usePassportScore";
 import { useHeaderControls } from "../../hooks/useHeaderControls";
 import { PersonIcon } from "../../assets/personIcon";
 import { WalletIcon } from "../../assets/walletIcon";
+import { HumanTechLogo } from "../../assets/humanTechLogo";
 
 // TODO technically this might not have a threshold of 20, but
 // how would we know at this point before we've made a request
@@ -24,18 +25,19 @@ export const ConnectWalletBody = ({
 
   return (
     <>
+      <div className={styles.blurEffect}></div>
       <div className={styles.iconContainer}>
         <PersonIcon />
       </div>
       <div className={styles.textBlock}>
         <div className={styles.heading}>Proof of Personhood</div>
-        <div>
+        <div className={styles.subtitleText}>
           {connectWalletCallback ? "Connect your wallet" : "Connect to the dapp"} and build up a score greater than 20 to participate
         </div>
       </div>
       {connectWalletCallback && (
         <Button
-          className={utilStyles.wFull}
+          className={`${utilStyles.wFull} ${styles.connectButton}`}
           invert={true}
           disabled={isConnecting}
           onClick={async () => {
@@ -54,7 +56,10 @@ export const ConnectWalletBody = ({
         </Button>
       )}
       <div className={styles.footer}>
-        <span className={styles.footerText}>🔒 Secured by human.tech</span>
+        <div className={styles.footerContent}>
+          <HumanTechLogo />
+          <span className={styles.footerText}>Secured by human.tech</span>
+        </div>
       </div>
     </>
   );

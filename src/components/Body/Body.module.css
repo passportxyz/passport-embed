@@ -33,9 +33,11 @@
 .expanded {
   opacity: 1;
   max-width: 320px;
-  min-height: 280px;
+  min-height: 300px;
   height: auto;
-  padding: 32px var(--widget-padding-x-c6dbf459);
+  padding: 12px var(--widget-padding-x-c6dbf459) 20px;
+  position: relative;
+  overflow: hidden;
 }
 
 .overlay {
@@ -71,8 +73,15 @@
 }
 
 .heading {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.subtitleText {
+  color: rgba(var(--color-accent-c6dbf459), 1);
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
 }
 
 .platformButton {
@@ -176,18 +185,28 @@
   width: 100%;
 }
 
+.footerContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
 .footerText {
   font-size: 12px;
-  opacity: 0.7;
-  color: rgba(var(--color-primary-c6dbf459), 0.7);
+  font-weight: 500;
+  color: #D4D4D4;
 }
 
 .iconContainer {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
+  width: 56px;
+  height: 56px;
   color: white;
+  filter: drop-shadow(0px 0px 12px rgba(255, 255, 255, 1));
 }
 
 .buttonContent {
@@ -195,4 +214,15 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+}
+
+.blurEffect {
+  position: absolute;
+  width: 284px;
+  height: 284px;
+  left: 8px;
+  top: -99px;
+  background: #006B56;
+  filter: blur(50px);
+  pointer-events: none;
 }
