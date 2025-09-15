@@ -1,5 +1,5 @@
 export const PersonIcon = () => (
-  <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg width="56" height="56" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <filter id="lightShadow">
         <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="white" floodOpacity="0.8"/>
