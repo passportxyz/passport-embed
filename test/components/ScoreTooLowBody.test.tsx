@@ -22,6 +22,7 @@ const mockStampPagesData = [
     platforms: [
       {
         name: "Platform 1",
+        platformId: "platform-1",
         description: '<p style="font-weight:700;">Test description 1</p>',
         documentationLink: "http://test1.com",
         credentials: [{ id: "cred1", weight: "10" }],
@@ -29,6 +30,7 @@ const mockStampPagesData = [
       },
       {
         name: "Platform 2",
+        platformId: "platform-2",
         description: "<p>Test description 2</p>",
         documentationLink: "http://test2.com",
         credentials: [
@@ -44,6 +46,7 @@ const mockStampPagesData = [
     platforms: [
       {
         name: "Platform 3",
+        platformId: "platform-3",
         description: "<p>Test description 3</p>",
         documentationLink: "http://test3.com",
         credentials: [{ id: "cred3", weight: "30" }],
@@ -234,6 +237,123 @@ describe("AddStamps Component", () => {
     expect(p1Button).not.toHaveClass("platformButtonClaimed");
   });
 
+  it("should handle error display with Error instance (covers line 113)", () => {
+    mockUseWidgetPassportScore.mockReturnValue({
+      data: { threshold: 25 },
+    });
+    mockUsePaginatedStampPages.mockReturnValue({
+      page: null,
+      error: new Error("Custom error message"),
+      nextPage: jest.fn(),
+      prevPage: jest.fn(),
+      isFirstPage: true,
+      isLastPage: true,
+      isLoading: false,
+      refetch: jest.fn(),
+    });
+
+    render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
+    expect(screen.getByText("Custom error message")).toBeInTheDocument();
+  });
+
+  it("should handle error display with non-Error instance (covers line 113)", () => {
+    mockUseWidgetPassportScore.mockReturnValue({
+      data: { threshold: 25 },
+    });
+    mockUsePaginatedStampPages.mockReturnValue({
+      page: null,
+      error: "String error",
+      nextPage: jest.fn(),
+      prevPage: jest.fn(),
+      isFirstPage: true,
+      isLastPage: true,
+      isLoading: false,
+      refetch: jest.fn(),
+    });
+
+    render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
+    expect(screen.getByText("Failed to load stamp pages")).toBeInTheDocument();
+  });
+
+
+  it("should handle navigation buttons with first page (covers lines 163-166)", () => {
+    mockUseWidgetPassportScore.mockReturnValue({
+      data: { threshold: 25 },
+    });
+    mockUsePaginatedStampPages.mockReturnValue({
+      page: mockStampPagesData[0],
+      nextPage: jest.fn(),
+      prevPage: jest.fn(),
+      isFirstPage: true,
+      isLastPage: false,
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
+    expect(screen.getByText("Try another way")).toBeInTheDocument();
+    expect(screen.queryByText("Go back")).not.toBeInTheDocument();
+  });
+
+  it("should handle navigation buttons with last page (covers lines 163-166)", () => {
+    mockUseWidgetPassportScore.mockReturnValue({
+      data: { threshold: 25 },
+    });
+    mockUsePaginatedStampPages.mockReturnValue({
+      page: mockStampPagesData[1],
+      nextPage: jest.fn(),
+      prevPage: jest.fn(),
+      isFirstPage: false,
+      isLastPage: true,
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
+    expect(screen.getByText("Go back")).toBeInTheDocument();
+    expect(screen.queryByText("Try another way")).not.toBeInTheDocument();
+  });
+
+  it("should handle InitialTooLow component with threshold (covers line 185)", () => {
+    mockUseWidgetPassportScore.mockReturnValue({
+      data: { threshold: 30 },
+    });
+    mockUsePaginatedStampPages.mockReturnValue({
+      page: null,
+      nextPage: jest.fn(),
+      prevPage: jest.fn(),
+      isFirstPage: true,
+      isLastPage: true,
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<ScoreTooLowBody generateSignatureCallback={mockGenerateSignature} />);
+    expect(screen.getByText(/Increase your score to 30\+/)).toBeInTheDocument();
+  });
+
+  it("should handle InitialTooLow component with default threshold (covers line 185)", () => {
+    mockUseWidgetPassportScore.mockReturnValue({
+      data: { threshold: undefined },
+    });
+    mockUsePaginatedStampPages.mockReturnValue({
+      page: null,
+      nextPage: jest.fn(),
+      prevPage: jest.fn(),
+      isFirstPage: true,
+      isLastPage: true,
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<ScoreTooLowBody generateSignatureCallback={mockGenerateSignature} />);
+    expect(screen.getByText(/Increase your score to 20\+/)).toBeInTheDocument();
+  });
+
   describe("Platform Deduplication", () => {
     it("should show dedupe badge when platform has deduplicated stamps", () => {
       // Mock deduplication scenario
@@ -303,5 +423,92 @@ describe("AddStamps Component", () => {
       expect(container.querySelector(".dedupeBadge")).not.toBeInTheDocument();
       expect(screen.queryByText("Dedupe")).not.toBeInTheDocument();
     });
+
+    it("should handle platform with no credentials in stamps data", () => {
+      // Mock platform with credentials that don't exist in stamps data
+      mockUseWidgetPassportScore.mockReturnValue({
+        data: {
+          stamps: {
+            other_cred: { score: 0, dedup: true },
+          },
+        },
+      });
+
+      const { container } = render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
+
+      // Check that dedupe badge is not present for platforms without matching credentials
+      expect(container.querySelector(".dedupeBadge")).not.toBeInTheDocument();
+    });
+
+    it("should handle platform with undefined stamps data", () => {
+      // Mock undefined stamps data
+      mockUseWidgetPassportScore.mockReturnValue({
+        data: {
+          stamps: undefined,
+        },
+      });
+
+      const { container } = render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
+
+      // Check that dedupe badge is not present when stamps data is undefined
+      expect(container.querySelector(".dedupeBadge")).not.toBeInTheDocument();
+    });
+  });
+
+  it("should show no stamps available when page is null", () => {
+    // This test covers line 120: if (!page) return (...)
+    mockUseWidgetPassportScore.mockReturnValue({
+      data: { threshold: 25 },
+    });
+
+    mockUsePaginatedStampPages.mockReturnValue({
+      page: null, // This triggers the "No Stamps Available" case
+      nextPage: jest.fn(),
+      prevPage: jest.fn(),
+      isFirstPage: true,
+      isLastPage: true,
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
+
+    expect(screen.getByText("No Stamps Available")).toBeInTheDocument();
+    expect(screen.getByText("No stamp metadata available at this time.")).toBeInTheDocument();
+  });
+
+  it("should handle platform verification close callback", () => {
+    // This test covers line 133: onClose={() => setOpenPlatform(null)}
+    mockUseWidgetPassportScore.mockReturnValue({
+      data: { threshold: 25 },
+    });
+
+    mockUsePaginatedStampPages.mockReturnValue({
+      page: mockStampPagesData[0],
+      nextPage: jest.fn(),
+      prevPage: jest.fn(),
+      isFirstPage: true,
+      isLastPage: false,
+      isLoading: false,
+      error: null,
+      refetch: jest.fn(),
+    });
+
+    render(<AddStamps generateSignatureCallback={mockGenerateSignature} />);
+
+    // Click on a platform to open verification
+    fireEvent.click(screen.getByText("Platform 1"));
+
+    // Should show platform verification
+    expect(screen.getByText(/Test description 1/i)).toBeInTheDocument();
+
+    // Click close button (this tests the onClose callback)
+    const closeButton = screen.getByTestId("close-platform-button");
+    fireEvent.click(closeButton);
+
+    // Should return to platform list
+    expect(screen.getByText("Platform 1")).toBeInTheDocument();
+    expect(screen.queryByText(/Test description 1/i)).not.toBeInTheDocument();
   });
 });

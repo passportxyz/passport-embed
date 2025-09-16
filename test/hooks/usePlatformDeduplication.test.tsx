@@ -195,4 +195,39 @@ describe("usePlatformDeduplication", () => {
     const { result } = renderHook(() => usePlatformDeduplication({ platform: mockPlatform }));
     expect(result.current).toBe(false);
   });
+
+  it("should return false when data is null", () => {
+    // This test covers line 9: if (!data?.stamps) return false;
+    const mockResult = {
+      data: undefined, // Use undefined instead of null to match type
+      isPending: false,
+      isFetching: false,
+      isLoading: false,
+      isError: false,
+      error: null,
+      refetch: jest.fn(),
+    };
+
+    mockUseWidgetPassportScore.mockReturnValue(mockResult);
+
+    const { result } = renderHook(() => usePlatformDeduplication({ platform: mockPlatform }));
+    expect(result.current).toBe(false);
+  });
+
+  it("should return false when stampData is undefined", () => {
+    // This test covers line 21: if (!stampData) return false;
+    const mockResult = createMockPassportEmbedResult({
+      // Twitter credential not present in stamps
+      OtherCred: {
+        score: 0,
+        dedup: true,
+        expiration_date: "2024-12-31T00:00:00Z",
+      },
+    });
+
+    mockUseWidgetPassportScore.mockReturnValue(mockResult);
+
+    const { result } = renderHook(() => usePlatformDeduplication({ platform: mockPlatform }));
+    expect(result.current).toBe(false);
+  });
 });
