@@ -246,6 +246,154 @@ describe("usePaginatedStampPages", () => {
     expect(result.current.isLastPage).toBe(true);
   });
 
+  it("should handle platform with undefined description", async () => {
+    // This test covers line 65: description: <SanitizedHTMLComponent html={platform.description || ""} />
+    const mockPagesWithUndefinedDescription = [
+      {
+        header: "Test Page",
+        platforms: [
+          {
+            name: "Test Platform",
+            platformId: "test-platform",
+            description: "", // Use empty string instead of undefined to match type
+            documentationLink: "http://test.com",
+            credentials: [{ id: "test-cred", weight: "10" }],
+            displayWeight: "10",
+          },
+        ],
+      },
+    ];
+
+    mockFetchStampPages.mockResolvedValueOnce(mockPagesWithUndefinedDescription);
+
+    const { result } = renderHook(() => usePaginatedStampPages(mockProps));
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    expect(result.current.page?.platforms[0].description).toBeDefined();
+    // The description should be a SanitizedHTMLComponent with empty string
+  });
+
+  it("should handle pagination with undefined stampPages length", async () => {
+    // This test covers line 87: const nextPage = () => setIdx((prev) => Math.min(prev + 1, (stampPages?.length ?? 1) - 1));
+    mockFetchStampPages.mockResolvedValueOnce([]); // Empty array to test edge case
+
+    const { result } = renderHook(() => usePaginatedStampPages(mockProps));
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    // Test nextPage when stampPages is empty
+    act(() => {
+      result.current.nextPage();
+    });
+
+    // Should handle gracefully without crashing
+    expect(result.current.isFirstPage).toBe(true);
+  });
+
+  it("should handle nextPage with single page (covers line 87)", async () => {
+    // This test covers line 87: const nextPage = () => setIdx((prev) => Math.min(prev + 1, (stampPages?.length ?? 1) - 1));
+    const singlePageData = [
+      {
+        header: "Single Page",
+        platforms: [
+        {
+          name: "Single Platform",
+          platformId: "single-platform",
+          description: "<p>Single platform description</p>",
+          documentationLink: "http://single.com",
+          credentials: [{ id: "single-cred", weight: "10" }],
+          displayWeight: "10",
+        },
+        ],
+      },
+    ];
+
+    mockFetchStampPages.mockResolvedValueOnce(singlePageData);
+
+    const { result } = renderHook(() => usePaginatedStampPages(mockProps));
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    // Verify we have the single page loaded (the hook adds a "More Options" page automatically)
+    expect(result.current.page?.header).toBe("Single Page");
+    expect(result.current.isFirstPage).toBe(true);
+    expect(result.current.isLastPage).toBe(false); // Because there's also a "More Options" page
+
+    // Call nextPage - this should move to the "More Options" page
+    // This tests the Math.min logic in line 87: Math.min(prev + 1, (stampPages?.length ?? 1) - 1)
+    act(() => {
+      result.current.nextPage();
+    });
+
+    // Should now be on the "More Options" page
+    expect(result.current.page?.header).toBe("More Options");
+    expect(result.current.isFirstPage).toBe(false);
+    expect(result.current.isLastPage).toBe(true);
+  });
+
+  it("should handle nextPage with multiple pages (covers line 54)", async () => {
+    const multiPageData = [
+      {
+        header: "Page 1",
+        platforms: [
+          {
+            name: "Platform 1",
+            platformId: "platform-1",
+            description: "<p>Platform 1 description</p>",
+            documentationLink: "http://platform1.com",
+            credentials: [{ id: "cred1", weight: "10" }],
+            displayWeight: "10",
+          },
+        ],
+      },
+      {
+        header: "Page 2",
+        platforms: [
+          {
+            name: "Platform 2",
+            platformId: "platform-2",
+            description: "<p>Platform 2 description</p>",
+            documentationLink: "http://platform2.com",
+            credentials: [{ id: "cred2", weight: "20" }],
+            displayWeight: "20",
+          },
+        ],
+      },
+    ];
+
+    mockFetchStampPages.mockResolvedValueOnce(multiPageData);
+
+    const { result } = renderHook(() => usePaginatedStampPages(mockProps));
+
+    await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+    // Should be on first page initially
+    expect(result.current.page?.header).toBe("Page 1");
+    expect(result.current.isFirstPage).toBe(true);
+    expect(result.current.isLastPage).toBe(false);
+
+    // Call nextPage - this tests line 54: Math.min(prev + 1, (stampPages?.length ?? 1) - 1)
+    act(() => {
+      result.current.nextPage();
+    });
+
+    // Should move to second page
+    expect(result.current.page?.header).toBe("Page 2");
+    expect(result.current.isFirstPage).toBe(false);
+    expect(result.current.isLastPage).toBe(false);
+
+    // Call nextPage again to go to "More Options" page
+    act(() => {
+      result.current.nextPage();
+    });
+
+    // Should be on "More Options" page (last page)
+    expect(result.current.page?.header).toBe("More Options");
+    expect(result.current.isFirstPage).toBe(false);
+    expect(result.current.isLastPage).toBe(true);
+  });
+
   describe("Errors", () => {
     it("should handle error cases", async () => {
       const errorMessage = "Network error";

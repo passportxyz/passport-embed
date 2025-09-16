@@ -51,4 +51,36 @@ describe("usePlatformStatus Hook", () => {
     const { result } = renderHook(() => usePlatformStatus({ platform: mockPlatform }));
     expect(result.current.claimed).toBe(false);
   });
+
+  it("should handle undefined data gracefully", () => {
+    // This test covers line 8: Object.entries(data?.stamps || {})
+    mockUseWidgetPassportScore.mockReturnValue({
+      data: undefined,
+    });
+
+    const { result } = renderHook(() => usePlatformStatus({ platform: mockPlatform }));
+    expect(result.current.claimed).toBe(false);
+  });
+
+  it("should handle null data gracefully", () => {
+    // This test covers line 8: Object.entries(data?.stamps || {})
+    mockUseWidgetPassportScore.mockReturnValue({
+      data: null,
+    });
+
+    const { result } = renderHook(() => usePlatformStatus({ platform: mockPlatform }));
+    expect(result.current.claimed).toBe(false);
+  });
+
+  it("should handle undefined stamps gracefully", () => {
+    // This test covers line 8: Object.entries(data?.stamps || {})
+    mockUseWidgetPassportScore.mockReturnValue({
+      data: {
+        stamps: undefined,
+      },
+    });
+
+    const { result } = renderHook(() => usePlatformStatus({ platform: mockPlatform }));
+    expect(result.current.claimed).toBe(false);
+  });
 });

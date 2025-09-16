@@ -44,6 +44,43 @@ describe("Body Routing", () => {
     waitFor(() => expect(mockResetPassportScore).toHaveBeenCalled());
   });
 
+  it("renders ErrorBody with generic message when error is not an Error instance", () => {
+    mockUseWidgetPassportScore.mockReturnValue({
+      isError: true,
+      error: "String error", // Not an Error instance
+      isLoading: false,
+      data: null,
+    });
+
+    const mockResetPassportScore = jest.fn();
+    mockUseResetWidgetPassportScore.mockReturnValue({
+      resetPassportScore: mockResetPassportScore,
+    });
+
+    render(<Body {...defaultProps} />);
+    expect(screen.getByText("An error occurred")).toBeInTheDocument();
+
+    const button = screen.getByRole("button", { name: "Try Again" });
+    expect(button).toBeInTheDocument();
+  });
+
+  it("renders ErrorBody with generic message when error is null", () => {
+    mockUseWidgetPassportScore.mockReturnValue({
+      isError: true,
+      error: null,
+      isLoading: false,
+      data: null,
+    });
+
+    const mockResetPassportScore = jest.fn();
+    mockUseResetWidgetPassportScore.mockReturnValue({
+      resetPassportScore: mockResetPassportScore,
+    });
+
+    render(<Body {...defaultProps} />);
+    expect(screen.getByText("An error occurred")).toBeInTheDocument();
+  });
+
   it("renders CongratsBody when score is passing", () => {
     mockUseWidgetPassportScore.mockReturnValue({
       isError: false,
