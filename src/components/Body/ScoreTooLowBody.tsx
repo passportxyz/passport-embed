@@ -13,6 +13,7 @@ import { PlatformVerification } from "./PlatformVerification";
 import { useQueryContext } from "../../hooks/useQueryContext";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
 import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
+import { HappyHuman } from "../../assets/happyHuman";
 
 export const Hyperlink = ({
   href,
@@ -170,22 +171,35 @@ export const AddStamps = ({
   );
 };
 
+const DoubleChevron = () => (
+  <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M17.5 11L12.5 6L7.5 11M17.5 18L12.5 13L7.5 18"
+      stroke="rgb(var(--color-background-c6dbf459))"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </svg>
+);
+
 const InitialTooLow = ({ onContinue }: { onContinue: () => void }) => {
   const { data } = useWidgetPassportScore();
-  const { setSubtitle } = useHeaderControls();
-
-  useEffect(() => {
-    setSubtitle("LOW SCORE");
-  });
 
   return (
     <>
       <div className={styles.textBlock}>
-        <div className={styles.heading}>Your score is too low to participate.</div>
-        <div>Increase your score to {data?.threshold || 20}+ by verifying additional Stamps.</div>
+        <HappyHuman />
+        <div className={styles.heading}>Increase score to participate!</div>
+        <div>
+          Your web3 history wasn’t sufficient to enable you to participate. Raise your score to {data?.threshold || 20}{" "}
+          or above  by verifying additional Stamps
+        </div>
       </div>
       <Button className={utilStyles.wFull} onClick={onContinue}>
-        Add Stamps
+        <div className={styles.buttonContent}>
+          <DoubleChevron /> Verify Stamps
+        </div>
       </Button>
     </>
   );
