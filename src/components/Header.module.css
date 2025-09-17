@@ -68,14 +68,6 @@
   font-size: 16px;
 }
 
-.success {
-  color: rgba(var(--color-success-c6dbf459), 1);
-}
-
-.failure {
-  color: rgba(var(--color-failure-c6dbf459), 1);
-}
-
 .score {
   font-size: 20px;
   font-weight: 700;

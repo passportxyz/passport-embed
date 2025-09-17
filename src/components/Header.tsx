@@ -1,12 +1,14 @@
 import styles from "./Header.module.css";
 import { PassportLogo } from "../assets/passportLogo";
-import { CheckmarkIcon } from "../assets/checkmarkIcon";
-import { XIcon } from "../assets/xIcon";
 import { LoadingIcon } from "../assets/loadingIcon";
 import { useHeaderControls } from "../hooks/useHeaderControls";
 import { useWidgetIsQuerying, useWidgetPassportScore } from "../hooks/usePassportScore";
 import { displayNumber } from "../utils";
 import { Dispatch, SetStateAction } from "react";
+
+const ScoreIndicator = ({ score, threshold }: { score: number; threshold: number }) => {
+  return <div className={styles.score}>{displayNumber(score)}</div>;
+};
 
 const ScoreDisplay = () => {
   const isQuerying = useWidgetIsQuerying();
@@ -15,14 +17,7 @@ const ScoreDisplay = () => {
   return (
     <>
       {isQuerying && <LoadingIcon />}
-      {!isQuerying && data && (
-        <>
-          {data.passingScore ? <CheckmarkIcon /> : <XIcon />}
-          <div className={`${data.passingScore ? styles.success : styles.failure} ${styles.score}`}>
-            {displayNumber(data.score)}
-          </div>
-        </>
-      )}
+      {!isQuerying && data && <ScoreIndicator {...data} />}
     </>
   );
 };

@@ -5,15 +5,8 @@ export const DarkTheme: PassportWidgetTheme = {
     primary: "255, 255, 255",
     secondary: "109, 109, 109",
     background: "0, 0, 0",
-    accent: "0, 212, 170",  // #00D4AA - bright teal for CTAs
-    // Remove gradient to use solid black background
-    // backgroundGradient: {
-    //   angle: "180deg",
-    //   stops: [
-    //     { color: "3, 94, 84", position: "0%" },    // #035E54 - teal top
-    //     { color: "2, 68, 61", position: "100%" }   // #02443D - darker teal bottom
-    //   ]
-    // },
+    accent: "0, 212, 170", // #00D4AA - bright teal for CTAs
+    // TODO probably remove success and failure?
     success: "164, 255, 169",
     failure: "203, 203, 203",
   },
