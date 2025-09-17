@@ -14,7 +14,6 @@ const ScoreDisplay = () => {
 
   return (
     <>
-      {(isQuerying || !data) && <PassportLogo />}
       {isQuerying && <LoadingIcon />}
       {!isQuerying && data && (
         <>
@@ -54,6 +53,7 @@ export const Header = ({
   setBodyIsOpen: Dispatch<SetStateAction<boolean>>;
   collapsible: boolean;
 }) => {
+  // TODO remove
   const { subtitle } = useHeaderControls();
 
   return (
@@ -67,10 +67,8 @@ export const Header = ({
         }
       }}
     >
-      <div className={styles.titleStack}>
-        Human Passport Score
-        {subtitle && <div className={styles.subtitle}>{subtitle}</div>}
-      </div>
+      <PassportLogo />
+      <div className={styles.titleStack}>Human Passport Score</div>
       <div className={styles.scoreSection}>
         <ScoreDisplay />
         {collapsible && <CollapseToggle bodyIsOpen={bodyIsOpen} />}

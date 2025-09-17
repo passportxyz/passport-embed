@@ -8,11 +8,6 @@ import { PersonIcon } from "../../assets/personIcon";
 import { WalletIcon } from "../../assets/walletIcon";
 import { HumanTechLogo } from "../../assets/humanTechLogo";
 
-// TODO technically this might not have a threshold of 20, but
-// how would we know at this point before we've made a request
-// to the backend? Do we do a pre-check? Or let the integrator
-// pass in an override?
-
 export const ConnectWalletBody = ({
   connectWalletCallback,
 }: Pick<PassportEmbedProps, "connectWalletCallback"> & {}) => {
@@ -20,25 +15,25 @@ export const ConnectWalletBody = ({
   const { setSubtitle } = useHeaderControls();
 
   useEffect(() => {
-    setSubtitle("");  // Remove subtitle for new design
+    setSubtitle(""); // Remove subtitle for new design
   });
 
   return (
     <>
       <div className={styles.blurEffect}></div>
-      <div className={styles.iconContainer}>
-        <PersonIcon />
-      </div>
       <div className={styles.textBlock}>
+        <div className={styles.iconContainer}>
+          <PersonIcon />
+        </div>
         <div className={styles.heading}>Proof of Personhood</div>
         <div className={styles.subtitleText}>
-          {connectWalletCallback ? "Connect your wallet" : "Connect to the dapp"} and build up a score greater than 20 to participate
+          {connectWalletCallback ? "Connect your wallet" : "Connect to the dapp"} and build up a score greater than 20
+          to participate
         </div>
       </div>
       {connectWalletCallback && (
         <Button
-          className={`${utilStyles.wFull} ${styles.connectButton}`}
-          invert={true}
+          className={`${utilStyles.wFull} ${styles.button}`}
           disabled={isConnecting}
           onClick={async () => {
             try {
