@@ -13,3 +13,7 @@
 .justifyBetween {
   justify-content: space-between;
 }
+
+.grow {
+  flex-grow: 1;
+}

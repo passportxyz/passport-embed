@@ -76,11 +76,18 @@
   margin-bottom: 36px;
 }
 
-.heading {
+.smallHeading {
+  text-align: center;
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
-  text-align: center;
+  width: 100%;
+}
+
+.heading {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 28px;
   width: 100%;
 }
 

@@ -14,9 +14,9 @@ export const CheckingBody = () => {
   return (
     <>
       <div className={styles.textBlock}>
-        <div className={styles.heading}>Verifying onchain activity...</div>
-        <div>
-          Please wait a few seconds as we analyze your onchain activities and verify relevant Stamps on your behalf.
+        <div className={styles.heading}>Verifying your activity...</div>
+        <div className={utilStyles.grow}>
+          Please wait a few seconds while we automatically add points to your account based on your web3 history.
         </div>
       </div>
       <Button className={utilStyles.wFull} disabled={true}>

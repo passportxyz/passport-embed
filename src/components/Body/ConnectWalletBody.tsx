@@ -25,7 +25,7 @@ export const ConnectWalletBody = ({
         <div className={styles.iconContainer}>
           <PersonIcon />
         </div>
-        <div className={styles.heading}>Proof of Personhood</div>
+        <div className={styles.smallHeading}>Proof of Personhood</div>
         <div className={styles.subtitleText}>
           {connectWalletCallback ? "Connect your wallet" : "Connect to the dapp"} and build up a score greater than 20
           to participate
