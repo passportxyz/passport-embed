@@ -38,6 +38,6 @@ Unless explicitly prompted by the user, do not create minor dev/LLM-facing docum
 ## ⚠️ Automatic Mim Processing
 After making commits with significant remembered knowledge, **run this command yourself**:
 ```bash
-./mim-coalesce
+./mim coalesce
 ```
 This processes the `.claude/knowledge/session.md` file into organized documentation.

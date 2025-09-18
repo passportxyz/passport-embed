@@ -16,6 +16,39 @@ NC='\033[0m' # No Color
 # Shared tools configuration for all mim commands
 ALLOWED_TOOLS="Read,Write,Edit,MultiEdit,Glob,Grep,LS,Bash,Git"
 
+# Load prompts from JS configuration
+PROMPTS_FILE="$SCRIPT_DIR/mim-prompts.js"
+if [ ! -f "$PROMPTS_FILE" ]; then
+  echo -e "${RED}❌ Error: Prompts file not found: $PROMPTS_FILE${NC}"
+  exit 1
+fi
+
+# Function to get prompt from JS
+get_prompt() {
+  local key="$1"
+  local index="${2:-0}"
+  node -e "const prompts = require('$PROMPTS_FILE'); console.log(prompts['$key'][$index] || '')" 2>/dev/null
+}
+
+# Function to get prompt array length
+get_prompt_count() {
+  local key="$1"
+  node -e "const prompts = require('$PROMPTS_FILE'); console.log((prompts['$key'] || []).length)" 2>/dev/null || echo 0
+}
+
+# Function to ensure inquisitor agent exists
+ensure_inquisitor_agent() {
+  local agent_file=".claude/agents/inquisitor.md"
+
+  # Agent should already be installed by install.sh
+  if [ ! -f "$agent_file" ]; then
+    echo -e "${RED}❌ Error: Inquisitor agent not found at $agent_file${NC}"
+    echo "Please reinstall mim to get the latest agents."
+    echo "Run: curl -sSL https://raw.githubusercontent.com/lucianHymer/mim/main/install.sh | sh"
+    exit 1
+  fi
+}
+
 show_help() {
   echo "⚡ Mím - Persistent Memory for Claude Code"
   echo ""
@@ -72,49 +105,18 @@ run_coalesce() {
   echo "   [The ritual takes time, perhaps several minutes]"
   echo ""
 
+  # Get the coalesce prompt from JSON
+  local prompt=$(get_prompt "coalesce" 0)
+  if [ -z "$prompt" ] || [ "$prompt" = "null" ]; then
+    echo -e "${RED}❌ Error: Could not load coalesce prompt${NC}"
+    exit 1
+  fi
+
   claude \
   --verbose \
   --allowedTools "$ALLOWED_TOOLS" \
   --append-system-prompt "You are Mim, keeper of project knowledge. You coalesce raw remembered knowledge into permanent documentation. CRITICAL PATH STRUCTURE: The instructions file is at .claude/knowledge/INSTRUCTIONS.md (NOT .claude/KNOWLEDGE_INSTRUCTIONS.md). CLAUDE.md contains @ references to .claude/knowledge/INSTRUCTIONS.md and .claude/knowledge/KNOWLEDGE_MAP_CLAUDE.md. You maintain TWO knowledge maps: KNOWLEDGE_MAP.md (user-facing with markdown links) and KNOWLEDGE_MAP_CLAUDE.md (Claude-facing with @ references - these are RELATIVE to the knowledge directory). The project structure: .claude/knowledge/session.md (raw captures), .claude/knowledge/{category}/ (organized knowledge), .claude/knowledge/KNOWLEDGE_MAP.md (human-facing index), .claude/knowledge/KNOWLEDGE_MAP_CLAUDE.md (claude-facing index with RELATIVE @ refs like @patterns/file.md NOT @.claude/knowledge/patterns/file.md)" \
-  --print --output-format stream-json "You are processing remembered knowledge. Execute this MANDATORY checklist:
-
-1. **MUST READ** .claude/knowledge/session.md - Even if empty
-2. **MUST PROCESS** each entry from session.md:
-   - Determine category (architecture/patterns/dependencies/workflows/gotchas/etc)
-   - **MUST CREATE OR UPDATE** appropriate file in .claude/knowledge/{category}/
-   - Keep dated entries only for gotchas
-3. **MUST UPDATE OR CREATE** BOTH knowledge maps:
-   - **KNOWLEDGE_MAP.md** (user-facing): Use markdown links like [Topic Name](path/file.md)
-   - **KNOWLEDGE_MAP_CLAUDE.md** (Claude-facing): Use RELATIVE @ references like @patterns/file.md or @gotchas/file.md (NOT full paths)
-   - Both maps should have identical structure, just different link formats
-   - Include last updated timestamps in user-facing map only
-4. **MUST CLEAR** session.md after processing - use Write tool with empty content
-
-**VERIFICATION CHECKLIST - ALL MUST BE TRUE:**
-- [ ] Read session.md (even if empty)
-- [ ] Created/updated .claude/knowledge/ category files for any new knowledge
-- [ ] Created/updated BOTH KNOWLEDGE_MAP.md (markdown links) and KNOWLEDGE_MAP_CLAUDE.md (@ references)
-- [ ] Verified no knowledge was lost in the transfer
-- [ ] Cleared session.md by writing empty content to it
-
-**IF YOU SKIP ANY STEP, YOU HAVE FAILED THE TASK**
-
-IMPORTANT: CLAUDE.md uses @ references to .claude/knowledge/INSTRUCTIONS.md and .claude/knowledge/KNOWLEDGE_MAP_CLAUDE.md
-IMPORTANT: KNOWLEDGE_MAP_CLAUDE.md uses RELATIVE @ references (e.g., @patterns/file.md NOT @.claude/knowledge/patterns/file.md)
-
-Documentation structure to create and maintain:
-.claude/knowledge/
-├── session.md           # Current session's raw captures (you must clear this)
-├── INSTRUCTIONS.md     # Knowledge remembering instructions (referenced by CLAUDE.md)
-├── architecture/        # System design, component relationships
-├── patterns/           # Coding patterns, conventions
-├── dependencies/       # External services, libraries
-├── workflows/          # How to do things in this project
-├── gotchas/           # Surprises, non-obvious behaviors
-├── KNOWLEDGE_MAP.md        # User-facing index with markdown links
-└── KNOWLEDGE_MAP_CLAUDE.md # Claude-facing index with RELATIVE @ references
-
-After completing all updates, inform the user that documentation has been updated." | stream_claude_output
+  --print --output-format stream-json "$prompt" | stream_claude_output
 
   if [ $? -eq 0 ]; then
     echo ""
@@ -166,56 +168,75 @@ run_distill() {
   echo "   [This may take several minutes to analyze all documentation]"
   echo ""
 
-  # No backup needed - git provides version control
+  # Ensure inquisitor agent exists
+  ensure_inquisitor_agent
 
+  # Run multi-prompt distill generation workflow
+  local prompt_count=$(get_prompt_count "distill_generate")
+  if [ "$prompt_count" -eq 0 ]; then
+    echo -e "${RED}❌ Error: No distill_generate prompts found${NC}"
+    exit 1
+  fi
+
+  local session_id=""
+  local exit_code=0
+
+  # First prompt: Launch inquisitor agents
+  echo "🔍 Phase 1: Launching inquisitor agents..."
+  local prompt=$(get_prompt "distill_generate" 0)
+  if [ -z "$prompt" ] || [ "$prompt" = "null" ]; then
+    echo -e "${RED}❌ Error: Could not load distill_generate prompt 0${NC}"
+    exit 1
+  fi
+
+  # Run first prompt and capture session ID
+  local temp_output=$(mktemp)
   claude \
     --verbose \
-    --allowedTools "$ALLOWED_TOOLS" \
-    --append-system-prompt "You are Mim's distillation aspect, tasked with cleaning and organizing documentation. You process ALL *.md files in .claude/knowledge/ EXCEPT session.md (which is the raw capture file). Special files: KNOWLEDGE_MAP.md (human-readable index), KNOWLEDGE_MAP_CLAUDE.md (Claude-specific index with @ references). You scan for duplicates, outdated information, conflicts, junk/useless content, and inconsistencies across all knowledge files. Perform cross-file analysis to detect redundancies between different knowledge files. Your goal is to auto-fix clear issues and report items that need human review." \
-    --print --output-format stream-json "Execute this MANDATORY distillation process:
+    --allowedTools "$ALLOWED_TOOLS,Task" \
+    --append-system-prompt "You are Mim's distillation orchestrator. You coordinate multiple inquisitor agents to verify and clean the knowledge base. The inquisitor agents are specialized for researching individual knowledge entries." \
+    --print --output-format stream-json "$prompt" 2>&1 | tee "$temp_output" | stream_claude_output
+  exit_code=${PIPESTATUS[0]}
 
-1. **SCAN AND ANALYZE ALL KNOWLEDGE FILES**:
-   - Read ALL *.md files in .claude/knowledge/ EXCEPT session.md (raw capture file)
-   - Understand special files: KNOWLEDGE_MAP.md (user index), KNOWLEDGE_MAP_CLAUDE.md (Claude index)
-   - DO NOT DELETE either KNOWLEDGE_MAP, we want both the markdown-link and claude-reference versions
-   - Perform CROSS-FILE analysis to detect duplicates between different knowledge files
-   - Identify: exact duplicates, near-duplicates, conflicting information, outdated content, junk/useless info, broken references
-   - Categorize issues into: AUTO_FIX (clear duplicates/junk/broken refs) and REQUIRES_REVIEW (conflicts/ambiguous)
+  # Extract session ID from the output
+  session_id=$(grep -o 'Session ID: [a-zA-Z0-9_-]*' "$temp_output" | tail -1 | cut -d' ' -f3)
+  rm "$temp_output"
 
-2. **AUTO-FIX CLEAR ISSUES**:
-   - Remove exact duplicate sections within and across files
-   - Delete junk/useless information (e.g., 'TODO: document this', empty sections, redundant explanations)
-   - Fix broken @ references and file paths
-   - Remove obviously outdated timestamps/versions
-   - Consolidate redundant information across different files
-   - Track all changes made for the report
+  if [ $exit_code -ne 0 ]; then
+    echo -e "${RED}❌ Phase 1 failed${NC}"
+    return 1
+  fi
 
-3. **GENERATE DISTILL REPORT AT ./distill-report.md**:
-   Create distill-report.md IN THE REPOSITORY ROOT with these sections:
+  # Subsequent prompts: Process with --resume
+  for ((i=1; i<prompt_count; i++)); do
+    local phase=$((i + 1))
+    echo ""
+    echo "🔄 Phase $phase: Processing findings..."
 
-   ## Automated Changes
-   [List all auto-fixes made with file names and brief descriptions]
-   
-   ## Requires Review
-   [List conflicts and ambiguous issues that need human guidance]
-   
-   For each review item, provide:
-   - **Issue**: Clear description of the conflict/problem
-   - **Location**: File path(s) affected
-   - **Current State**: What exists now
-   - **Options**: Suggested resolutions
-   
-   <!-- USER INPUT START -->
-   [Your decisions here]
-   <!-- USER INPUT END -->
+    prompt=$(get_prompt "distill_generate" $i)
+    if [ -z "$prompt" ] || [ "$prompt" = "null" ]; then
+      echo -e "${RED}❌ Error: Could not load distill_generate prompt $i${NC}"
+      exit 1
+    fi
 
-4. **COMPLETION**:
-   - Save report to ./distill-report.md (repository root, NOT in .claude/knowledge/)
-   - If review items exist, instruct user to run: mim distill refine
-   - If no review items, report successful cleanup completion
-   - DO NOT commit any changes - commits are handled by 'mim distill refine'
+    # Use --resume flag to continue the same session
+    local resume_flag=""
+    if [ -n "$session_id" ]; then
+      resume_flag="--resume $session_id"
+    fi
 
-IMPORTANT: Process ALL knowledge files except session.md. Perform cross-file deduplication. Clean up junk/useless content aggressively. Use multi-line USER INPUT blocks for easier editing. DO NOT COMMIT CHANGES - the user will commit during the refine step." | stream_claude_output
+    claude \
+      $resume_flag \
+      --verbose \
+      --allowedTools "$ALLOWED_TOOLS" \
+      --print --output-format stream-json "$prompt" | stream_claude_output
+    exit_code=$?
+
+    if [ $exit_code -ne 0 ]; then
+      echo -e "${RED}❌ Phase $phase failed${NC}"
+      return 1
+    fi
+  done
 
   if [ $? -eq 0 ]; then
     echo ""
@@ -347,35 +368,18 @@ run_distill_refine() {
   echo "   [Applying your decisions to documentation]"
   echo ""
 
+  # Get the distill_refine prompt from JSON
+  local prompt=$(get_prompt "distill_refine" 0)
+  if [ -z "$prompt" ] || [ "$prompt" = "null" ]; then
+    echo -e "${RED}❌ Error: Could not load distill_refine prompt${NC}"
+    exit 1
+  fi
+
   claude \
     --verbose \
     --allowedTools "$ALLOWED_TOOLS" \
     --append-system-prompt "You are Mim's refinement aspect, completing the distillation process. The report is at ./distill-report.md (repository root). If there are items with user guidance between <!-- USER INPUT START --> and <!-- USER INPUT END --> tags, apply those decisions. If there are only auto-fixes and no review items, simply delete the report to mark completion. Remember that knowledge files are in .claude/knowledge/ and include various topic files plus the special KNOWLEDGE_MAP.md and KNOWLEDGE_MAP_CLAUDE.md files." \
-    --print --output-format stream-json "Execute this MANDATORY refinement process:
-
-1. **READ DISTILL REPORT FROM ./distill-report.md**:
-   - Read ./distill-report.md (repository root) completely
-   - Check if there are any <!-- USER INPUT START --> ... <!-- USER INPUT END --> blocks
-   - If present, parse the user's decisions/instructions from between these tags
-
-2. **APPLY USER DECISIONS TO KNOWLEDGE FILES (if any)**:
-   - If user input blocks exist, apply the requested changes to the appropriate files
-   - Knowledge files are in .claude/knowledge/ (various topic .md files)
-   - Special files: KNOWLEDGE_MAP.md (user index) and KNOWLEDGE_MAP_CLAUDE.md (Claude index)
-   - DO NOT DELETE either KNOWLEDGE_MAP, we want both the markdown-link and claude-reference versions
-   - Make precise edits based on user instructions
-   - If changes affect the knowledge maps, update both consistently
-
-3. **DELETE THE REPORT**:
-   - After successfully applying any refinements (or if only auto-fixes), delete ./distill-report.md
-   - This indicates the refinement session is complete
-
-4. **VERIFICATION**:
-   - If user decisions were applied, ensure all changes were applied correctly
-   - Verify consistency between KNOWLEDGE_MAP.md and KNOWLEDGE_MAP_CLAUDE.md if modified
-   - Report completion status and list of files modified (if any)
-
-IMPORTANT: The report is at ./distill-report.md (repository root). If there are no user input blocks, just delete the report to mark completion (changes were already made during distill)." | stream_claude_output
+    --print --output-format stream-json "$prompt" | stream_claude_output
 
   if [ $? -eq 0 ]; then
     echo ""
