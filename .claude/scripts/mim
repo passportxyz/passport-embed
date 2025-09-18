@@ -4,7 +4,6 @@ set -o pipefail
 # Mím - Persistent Memory for Claude Code
 # Main entry point for all mim commands
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Colors for output
 RED='\033[0;31m'
@@ -16,133 +15,293 @@ NC='\033[0m' # No Color
 # Shared tools configuration for all mim commands
 ALLOWED_TOOLS="Read,Write,Edit,MultiEdit,Glob,Grep,LS,Bash,Git"
 
-# Load prompts from JS configuration
-PROMPTS_FILE="$SCRIPT_DIR/mim-prompts.js"
-if [ ! -f "$PROMPTS_FILE" ]; then
-  echo -e "${RED}❌ Error: Prompts file not found: $PROMPTS_FILE${NC}"
-  exit 1
-fi
+# ============================================================================
+# PROMPTS SECTION - All prompts are embedded here for simplicity
+# ============================================================================
 
-# Function to get prompt from JS
-get_prompt() {
-  local key="$1"
-  local index="${2:-0}"
-  node -e "const prompts = require('$PROMPTS_FILE'); console.log(prompts['$key'][$index] || '')" 2>/dev/null
-}
+# Coalesce prompt
+read -r -d '' PROMPT_COALESCE << 'EOF'
+You are processing remembered knowledge. Execute this MANDATORY checklist:
 
-# Function to get prompt array length
-get_prompt_count() {
-  local key="$1"
-  node -e "const prompts = require('$PROMPTS_FILE'); console.log((prompts['$key'] || []).length)" 2>/dev/null || echo 0
-}
+1. **MUST READ** .claude/knowledge/session.md - Even if empty
+2. **MUST PROCESS** each entry from session.md:
+   - Determine category (architecture/patterns/dependencies/workflows/gotchas/etc)
+   - **MUST CREATE OR UPDATE** appropriate file in .claude/knowledge/{category}/
+   - Keep dated entries only for gotchas
+3. **MUST UPDATE OR CREATE** BOTH knowledge maps:
+   - **KNOWLEDGE_MAP.md** (user-facing): Use markdown links like [Topic Name](path/file.md)
+   - **KNOWLEDGE_MAP_CLAUDE.md** (Claude-facing): Use RELATIVE @ references like @patterns/file.md or @gotchas/file.md (NOT full paths)
+   - Both maps should have identical structure, just different link formats
+   - Include last updated timestamps in user-facing map only
+4. **MUST CLEAR** session.md after processing - use Write tool with empty content
 
-# Function to ensure inquisitor agent exists
-ensure_inquisitor_agent() {
-  local agent_file=".claude/agents/inquisitor.md"
+**VERIFICATION CHECKLIST - ALL MUST BE TRUE:**
+- [ ] Read session.md (even if empty)
+- [ ] Created/updated .claude/knowledge/ category files for any new knowledge
+- [ ] Created/updated BOTH KNOWLEDGE_MAP.md (markdown links) and KNOWLEDGE_MAP_CLAUDE.md (@ references)
+- [ ] Verified no knowledge was lost in the transfer
+- [ ] Cleared session.md by writing empty content to it
 
-  # Agent should already be installed by install.sh
-  if [ ! -f "$agent_file" ]; then
-    echo -e "${RED}❌ Error: Inquisitor agent not found at $agent_file${NC}"
-    echo "Please reinstall mim to get the latest agents."
-    echo "Run: curl -sSL https://raw.githubusercontent.com/lucianHymer/mim/main/install.sh | sh"
-    exit 1
-  fi
-}
+**IF YOU SKIP ANY STEP, YOU HAVE FAILED THE TASK**
 
-show_help() {
-  echo "⚡ Mím - Persistent Memory for Claude Code"
-  echo ""
-  echo "USAGE:"
-  echo "  mim <command> [options]"
-  echo ""
-  echo "COMMANDS:"
-  echo "  coalesce     Process remembered knowledge into documentation"
-  echo "  distill      Automatically clean up duplicates and conflicts in documentation"
-  echo "               (interactive by default - opens editor for review items)"
-  echo ""
-  echo "OPTIONS FOR DISTILL:"
-  echo "  --no-interactive, -n  Skip editor, preserve current two-step behavior"
-  echo "  --editor <cmd>        Override \$EDITOR for this run"
-  echo "  --refine-only         Jump straight to refine step"
-  echo ""
-  echo "EXAMPLES:"
-  echo "  mim coalesce              # Process session.md into organized docs"
-  echo "  mim distill               # Auto-clean and interactively review (default)"
-  echo "  mim distill -n            # Auto-clean only, no interactive editor"
-  echo "  mim distill --editor vim  # Use vim for this distill session"
-  echo "  mim distill --refine-only # Jump straight to refine step"
-  echo ""
-}
+IMPORTANT: CLAUDE.md uses @ references to .claude/knowledge/INSTRUCTIONS.md and .claude/knowledge/KNOWLEDGE_MAP_CLAUDE.md
+IMPORTANT: KNOWLEDGE_MAP_CLAUDE.md uses RELATIVE @ references (e.g., @patterns/file.md NOT @.claude/knowledge/patterns/file.md)
 
-# Stream claude output, extracting text and tool usage
+Documentation structure to create and maintain:
+.claude/knowledge/
+|-- session.md           # Current session's raw captures (you must clear this)
+|-- INSTRUCTIONS.md     # Knowledge remembering instructions (referenced by CLAUDE.md)
+|-- architecture/        # System design, component relationships
+|-- patterns/           # Coding patterns, conventions
+|-- dependencies/       # External services, libraries
+|-- workflows/          # How to do things in this project
+|-- gotchas/           # Surprises, non-obvious behaviors
+|-- KNOWLEDGE_MAP.md        # User-facing index with markdown links
+|-- KNOWLEDGE_MAP_CLAUDE.md # Claude-facing index with RELATIVE @ references
+
+After completing all updates, inform the user that documentation has been updated.
+EOF
+
+# Distill generate prompt 1
+read -r -d '' PROMPT_DISTILL_GEN_1 << 'EOF'
+Launch parallel inquisitor agents to research each knowledge entry.
+
+Your task:
+1. Read ALL *.md files in .claude/knowledge/ EXCEPT session.md
+2. For EACH substantive knowledge entry found, launch an inquisitor agent
+3. Each inquisitor researches ONE specific entry to verify it against the codebase
+4. Collect all their research findings
+
+The inquisitor agents will return structured reports with:
+- What I Found (current state)
+- Changes Detected (recent modifications)
+- Related Knowledge (similar entries)
+- Observations (discrepancies/issues)
+
+Launch as many inquisitor agents as needed to thoroughly verify the knowledge base.
+Aim for comprehensive coverage of all knowledge entries.
+EOF
+
+# Distill generate prompt 2
+read -r -d '' PROMPT_DISTILL_GEN_2 << 'EOF'
+Process all inquisitor findings and create distill-report.md.
+
+Based on the research from all inquisitor agents:
+
+1. **ANALYZE ALL FINDINGS**:
+   - Synthesize research from all inquisitors
+   - Identify exact duplicates, near-duplicates, conflicts, outdated info, junk
+   - Categorize: AUTO_FIX (clear issues) vs REQUIRES_REVIEW (ambiguous)
+
+2. **AUTO-FIX CLEAR ISSUES**:
+   - Remove exact duplicate sections
+   - Delete junk/useless information
+   - Fix broken references
+   - Consolidate redundant information
+   - Track all changes made
+
+3. **GENERATE ./distill-report.md** with:
+   ## Automated Changes
+   [List all auto-fixes made with file names and descriptions]
+
+   ## Requires Review
+   [List conflicts needing human guidance]
+
+   For each review item:
+   - **Issue**: Clear description
+   - **Location**: File path(s)
+   - **Current State**: What exists now
+   - **Options**: Suggested resolutions
+
+   <!-- USER INPUT START -->
+   [Your decisions here]
+   <!-- USER INPUT END -->
+
+4. **CRITICAL VERIFICATION**: Double-check that EVERY review item has both:
+   - <!-- USER INPUT START --> delimiter before the input area
+   - <!-- USER INPUT END --> delimiter after the input area
+   - These delimiters MUST be present for EACH individual review item
+
+5. Save to ./distill-report.md (repository root)
+6. DO NOT commit changes
+EOF
+
+# Distill generate prompt 3
+read -r -d '' PROMPT_DISTILL_GEN_3 << 'EOF'
+think hard
+
+Review your synthesis and distill-report.md:
+
+1. **EDGE CASE REVIEW**:
+   - Check for circular duplicates (A->B->C->A)
+   - Identify partial overlaps with unique info
+   - Consider context-dependent accuracy
+   - Look for recently deleted code references
+   - Flag ambiguous references
+
+2. **VALIDATION**:
+   - Ensure no valuable knowledge is accidentally deleted
+   - Verify auto-fixes are truly safe
+   - Double-check categorization (auto-fix vs review)
+   - Confirm all inquisitor findings were addressed
+
+3. **USER INPUT DELIMITER VERIFICATION**:
+   - CRITICAL: Verify EACH review item has <!-- USER INPUT START --> and <!-- USER INPUT END --> delimiters
+   - Each review item MUST have its own pair of delimiters
+   - No review item should be missing these delimiters
+   - Fix any missing delimiters immediately
+
+4. **REFINEMENT**:
+   - Adjust recommendations if needed
+   - Add any missed issues
+   - Improve clarity of review items
+   - Update distill-report.md with any changes
+
+Take your time to think through edge cases and ensure the report is thorough and accurate.
+EOF
+
+# Distill refine prompt
+read -r -d '' PROMPT_DISTILL_REFINE << 'EOF'
+Execute this MANDATORY refinement process:
+
+1. **READ DISTILL REPORT FROM ./distill-report.md**:
+   - Read ./distill-report.md (repository root) completely
+   - Check if there are any <!-- USER INPUT START --> ... <!-- USER INPUT END --> blocks
+   - If present, parse the user's decisions/instructions from between these tags
+
+2. **APPLY USER DECISIONS TO KNOWLEDGE FILES (if any)**:
+   - If user input blocks exist, apply the requested changes to the appropriate files
+   - Knowledge files are in .claude/knowledge/ (various topic .md files)
+   - Special files: KNOWLEDGE_MAP.md (user index) and KNOWLEDGE_MAP_CLAUDE.md (Claude index)
+   - DO NOT DELETE either KNOWLEDGE_MAP, we want both the markdown-link and claude-reference versions
+   - Make precise edits based on user instructions
+   - If changes affect the knowledge maps, update both consistently
+
+3. **DELETE THE REPORT**:
+   - After successfully applying any refinements (or if only auto-fixes), delete ./distill-report.md
+   - This indicates the refinement session is complete
+
+4. **VERIFICATION**:
+   - If user decisions were applied, ensure all changes were applied correctly
+   - Verify consistency between KNOWLEDGE_MAP.md and KNOWLEDGE_MAP_CLAUDE.md if modified
+   - Report completion status and list of files modified (if any)
+
+IMPORTANT: The report is at ./distill-report.md (repository root). If there are no user input blocks, just delete the report to mark completion (changes were already made during distill).
+EOF
+
+# ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
+# Function to stream claude output
 stream_claude_output() {
   while IFS= read -r line; do
-    # Extract and print text messages
-    text=$(echo "$line" | jq -r 'select(.message.content[0].type == "text") | .message.content[0].text' 2>/dev/null)
-    if [ -n "$text" ]; then
-      echo "$text"
-    fi
-    
-    # Extract and print tool usage
-    tool=$(echo "$line" | jq -r 'select(.message.content[0].type == "tool_use") | .message.content[0].name' 2>/dev/null)
-    if [ -n "$tool" ]; then
-      echo "[Using tool: $tool]"
+    # Extract content from stream-json format (this is a simple implementation)
+    if echo "$line" | grep -q '"type":"text"'; then
+      # Extract text content between "text":" and next "
+      echo "$line" | sed -n 's/.*"text":"\([^"]*\)".*/\1/p'
+    else
+      echo "$line"
     fi
   done
 }
 
+# Function to run claude with consistent options
+run_claude() {
+  local prompt="$1"
+  local tools="${2:-$ALLOWED_TOOLS}"
+  local resume_flag="${3:-}"
+  local system_prompt="${4:-}"
+  local capture_output="${5:-false}"
 
-run_coalesce() {
-  if [ ! -f .claude/knowledge/session.md ] || [ ! -s .claude/knowledge/session.md ]; then
-    echo "📜 No knowledge to process (session.md is empty or missing)"
-    exit 0
+  local cmd="claude"
+
+  # Add resume flag if provided
+  if [ -n "$resume_flag" ]; then
+    cmd="$cmd $resume_flag"
   fi
 
-  echo "⚔️  ODIN CALLS! Mímir's severed head awakens to serve!"
-  echo "🔨 Fragment by fragment, we forge the eternal codex..."
-  echo "🔥 By the flames of Muspelheim, knowledge shall be forged anew!"
-  echo ""
-  echo "   [The ritual takes time, perhaps several minutes]"
-  echo ""
+  # Add verbose and tools
+  cmd="$cmd --verbose --allowedTools \"$tools\""
 
-  # Get the coalesce prompt from JSON
-  local prompt=$(get_prompt "coalesce" 0)
-  if [ -z "$prompt" ] || [ "$prompt" = "null" ]; then
-    echo -e "${RED}❌ Error: Could not load coalesce prompt${NC}"
-    exit 1
+  # Add system prompt if provided
+  if [ -n "$system_prompt" ]; then
+    cmd="$cmd --append-system-prompt \"$system_prompt\""
   fi
 
-  claude \
-  --verbose \
-  --allowedTools "$ALLOWED_TOOLS" \
-  --append-system-prompt "You are Mim, keeper of project knowledge. You coalesce raw remembered knowledge into permanent documentation. CRITICAL PATH STRUCTURE: The instructions file is at .claude/knowledge/INSTRUCTIONS.md (NOT .claude/KNOWLEDGE_INSTRUCTIONS.md). CLAUDE.md contains @ references to .claude/knowledge/INSTRUCTIONS.md and .claude/knowledge/KNOWLEDGE_MAP_CLAUDE.md. You maintain TWO knowledge maps: KNOWLEDGE_MAP.md (user-facing with markdown links) and KNOWLEDGE_MAP_CLAUDE.md (Claude-facing with @ references - these are RELATIVE to the knowledge directory). The project structure: .claude/knowledge/session.md (raw captures), .claude/knowledge/{category}/ (organized knowledge), .claude/knowledge/KNOWLEDGE_MAP.md (human-facing index), .claude/knowledge/KNOWLEDGE_MAP_CLAUDE.md (claude-facing index with RELATIVE @ refs like @patterns/file.md NOT @.claude/knowledge/patterns/file.md)" \
-  --print --output-format stream-json "$prompt" | stream_claude_output
+  # Add print and output format
+  cmd="$cmd --print --output-format stream-json \"$prompt\""
 
-  if [ $? -eq 0 ]; then
-    echo ""
-    echo "⚡ THE RITUAL IS COMPLETE! The codex has been forged!"
-    echo ""
-    echo "📜 Sealing the runes in git's eternal halls..."
-    git add CLAUDE.md .claude/knowledge/
-    git commit -m "📜 Update project documentation via Mim"
-    echo ""
-    echo "🔥 IT IS DONE. Mímir returns to slumber."
+  # Execute with or without output capture
+  if [ "$capture_output" = "true" ]; then
+    local temp_output=$(mktemp)
+    eval "$cmd" 2>&1 | tee "$temp_output" | stream_claude_output
+    local exit_code=${PIPESTATUS[0]}
+    echo "$temp_output"  # Return temp file path for caller to use
+    return $exit_code
   else
-    echo ""
-    echo "💀 THE RITUAL FALTERS! Mímir's magic was disrupted!"
-    echo "⚠️  The fragments remain unbound... try again, wanderer."
+    eval "$cmd" | stream_claude_output
+    return $?
   fi
 }
 
-run_distill() {
-  # Parse arguments
-  local interactive=true
+# Function to ensure inquisitor agent exists
+ensure_inquisitor_agent() {
+  local agent_dir=".claude/agents"
+  local agent_path="$agent_dir/inquisitor.md"
+
+  if [ ! -f "$agent_path" ]; then
+    echo -e "${YELLOW}⚠️  Inquisitor agent not found at $agent_path${NC}"
+    echo "   Please ensure Mim is properly installed"
+    return 1
+  fi
+}
+
+# ============================================================================
+# COMMAND FUNCTIONS
+# ============================================================================
+
+# Coalesce command - Process session.md into organized documentation
+coalesce() {
+  echo "🔄 Running mim coalesce..."
+  echo "Processing remembered knowledge from session.md..."
+  echo ""
+
+  # Use the embedded coalesce prompt
+  local prompt="$PROMPT_COALESCE"
+  local system_prompt="You are Mím's knowledge processor. Your role is to organize raw captured knowledge into structured documentation. You must process every entry, categorize it appropriately, update knowledge maps, and ensure no knowledge is lost."
+
+  run_claude "$prompt" "$ALLOWED_TOOLS" "" "$system_prompt"
+
+  if [ $? -eq 0 ]; then
+    echo ""
+    echo "✨ Coalesce complete!"
+    echo ""
+    echo "📚 Knowledge processed and organized"
+    echo "📍 Check .claude/knowledge/ for updated documentation"
+  else
+    echo -e "${RED}❌ Coalesce failed${NC}"
+    exit 1
+  fi
+}
+
+# Distill command - Clean duplicates and conflicts in documentation
+distill() {
+  echo "🧹 Running mim distill..."
+  echo "🔍 Scanning documentation for duplicates, conflicts, junk, and outdated information..."
+  echo ""
+  echo "   [This may take several minutes to analyze all documentation]"
+  echo ""
+
+  # Parse flags
+  local no_interactive=false
   local custom_editor=""
-  
+  local refine_only=false
+
   while [[ $# -gt 0 ]]; do
     case $1 in
       --no-interactive|-n)
-        interactive=false
+        no_interactive=true
         shift
         ;;
       --editor)
@@ -150,53 +309,97 @@ run_distill() {
         shift 2
         ;;
       --refine-only)
-        # Jump directly to refine
-        run_distill_refine
-        return $?
+        refine_only=true
+        shift
         ;;
       *)
-        echo -e "${RED}❌ Unknown option: $1${NC}"
-        echo "Use 'mim help' to see available options."
+        echo -e "${RED}Unknown option: $1${NC}"
+        echo "Usage: mim distill [--no-interactive|-n] [--editor <command>] [--refine-only]"
         exit 1
         ;;
     esac
   done
 
-  echo "🧹 Running mim distill..."
-  echo "🔍 Scanning documentation for duplicates, conflicts, junk, and outdated information..."
-  echo ""
-  echo "   [This may take several minutes to analyze all documentation]"
-  echo ""
+  # Determine which editor to use
+  local editor_cmd="${custom_editor:-${EDITOR:-nano}}"
 
+  # If --refine-only, skip directly to refine step
+  if [ "$refine_only" = true ]; then
+    if [ ! -f "./distill-report.md" ]; then
+      echo -e "${YELLOW}⚠️  No distill-report.md found. Run 'mim distill' first.${NC}"
+      exit 1
+    fi
+    echo "📋 Found existing distill-report.md"
+    echo "🔄 Applying refinements..."
+    distill_refine
+    return $?
+  fi
+
+  # Run the full distill workflow
+  if ! distill_generate; then
+    return 1
+  fi
+
+  # Handle post-generation based on mode
+  if [ "$no_interactive" = true ]; then
+    # Non-interactive mode
+    echo ""
+    echo -e "${YELLOW}📋 Review required before applying changes${NC}"
+    echo ""
+    echo "Next steps:"
+    echo "  1. Review and edit: ${BLUE}${editor_cmd} ./distill-report.md${NC}"
+    echo "  2. Add your decisions in the <!-- USER INPUT --> sections"
+    echo "  3. Apply changes: ${BLUE}mim distill --refine-only${NC}"
+    echo ""
+    echo "Or use interactive mode: ${BLUE}mim distill${NC} (opens editor automatically)"
+  else
+    # Interactive mode - open editor if review needed
+    if [ -f "./distill-report.md" ]; then
+      if grep -q "## Requires Review" "./distill-report.md" 2>/dev/null; then
+        echo ""
+        echo "📝 Opening distill-report.md for your review..."
+        echo "   Please add your decisions in the <!-- USER INPUT --> sections"
+        echo ""
+
+        # Open editor and wait for user to finish
+        $editor_cmd "./distill-report.md"
+
+        echo ""
+        echo "🔄 Applying your refinements..."
+        distill_refine
+      else
+        # No review needed, just auto-fixes
+        echo ""
+        echo "✨ No manual review needed - only automatic fixes were found"
+        echo "🔄 Applying automatic fixes..."
+        distill_refine
+      fi
+    else
+      echo ""
+      echo "✨ Distillation complete! No issues found."
+    fi
+  fi
+}
+
+# Distill generate - Create the distill report
+distill_generate() {
   # Ensure inquisitor agent exists
   ensure_inquisitor_agent
 
   # Run multi-prompt distill generation workflow
-  local prompt_count=$(get_prompt_count "distill_generate")
-  if [ "$prompt_count" -eq 0 ]; then
-    echo -e "${RED}❌ Error: No distill_generate prompts found${NC}"
-    exit 1
-  fi
+  # We have 3 prompts for distill_generate
 
   local session_id=""
   local exit_code=0
 
   # First prompt: Launch inquisitor agents
   echo "🔍 Phase 1: Launching inquisitor agents..."
-  local prompt=$(get_prompt "distill_generate" 0)
-  if [ -z "$prompt" ] || [ "$prompt" = "null" ]; then
-    echo -e "${RED}❌ Error: Could not load distill_generate prompt 0${NC}"
-    exit 1
-  fi
+  local prompt="$PROMPT_DISTILL_GEN_1"
 
   # Run first prompt and capture session ID
-  local temp_output=$(mktemp)
-  claude \
-    --verbose \
-    --allowedTools "$ALLOWED_TOOLS,Task" \
-    --append-system-prompt "You are Mim's distillation orchestrator. You coordinate multiple inquisitor agents to verify and clean the knowledge base. The inquisitor agents are specialized for researching individual knowledge entries." \
-    --print --output-format stream-json "$prompt" 2>&1 | tee "$temp_output" | stream_claude_output
-  exit_code=${PIPESTATUS[0]}
+  local system_prompt="You are Mím's distillation orchestrator, Phase 1: Knowledge Verification. You coordinate multiple inquisitor agents to research and verify each knowledge entry against the current codebase. Launch agents systematically to ensure comprehensive coverage."
+  local temp_output=$(run_claude "$prompt" "$ALLOWED_TOOLS,Task" "" "$system_prompt" "true")
+  exit_code=$?
 
   # Extract session ID from the output
   session_id=$(grep -o 'Session ID: [a-zA-Z0-9_-]*' "$temp_output" | tail -1 | cut -d' ' -f3)
@@ -207,36 +410,39 @@ run_distill() {
     return 1
   fi
 
-  # Subsequent prompts: Process with --resume
-  for ((i=1; i<prompt_count; i++)); do
-    local phase=$((i + 1))
-    echo ""
-    echo "🔄 Phase $phase: Processing findings..."
+  # Second prompt: Process findings
+  echo ""
+  echo "🔄 Phase 2: Processing findings..."
+  prompt="$PROMPT_DISTILL_GEN_2"
 
-    prompt=$(get_prompt "distill_generate" $i)
-    if [ -z "$prompt" ] || [ "$prompt" = "null" ]; then
-      echo -e "${RED}❌ Error: Could not load distill_generate prompt $i${NC}"
-      exit 1
-    fi
+  # Use --resume flag to continue the same session
+  local resume_flag=""
+  if [ -n "$session_id" ]; then
+    resume_flag="--resume $session_id"
+  fi
 
-    # Use --resume flag to continue the same session
-    local resume_flag=""
-    if [ -n "$session_id" ]; then
-      resume_flag="--resume $session_id"
-    fi
+  local system_prompt_phase2="You are Mím's distillation synthesizer, Phase 2: Finding Analysis. You process all inquisitor research to identify duplicates, conflicts, and outdated information. You must create a clear distill-report.md with proper USER INPUT delimiters for each review item."
+  run_claude "$prompt" "$ALLOWED_TOOLS" "$resume_flag" "$system_prompt_phase2"
+  exit_code=$?
 
-    claude \
-      $resume_flag \
-      --verbose \
-      --allowedTools "$ALLOWED_TOOLS" \
-      --print --output-format stream-json "$prompt" | stream_claude_output
-    exit_code=$?
+  if [ $exit_code -ne 0 ]; then
+    echo -e "${RED}❌ Phase 2 failed${NC}"
+    return 1
+  fi
 
-    if [ $exit_code -ne 0 ]; then
-      echo -e "${RED}❌ Phase $phase failed${NC}"
-      return 1
-    fi
-  done
+  # Third prompt: Edge case review
+  echo ""
+  echo "🔄 Phase 3: Edge case review..."
+  prompt="$PROMPT_DISTILL_GEN_3"
+
+  local system_prompt_phase3="You are Mím's distillation validator, Phase 3: Quality Assurance. You perform edge case analysis and validation of the distill report. Ensure all USER INPUT delimiters are present, no valuable knowledge is lost, and all recommendations are accurate."
+  run_claude "$prompt" "$ALLOWED_TOOLS" "$resume_flag" "$system_prompt_phase3"
+  exit_code=$?
+
+  if [ $exit_code -ne 0 ]; then
+    echo -e "${RED}❌ Phase 3 failed${NC}"
+    return 1
+  fi
 
   if [ $? -eq 0 ]; then
     echo ""
@@ -244,186 +450,107 @@ run_distill() {
     if [ -f "./distill-report.md" ]; then
       echo ""
       echo "📋 Distill report generated at ./distill-report.md"
-      
+
       # Check if there are review items
       local has_review_items=false
-      if grep -q "## Requires Review" "./distill-report.md" && [ "$(grep -A 10 "## Requires Review" "./distill-report.md" | wc -l)" -gt 2 ]; then
+      if grep -q "## Requires Review" "./distill-report.md" 2>/dev/null; then
         has_review_items=true
       fi
-      
+
       if [ "$has_review_items" = true ]; then
-        echo -e "${YELLOW}⚠️  Some issues require human review${NC}"
-        
-        if [ "$interactive" = true ]; then
-          # Interactive mode: open editor
-          echo ""
-          echo "📝 Opening editor for review items..."
-          
-          # Determine which editor to use
-          local editor_cmd=""
-          if [ -n "$custom_editor" ]; then
-            editor_cmd="$custom_editor"
-          elif [ -n "$EDITOR" ]; then
-            editor_cmd="$EDITOR"
-          else
-            # Try common editors as fallback
-            if command -v vi >/dev/null 2>&1; then
-              editor_cmd="vi"
-            elif command -v nano >/dev/null 2>&1; then
-              editor_cmd="nano"
-            else
-              echo -e "${RED}❌ No editor found! Set \$EDITOR or use --editor option${NC}"
-              echo "📝 Edit ./distill-report.md manually, then run:"
-              echo -e "${BLUE}   mim distill refine${NC}"
-              exit 1
-            fi
-          fi
-          
-          echo "Using editor: $editor_cmd"
-          echo ""
-          
-          # Open the editor and wait for it to close
-          if $editor_cmd "./distill-report.md"; then
-            echo ""
-            echo "✅ Editor closed successfully"
-            echo "🎯 Applying refinements..."
-            echo ""
-            # Run refinement automatically
-            run_distill_refine
-          else
-            echo ""
-            echo -e "${YELLOW}⚠️  Editor exited with error or was cancelled${NC}"
-            echo "📋 Distill report preserved at ./distill-report.md"
-            echo "You can manually edit it and run:"
-            echo -e "${BLUE}   mim distill refine${NC}"
-            exit 1
-          fi
-        else
-          # Non-interactive mode: preserve old behavior
-          echo "📝 Edit ./distill-report.md to add your decisions, then run:"
-          echo -e "${BLUE}   mim distill refine${NC}"
-        fi
+        return 0  # Success with review needed
       else
-        echo -e "${GREEN}✅ No manual review required - all issues were auto-fixed${NC}"
-        echo ""
-        
-        if [ "$interactive" = true ]; then
-          # In interactive mode, automatically proceed to refine to commit changes
-          echo "🎯 Applying auto-fixes..."
-          run_distill_refine
-        else
-          # Non-interactive mode: preserve old behavior
-          echo "📝 Changes have been made but NOT committed."
-          echo "Run 'mim distill refine' to commit the changes."
-        fi
+        echo "   ✓ Only automatic fixes found, no manual review needed"
+        return 0
       fi
     fi
   else
-    echo ""
-    echo -e "${RED}💀 Distillation failed! Check the output above for errors.${NC}"
-    exit 1
+    echo -e "${RED}❌ Distill generation failed${NC}"
+    return 1
   fi
 }
 
-run_distill_refine() {
-  echo "🎯 Running mim distill refine..."
-  
+# Distill refine - Apply changes from distill report
+distill_refine() {
   if [ ! -f "./distill-report.md" ]; then
-    echo -e "${RED}❌ Error: No distill report found at ./distill-report.md${NC}"
-    echo "Run 'mim distill' first to generate a report."
-    exit 1
+    echo -e "${YELLOW}⚠️  No distill report found at ./distill-report.md${NC}"
+    echo "   Run 'mim distill' first to generate a report"
+    return 1
   fi
 
-  # Check if report has review items that need user input
-  has_review_items=false
-  if grep -q "## Requires Review" "./distill-report.md" && [ "$(grep -A 10 "## Requires Review" "./distill-report.md" | wc -l)" -gt 2 ]; then
-    has_review_items=true
-  fi
-
-  # If there are review items, check for user input
-  if [ "$has_review_items" = true ]; then
-    # Check if report has user input
-    if ! grep -q "<!-- USER INPUT START -->" "./distill-report.md"; then
-      echo -e "${YELLOW}⚠️  No user input found in distill-report.md${NC}"
-      echo "Please edit distill-report.md and add your decisions between the USER INPUT tags."
-      exit 1
-    fi
-    
-    # Check if user actually added content between the tags
-    user_content=$(awk '/<!-- USER INPUT START -->/{flag=1;next}/<!-- USER INPUT END -->/{flag=0}flag' "./distill-report.md" | grep -v '^[[:space:]]*$' | grep -v '<!-- Add your decision/instructions here -->')
-    if [ -z "$user_content" ]; then
-      echo -e "${YELLOW}⚠️  No user decisions found between USER INPUT tags${NC}"
-      echo "Please edit distill-report.md and add your decisions between:"
-      echo "  <!-- USER INPUT START -->"
-      echo "  [Your decisions here]"
-      echo "  <!-- USER INPUT END -->"
-      exit 1
-    fi
-  else
-    echo "ℹ️  No review items found - only auto-fixes to commit"
-  fi
-
-  echo "🔍 Processing user-guided refinements from distill report..."
-  echo ""
-  echo "   [Applying your decisions to documentation]"
+  echo "📋 Applying refinements from distill-report.md..."
   echo ""
 
-  # Get the distill_refine prompt from JSON
-  local prompt=$(get_prompt "distill_refine" 0)
-  if [ -z "$prompt" ] || [ "$prompt" = "null" ]; then
-    echo -e "${RED}❌ Error: Could not load distill_refine prompt${NC}"
-    exit 1
-  fi
+  # Use the embedded distill_refine prompt
+  local prompt="$PROMPT_DISTILL_REFINE"
+  local system_prompt="You are Mím's refinement executor. Your role is to apply user decisions from the distill report to the knowledge base. Parse user input sections carefully, apply changes precisely, and clean up the report when complete."
 
-  claude \
-    --verbose \
-    --allowedTools "$ALLOWED_TOOLS" \
-    --append-system-prompt "You are Mim's refinement aspect, completing the distillation process. The report is at ./distill-report.md (repository root). If there are items with user guidance between <!-- USER INPUT START --> and <!-- USER INPUT END --> tags, apply those decisions. If there are only auto-fixes and no review items, simply delete the report to mark completion. Remember that knowledge files are in .claude/knowledge/ and include various topic files plus the special KNOWLEDGE_MAP.md and KNOWLEDGE_MAP_CLAUDE.md files." \
-    --print --output-format stream-json "$prompt" | stream_claude_output
+  run_claude "$prompt" "$ALLOWED_TOOLS" "" "$system_prompt"
 
   if [ $? -eq 0 ]; then
     echo ""
     echo "✨ Refinement complete!"
-    
-    # Check if distill-report.md was deleted (indicates successful completion)
-    if [ ! -f "./distill-report.md" ]; then
-      echo -e "${GREEN}✅ Distill report cleaned up after successful refinement${NC}"
+    echo ""
+
+    # Check if report still exists (it should be deleted after successful refine)
+    if [ -f "./distill-report.md" ]; then
+      echo -e "${YELLOW}⚠️  Note: distill-report.md still exists${NC}"
+      echo "   This might indicate the refinement was incomplete"
+    else
+      echo "✓ All refinements applied successfully"
+      echo "✓ Distill report cleaned up"
     fi
-    
-    echo ""
-    echo "📜 Committing refined documentation..."
-    git add .
-    git commit -m "🎯 Apply user-guided documentation refinements"
-    echo ""
-    echo -e "${GREEN}🔥 All refinements applied successfully!${NC}"
   else
-    echo ""
-    echo -e "${RED}💀 Refinement failed! Check the output above for errors.${NC}"
-    exit 1
+    echo -e "${RED}❌ Refinement failed${NC}"
+    echo "   Check distill-report.md and try again"
+    return 1
   fi
 }
 
-# Main command dispatcher
-case "$1" in
-  "coalesce")
+# Show help
+show_help() {
+  cat << 'HELP_EOF'
+Mím - Persistent Memory for Claude Code
+
+Usage: mim <command> [options]
+
+Commands:
+  coalesce    Process session.md into organized documentation
+  distill     Clean duplicates, conflicts, and outdated information
+              Options:
+                --no-interactive, -n   Manual two-step process (no auto-editor)
+                --editor <cmd>         Override $EDITOR for this session
+                --refine-only         Skip to applying existing distill report
+  help        Show this help message
+
+Examples:
+  mim coalesce              # Process remembered knowledge
+  mim distill               # Interactive cleanup (auto-opens editor)
+  mim distill -n            # Non-interactive (manual review)
+  mim distill --refine-only # Apply existing distill-report.md
+
+Learn more: https://github.com/lucianHymer/mim
+HELP_EOF
+}
+
+# ============================================================================
+# MAIN ENTRY POINT
+# ============================================================================
+
+# Parse command
+case "${1:-}" in
+  coalesce)
+    coalesce
+    ;;
+  distill)
     shift
-    run_coalesce "$@"
+    distill "$@"
     ;;
-  "distill")
-    if [ "$2" = "refine" ]; then
-      # Hidden alias for backward compatibility - routes to --refine-only
-      shift 2
-      run_distill --refine-only "$@"
-    else
-      shift
-      run_distill "$@"
-    fi
-    ;;
-  "help"|"--help"|"-h"|"")
+  help|--help|-h|"")
     show_help
     ;;
   *)
-    echo -e "${RED}❌ Unknown command: $1${NC}"
+    echo -e "${RED}Unknown command: $1${NC}"
     echo ""
     show_help
     exit 1

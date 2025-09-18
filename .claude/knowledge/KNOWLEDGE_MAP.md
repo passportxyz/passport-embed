@@ -12,11 +12,11 @@ _Last updated: 2025-09-04_
 
 - [Build System and Components](./architecture/build-system.md) - Webpack configuration, build philosophy, React Query integration, and Passport widget body component structure
 - [MSW Infrastructure](./architecture/msw-infrastructure.md) - Complete MSW testing system refactored into dev/ directory with orchestrated build commands
-- [Human ID Configuration](./architecture/human-id-configuration.md) - Human ID SDK configuration, external calls, and comprehensive mocking implementation _(Updated 2025-09-04)_
+- [Human ID SDK](./architecture/human-id-sdk.md) - Human ID SDK integration, configuration, and comprehensive mocking implementation _(Merged 2025-09-18)_
 
 ## ⚙️ Configuration
 
-- [Dev Environment](./config/dev-environment.md) - Example app setup, Vite configuration, environment variables, MSW development setup, widget CSS variables, Playwright MCP configuration for Fedora
+- [Development Guide](./config/development-guide.md) - Complete development environment setup, Vite configuration, MSW setup, and testing workflows _(Merged 2025-09-18)_
 - [TypeScript Path Mapping](./config/typescript-path-mapping.md) - TypeScript path mapping for local development with Vite aliases _(New 2025-09-03)_
 
 ## 📦 Dependencies
@@ -27,7 +27,6 @@ _Last updated: 2025-09-04_
 
 - [PostCSS Dependencies](./gotchas/postcss-dependencies.md) - Autoprefixer dependency resolution issues and solutions
 - [UI Alignment](./gotchas/ui-alignment.md) - Text alignment issues in Passport widget, padding impacts on Stamp flow, and solutions
-- [Missing Components](./gotchas/missing-components.md) - ScenarioSwitcher component didn't exist, MSW files JavaScript conversion error, dev environment API key requirements
 - [MSW Handler Issues](./gotchas/msw-handler-issues.md) - MSW handler URL mismatch and bash process termination issues
 - [Playwright Test Issues](./gotchas/playwright-test-issues.md) - Test timeouts and beforeEach navigation issues
 - [More Options Pagination](./gotchas/more-options-pagination.md) - Pagination issues, Vite HMR errors, Human ID SDK sync behavior _(Updated 2025-09-04)_
@@ -38,7 +37,6 @@ _Last updated: 2025-09-04_
 
 - [MSW Scenario System](./patterns/msw-scenario-system.md) - Flexible mock data architecture, TypeScript file structure, and error scenario testing patterns
 - [Wallet Callback Pattern](./patterns/wallet-callback-pattern.md) - Framework-agnostic wallet integration through callbacks
-- [Human ID Integration](./patterns/human-id-integration.md) - Human ID SDK integration pattern for SBT-based credentials _(New 2025-09-03)_
 
 ## 🧪 Testing
 
@@ -49,7 +47,6 @@ _Last updated: 2025-09-04_
 
 ## 🔄 Workflows
 
-- [Development](./workflows/development.md) - Local development setup, hot reload configuration, MSW setup process, Playwright MCP testing workflow on Fedora, widget user flow states
 - [Playwright Automation](./workflows/playwright-automation.md) - Playwright MCP browser automation best practices and critical warnings
 
 ## 🎨 UI Components

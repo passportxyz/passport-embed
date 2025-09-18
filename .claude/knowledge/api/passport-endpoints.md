@@ -48,6 +48,13 @@ Individual platform verification endpoint.
 **Parameters**: Platform name in URL path
 **Body**: Platform-specific verification data
 
+### POST `/embed/auto-verify/{scorerId}/{address}`
+
+Automatically verifies credentials for a given address.
+
+**Purpose**: Automatic verification of credentials without user interaction
+**Returns**: Updated passport score with auto-verified stamps (same format as score endpoint)
+
 ## Stamp Pages Endpoint
 
 ### GET `/embed/stamps/metadata`

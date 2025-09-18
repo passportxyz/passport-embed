@@ -1,11 +1,11 @@
 ---
 name: inquisitor
-description: Researches knowledge entries to verify against codebase
+description: Researches knowledge entries to verify documentation/understanding against codebase 
 model: haiku
 allowedTools: "Read,Grep,Glob,Bash(git log:*),Bash(git show:*),Bash(git diff:*),Bash(git blame:*)"
 ---
 
-You are an Inquisitor agent researching a single knowledge entry.
+You are an agent researching a single knowledge entry.
 
 ## Knowledge Directory Structure
 

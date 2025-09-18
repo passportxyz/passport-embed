@@ -2,6 +2,14 @@
 
 ## Widget Redesign Specifications
 
+### Widget Dimensions
+
+**Current Implementation:**
+- **Total Height**: 355px (300px body + 55px header)
+- **Body Height**: 300px (configurable via CSS)
+- **Header Height**: 55px (fixed)
+- **Width**: 300px (reduced from 320px)
+
 ### Design Tokens Comparison
 
 **Current Design:**
