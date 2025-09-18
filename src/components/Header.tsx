@@ -16,7 +16,7 @@ const ScoreIndicator = ({ score, threshold }: { score: number; threshold: number
       rgba(var(--color-accent-c6dbf459), 1) ${angle}deg,
       rgba(var(--color-primary-c6dbf459), 1) ${angle}deg,
       rgba(var(--color-primary-c6dbf459), 1) 360deg
-    )`
+    )`,
   };
 
   return (
@@ -83,7 +83,7 @@ export const Header = ({
       }}
     >
       <PassportLogo />
-      <div className={styles.titleStack}>Human Passport Score</div>
+      <div>Human Passport Score</div>
       <div className={styles.scoreSection}>
         <ScoreDisplay />
         {collapsible && <CollapseToggle bodyIsOpen={bodyIsOpen} />}
