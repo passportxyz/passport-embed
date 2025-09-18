@@ -25,12 +25,19 @@ show_help() {
   echo "COMMANDS:"
   echo "  coalesce     Process remembered knowledge into documentation"
   echo "  distill      Automatically clean up duplicates and conflicts in documentation"
-  echo "  distill refine  Apply user-guided refinements from distill report"
+  echo "               (interactive by default - opens editor for review items)"
+  echo ""
+  echo "OPTIONS FOR DISTILL:"
+  echo "  --no-interactive, -n  Skip editor, preserve current two-step behavior"
+  echo "  --editor <cmd>        Override \$EDITOR for this run"
+  echo "  --refine-only         Jump straight to refine step"
   echo ""
   echo "EXAMPLES:"
   echo "  mim coalesce              # Process session.md into organized docs"
-  echo "  mim distill               # Auto-clean docs and generate review report"
-  echo "  mim distill refine        # Apply user comments from distill report"
+  echo "  mim distill               # Auto-clean and interactively review (default)"
+  echo "  mim distill -n            # Auto-clean only, no interactive editor"
+  echo "  mim distill --editor vim  # Use vim for this distill session"
+  echo "  mim distill --refine-only # Jump straight to refine step"
   echo ""
 }
 
@@ -126,6 +133,33 @@ After completing all updates, inform the user that documentation has been update
 }
 
 run_distill() {
+  # Parse arguments
+  local interactive=true
+  local custom_editor=""
+  
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+      --no-interactive|-n)
+        interactive=false
+        shift
+        ;;
+      --editor)
+        custom_editor="$2"
+        shift 2
+        ;;
+      --refine-only)
+        # Jump directly to refine
+        run_distill_refine
+        return $?
+        ;;
+      *)
+        echo -e "${RED}❌ Unknown option: $1${NC}"
+        echo "Use 'mim help' to see available options."
+        exit 1
+        ;;
+    esac
+  done
+
   echo "🧹 Running mim distill..."
   echo "🔍 Scanning documentation for duplicates, conflicts, junk, and outdated information..."
   echo ""
@@ -191,15 +225,76 @@ IMPORTANT: Process ALL knowledge files except session.md. Perform cross-file ded
       echo "📋 Distill report generated at ./distill-report.md"
       
       # Check if there are review items
+      local has_review_items=false
       if grep -q "## Requires Review" "./distill-report.md" && [ "$(grep -A 10 "## Requires Review" "./distill-report.md" | wc -l)" -gt 2 ]; then
+        has_review_items=true
+      fi
+      
+      if [ "$has_review_items" = true ]; then
         echo -e "${YELLOW}⚠️  Some issues require human review${NC}"
-        echo "📝 Edit ./distill-report.md to add your decisions, then run:"
-        echo -e "${BLUE}   mim distill refine${NC}"
+        
+        if [ "$interactive" = true ]; then
+          # Interactive mode: open editor
+          echo ""
+          echo "📝 Opening editor for review items..."
+          
+          # Determine which editor to use
+          local editor_cmd=""
+          if [ -n "$custom_editor" ]; then
+            editor_cmd="$custom_editor"
+          elif [ -n "$EDITOR" ]; then
+            editor_cmd="$EDITOR"
+          else
+            # Try common editors as fallback
+            if command -v vi >/dev/null 2>&1; then
+              editor_cmd="vi"
+            elif command -v nano >/dev/null 2>&1; then
+              editor_cmd="nano"
+            else
+              echo -e "${RED}❌ No editor found! Set \$EDITOR or use --editor option${NC}"
+              echo "📝 Edit ./distill-report.md manually, then run:"
+              echo -e "${BLUE}   mim distill refine${NC}"
+              exit 1
+            fi
+          fi
+          
+          echo "Using editor: $editor_cmd"
+          echo ""
+          
+          # Open the editor and wait for it to close
+          if $editor_cmd "./distill-report.md"; then
+            echo ""
+            echo "✅ Editor closed successfully"
+            echo "🎯 Applying refinements..."
+            echo ""
+            # Run refinement automatically
+            run_distill_refine
+          else
+            echo ""
+            echo -e "${YELLOW}⚠️  Editor exited with error or was cancelled${NC}"
+            echo "📋 Distill report preserved at ./distill-report.md"
+            echo "You can manually edit it and run:"
+            echo -e "${BLUE}   mim distill refine${NC}"
+            exit 1
+          fi
+        else
+          # Non-interactive mode: preserve old behavior
+          echo "📝 Edit ./distill-report.md to add your decisions, then run:"
+          echo -e "${BLUE}   mim distill refine${NC}"
+        fi
       else
         echo -e "${GREEN}✅ No manual review required - all issues were auto-fixed${NC}"
         echo ""
-        echo "📝 Changes have been made but NOT committed."
-        echo "Run 'mim distill refine' to commit the changes."
+        
+        if [ "$interactive" = true ]; then
+          # In interactive mode, automatically proceed to refine to commit changes
+          echo "🎯 Applying auto-fixes..."
+          run_distill_refine
+        else
+          # Non-interactive mode: preserve old behavior
+          echo "📝 Changes have been made but NOT committed."
+          echo "Run 'mim distill refine' to commit the changes."
+        fi
       fi
     fi
   else
@@ -312,8 +407,9 @@ case "$1" in
     ;;
   "distill")
     if [ "$2" = "refine" ]; then
+      # Hidden alias for backward compatibility - routes to --refine-only
       shift 2
-      run_distill_refine "$@"
+      run_distill --refine-only "$@"
     else
       shift
       run_distill "$@"
