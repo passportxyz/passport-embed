@@ -35,7 +35,7 @@
 
 .expanded {
   opacity: 1;
-  max-width: 320px;
+  max-width: 300px;
   min-height: 300px;
   height: 300px; /* 300px body + 55px header = 355px total */
   padding: 12px var(--widget-padding-x-c6dbf459) 20px;
@@ -91,7 +91,7 @@
 
 .heading {
   text-align: left;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   line-height: 28px;
   width: 100%;
