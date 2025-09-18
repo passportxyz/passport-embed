@@ -192,8 +192,8 @@ const InitialTooLow = ({ onContinue }: { onContinue: () => void }) => {
         <HappyHuman />
         <div className={styles.heading}>Increase score to participate!</div>
         <div>
-          Your web3 history wasn’t sufficient to enable you to participate. Raise your score to {data?.threshold || 20}{" "}
-          or above  by verifying additional Stamps
+          Your web3 history wasn't sufficient to enable you to participate. Raise your score to {data?.threshold || 20}{" "}
+          or above by verifying additional Stamps
         </div>
       </div>
       <Button className={utilStyles.wFull} onClick={onContinue}>

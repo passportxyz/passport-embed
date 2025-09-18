@@ -256,7 +256,7 @@ describe("Header Component", () => {
         ...defaultMockResult,
         data: {
           ...defaultScoreData,
-          score: undefined as any,
+          score: undefined as unknown as number,
         },
       });
 

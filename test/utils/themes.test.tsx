@@ -1,5 +1,5 @@
-import React, { useRef } from "react";
-import { render, renderHook } from "@testing-library/react";
+import React from "react";
+import { render } from "@testing-library/react";
 import { DarkTheme, LightTheme } from "../../src/utils/themes";
 import { Widget } from "../../src/widgets/Widget";
 import type { PassportWidgetTheme } from "../../src/widgets/Widget";
@@ -121,7 +121,7 @@ describe("Widget setTheme functionality", () => {
         primary: "0, 0, 0",
         secondary: "128, 128, 128",
         background: "255, 255, 255",
-        accent: undefined as any, // Explicitly testing undefined
+        accent: undefined as unknown as string, // Explicitly testing undefined
       },
     };
 

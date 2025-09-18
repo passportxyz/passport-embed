@@ -1,7 +1,6 @@
 import styles from "./Header.module.css";
 import { PassportLogo } from "../assets/passportLogo";
 import { LoadingIcon } from "../assets/loadingIcon";
-import { useHeaderControls } from "../hooks/useHeaderControls";
 import { useWidgetIsQuerying, useWidgetPassportScore } from "../hooks/usePassportScore";
 import { displayNumber } from "../utils";
 import { Dispatch, SetStateAction } from "react";
@@ -72,9 +71,6 @@ export const Header = ({
   setBodyIsOpen: Dispatch<SetStateAction<boolean>>;
   collapsible: boolean;
 }) => {
-  // TODO remove
-  const { subtitle } = useHeaderControls();
-
   return (
     <button
       className={`${styles.container} ${bodyIsOpen || !collapsible ? styles.bodyExpanded : styles.bodyCollapsed} ${
