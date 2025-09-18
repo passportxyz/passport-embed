@@ -37,7 +37,9 @@
   opacity: 0;
 }
 
-.scrollable {
-  overflow-y: auto;
+.contents {
+  /* Inner container for the scrollable content */
   scrollbar-width: thin;
+  width: 100%;
+  place-self: stretch; /* Override the center alignment to fill the container */
 }

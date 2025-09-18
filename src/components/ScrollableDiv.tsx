@@ -14,8 +14,8 @@ export const ScrollableDiv = ({
   const scrollContainerRef = createRef<HTMLDivElement>();
 
   return (
-    <div className={`${className} ${styles.scrollableDiv}`}>
-      <div className={`${styles.scrollable} ${className}`} ref={scrollContainerRef}>
+    <div className={`${className} ${styles.scrollableDiv}`} ref={scrollContainerRef}>
+      <div className={styles.contents}>
         {children}
       </div>
       <ScrollIndicator

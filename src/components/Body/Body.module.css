@@ -43,10 +43,9 @@
   overflow: hidden;
 }
 
-/* Remove top and bottom padding when showing Add Stamps view */
+/* Remove all padding when showing Add Stamps view so scrollable div can extend to edges */
 .expanded:has(.allStampsContainer) {
-  padding-top: 0;
-  padding-bottom: 0;
+  padding: 0;
 }
 
 .overlay {
@@ -274,13 +273,13 @@
 
 /* All stamps view styles */
 .allStampsContainer {
-  width: 100%;
+  width: 100%; /* Full width now that parent padding is removed */
   height: 100%; /* Use full available height of parent */
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 2px 0px;
   overflow-y: auto;
+  box-sizing: border-box;
+
+  /* No vertical padding, horizontal padding using theme variable */
+  padding: 0 var(--widget-padding-x-c6dbf459);
 }
 
 .stampCategory {
@@ -289,8 +288,8 @@
   gap: 8px;
 }
 
-/* Add top padding to the first category */
-.stampCategory:first-child {
+/* Add top padding to all categories */
+.stampCategory {
   padding-top: 12px;
 }
 
