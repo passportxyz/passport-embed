@@ -73,6 +73,25 @@
   font-weight: 700;
 }
 
+.scoreIndicator {
+  position: relative;
+  width: 40px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.scoreIndicatorText {
+  position: relative;
+  z-index: 1;
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(var(--color-background-c6dbf459), 1);
+}
+
 .scoreSection {
   display: flex;
   align-items: center;

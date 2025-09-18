@@ -5,8 +5,7 @@ export const DarkTheme: PassportWidgetTheme = {
     primary: "255, 255, 255",
     secondary: "109, 109, 109",
     background: "0, 0, 0",
-    accent: "0, 212, 170", // #00D4AA - bright teal for CTAs
-    // TODO probably remove success and failure?
+    accent: "0, 212, 170",
     success: "164, 255, 169",
     failure: "203, 203, 203",
   },
@@ -41,6 +40,7 @@ export const LightTheme: PassportWidgetTheme = {
     primary: "55, 55, 55",
     secondary: "201, 201, 201",
     background: "255, 255, 255",
+    accent: "0, 212, 170",
     success: "36, 212, 83",
     failure: "55, 55, 55",
   },

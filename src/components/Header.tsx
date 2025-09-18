@@ -7,7 +7,31 @@ import { displayNumber } from "../utils";
 import { Dispatch, SetStateAction } from "react";
 
 const ScoreIndicator = ({ score, threshold }: { score: number; threshold: number }) => {
-  return <div className={styles.score}>{displayNumber(score)}</div>;
+  const fillPercentage = Math.min((score / threshold) * 100, 100);
+  const angle = (fillPercentage / 100) * 360;
+
+  const gradientStyle = {
+    background: `conic-gradient(
+      from 0deg,
+      rgba(var(--color-accent-c6dbf459), 1) 0deg,
+      rgba(var(--color-accent-c6dbf459), 1) ${angle}deg,
+      rgba(var(--color-primary-c6dbf459), 1) ${angle}deg,
+      rgba(var(--color-primary-c6dbf459), 1) 360deg
+    )`
+  };
+
+  return (
+    <div
+      className={styles.scoreIndicator}
+      role="progressbar"
+      aria-valuenow={score}
+      aria-valuemin={0}
+      aria-valuemax={threshold}
+      style={gradientStyle}
+    >
+      <div className={styles.scoreIndicatorText}>{displayNumber(score)}</div>
+    </div>
+  );
 };
 
 const ScoreDisplay = () => {
