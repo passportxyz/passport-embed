@@ -2,11 +2,12 @@ import styles from "./Body.module.css";
 import utilStyles from "../../utilStyles.module.css";
 import { Button } from "../Button";
 import { useEffect, useState } from "react";
-import { useHeaderControls } from "../../hooks/useHeaderControls";
 import { useWidgetPassportScore } from "../../hooks/usePassportScore";
-import { usePaginatedStampPages } from "../../hooks/useStampPages";
-import { Platform, VISIT_PASSPORT_HEADER } from "../../hooks/stampTypes";
-import { TextButton } from "../TextButton";
+import { useQuery } from "@tanstack/react-query";
+import { SanitizedHTMLComponent } from "../SanitizedHTMLComponent";
+import { fetchStampPages } from "../../utils/stampDataApi";
+import { usePassportQueryClient } from "../../hooks/usePassportQueryClient";
+import { Platform } from "../../hooks/stampTypes";
 import { RightArrow } from "../../assets/rightArrow";
 import { ScrollableDiv } from "../ScrollableDiv";
 import { PlatformVerification } from "./PlatformVerification";
@@ -87,19 +88,31 @@ export const AddStamps = ({
 }: {
   generateSignatureCallback: ((message: string) => Promise<string | undefined>) | undefined;
 }) => {
-  const { setSubtitle } = useHeaderControls();
-  const queryProps = useQueryContext();
-  const { scorerId, apiKey, embedServiceUrl } = queryProps;
-  const { page, nextPage, prevPage, isFirstPage, isLastPage, isLoading, error, refetch } = usePaginatedStampPages({
-    apiKey,
-    scorerId,
-    embedServiceUrl,
-  });
+  const { scorerId, apiKey, embedServiceUrl } = useQueryContext();
+  const queryClient = usePassportQueryClient();
   const [openPlatform, setOpenPlatform] = useState<Platform | null>(null);
 
-  useEffect(() => {
-    setSubtitle("VERIFY STAMPS");
-  }, [setSubtitle]);
+  const { data: stampPages, isLoading, error, refetch } = useQuery(
+    {
+      queryKey: ["stampPages", apiKey, scorerId, embedServiceUrl],
+      queryFn: async () => {
+        const data = await fetchStampPages({ apiKey, scorerId, embedServiceUrl });
+        return data.map((page: any) => ({
+          ...page,
+          platforms: page.platforms.map((platform: any) => ({
+            ...platform,
+            description: <SanitizedHTMLComponent html={platform.description || ""} />,
+            displayWeight: platform.displayWeight,
+          })),
+        }));
+      },
+      staleTime: 1000 * 60 * 60, // 1 hour
+      gcTime: 1000 * 60 * 60 * 2, // 2 hours cache
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+    },
+    queryClient
+  );
 
   if (isLoading)
     return (
@@ -118,15 +131,13 @@ export const AddStamps = ({
         </Button>
       </>
     );
-  if (!page)
+  if (!stampPages || stampPages.length === 0)
     return (
       <div className={styles.textBlock}>
         <div className={styles.heading}>No Stamps Available</div>
         <div>No stamp metadata available at this time.</div>
       </div>
     );
-
-  const { header, platforms } = page;
 
   if (openPlatform) {
     return (
@@ -138,35 +149,25 @@ export const AddStamps = ({
     );
   }
 
-  const isVisitPassportPage = header === VISIT_PASSPORT_HEADER;
-
   return (
     <>
-      <div className={styles.textBlock}>
-        <div className={styles.heading}>{header}</div>
-        {isVisitPassportPage ? (
-          <div className={styles.innerText}>
-            Visit <Hyperlink href="https://app.passport.xyz">Human Passport</Hyperlink> for more Stamp options!
+      <ScrollableDiv className={styles.allStampsContainer}>
+        {stampPages.map((page, pageIndex) => (
+          <div key={pageIndex} className={styles.stampCategory}>
+            <div className={styles.categoryHeader}>{page.header}</div>
+            <div className={styles.stampsList}>
+              {page.platforms.map((platform) => (
+                <PlatformButton key={platform.platformId} platform={platform} setOpenPlatform={setOpenPlatform} />
+              ))}
+            </div>
           </div>
-        ) : (
-          <div>Choose from below and verify</div>
-        )}
-      </div>
-      {isVisitPassportPage || (
-        <ScrollableDiv className={styles.platformButtonGroup}>
-          {platforms.map((platform) => (
-            <PlatformButton key={platform.platformId} platform={platform} setOpenPlatform={setOpenPlatform} />
-          ))}
-        </ScrollableDiv>
-      )}
-      <div
-        className={`${styles.navigationButtons} ${
-          isFirstPage || isLastPage ? utilStyles.justifyCenter : utilStyles.justifyBetween
-        }`}
-      >
-        {isFirstPage || <TextButton onClick={prevPage}>Go back</TextButton>}
-        {isLastPage || <TextButton onClick={nextPage}>Try another way</TextButton>}
-      </div>
+        ))}
+        <div className={styles.exploreMoreSection}>
+          <Hyperlink href="https://app.passport.xyz" className={styles.exploreMoreLink}>
+            🚀 Explore Additional Stamps ↗
+          </Hyperlink>
+        </div>
+      </ScrollableDiv>
     </>
   );
 };
