@@ -105,57 +105,89 @@
 }
 
 .platformButton {
-  padding: 8px 20px;
-  width: 100%;
-
-  background-color: rgba(var(--color-background-c6dbf459), 1);
-  color: rgba(var(--color-primary-c6dbf459), 1);
-
   display: flex;
-  flex-direction: row;
   align-items: center;
-  gap: 8px;
-
-  line-height: 1;
-
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(var(--color-secondary-c6dbf459), 1);
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
-  border-radius: 12px;
-  border: 1px solid rgba(var(--color-primary-c6dbf459), 1);
-  transition: outline var(--transition-speed-c6dbf459) ease;
+  transition: all var(--transition-speed-c6dbf459) ease;
+  margin-bottom: 8px;
+  color: rgba(var(--color-primary-c6dbf459), 1);
+}
+
+.platformButton:last-child {
+  margin-bottom: 0;
 }
 
 .platformButton:hover {
-  outline: 1px solid rgba(var(--color-primary-c6dbf459), 1);
+  background: rgba(var(--color-secondary-c6dbf459), 0.8);
 }
 
 .platformButton:disabled {
   cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .platformButtonClaimed {
-  background-color: rgba(var(--color-primary-c6dbf459), 1);
-  color: rgba(var(--color-background-c6dbf459), 1);
+  background: rgba(var(--color-accent-c6dbf459), 0.8);
+  border: none;
+  color: rgba(var(--color-primary-c6dbf459), 1);
+}
+
+.platformButtonClaimed:hover {
+  background: rgba(var(--color-accent-c6dbf459), 0.7);
 }
 
 .platformButtonHeader {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
+  flex: 1;
+  gap: 8px;
 }
 
 .platformButtonTitle {
   line-height: 1;
   font-weight: 500;
   text-align: left;
+  flex: 1;
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
 .platformButtonWeight {
-  font-weight: 700;
-  font-size: 16px;
+  font-weight: 500;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-right: 8px;
+}
+
+.platformButtonScore {
+  font-weight: 400;
+  font-size: 13px;
+  margin-right: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.scoreValue {
+  color: rgba(var(--color-accent-c6dbf459), 1);
+  font-weight: 500;
+}
+
+.scoreDivider {
+  color: rgba(var(--color-primary-c6dbf459), 1);
+  font-weight: 500;
+}
+
+.platformButtonChevron {
+  opacity: 0.5;
+  display: flex;
+  align-items: center;
 }
 
 .platformButtonGroup {
@@ -305,7 +337,7 @@
 .stampsList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0; /* Remove gap since buttons have margin-bottom */
 }
 
 .exploreMoreSection {

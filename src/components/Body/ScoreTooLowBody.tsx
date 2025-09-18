@@ -65,6 +65,8 @@ const PlatformButton = ({
 }) => {
   const { claimed } = usePlatformStatus({ platform });
   const isDeduped = usePlatformDeduplication({ platform });
+  const { data: scoreData } = useWidgetPassportScore();
+  const currentScore = scoreData?.score || 0;
 
   return (
     <button
@@ -77,8 +79,17 @@ const PlatformButton = ({
           {isDeduped && <DedupeBadge />}
         </div>
       </div>
-      {claimed ? <ClaimedIcon /> : <div className={styles.platformButtonWeight}>{platform.displayWeight}</div>}
-      <RightArrow invertColors={claimed} />
+      {claimed ? (
+        <div className={styles.platformButtonScore}>
+          <span className={styles.scoreDivider}>{platform.displayWeight}</span>
+          <span className={styles.scoreValue}>/{Math.floor(currentScore)}</span>
+        </div>
+      ) : (
+        <div className={styles.platformButtonWeight}>{platform.displayWeight}</div>
+      )}
+      <div className={styles.platformButtonChevron}>
+        <RightArrow invertColors={false} />
+      </div>
     </button>
   );
 };
