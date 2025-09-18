@@ -66,6 +66,15 @@ The setTheme function handles:
 - ✅ Fully backward compatible
 - ✅ Clean hover states with brightness filter
 
+### Theme System Best Practices
+
+- **Never hardcode colors** - Always use theme CSS variables for maintainability
+- **Header styling**: Use `rgba(var(--color-background-c6dbf459), 1)` for solid black
+- **Accent colors**: Green text (#00D4AA) available as accent color "0, 212, 170" in DarkTheme
+- **Button modifications**: Use `filter: brightness()` to adjust existing theme colors
+- **Blur effects**: Teal gradient colors (3, 94, 84 to 2, 68, 61) available in theme
+- **Spacing**: Always use variables like `--widget-padding-x-c6dbf459` for consistent spacing
+
 ### Remaining Redesign Tasks
 
 - Update header title text to "Proof of Personhood"
