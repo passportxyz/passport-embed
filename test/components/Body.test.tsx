@@ -65,7 +65,7 @@ describe("Body Routing", () => {
     });
 
     render(<Body {...defaultProps} />);
-    expect(screen.getByText("Your score is too low to participate.")).toBeInTheDocument();
+    expect(screen.getByText("Increase score to participate!")).toBeInTheDocument();
   });
 
   it("renders CheckingBody when showLoading is true", () => {
@@ -93,7 +93,7 @@ describe("Body Routing", () => {
 
       expect(screen.getByText("Connect your wallet", { exact: false })).toBeInTheDocument();
 
-      const button = screen.getByRole("button", { name: "Connect Wallet" });
+      const button = screen.getByRole("button", { name: "Connect wallet" });
       expect(button).toBeInTheDocument();
 
       fireEvent.click(button);

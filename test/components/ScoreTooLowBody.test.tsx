@@ -77,9 +77,9 @@ describe("ScoreTooLowBody Component", () => {
 
     render(<ScoreTooLowBody generateSignatureCallback={mockGenerateSignature} />);
 
-    expect(screen.getByText(/Your score is too low to participate/i)).toBeInTheDocument();
-    expect(screen.getByText(/Increase your score to 25\+ by verifying/i)).toBeInTheDocument();
-    expect(screen.getByText("Add Stamps")).toBeInTheDocument();
+    expect(screen.getByText("Increase score to participate!")).toBeInTheDocument();
+    expect(screen.getByText(/Raise your score to 25/i)).toBeInTheDocument();
+    expect(screen.getByText("Verify Stamps")).toBeInTheDocument();
   });
 
   it("should transition to AddStamps when continuing", async () => {
@@ -101,7 +101,7 @@ describe("ScoreTooLowBody Component", () => {
 
     render(<ScoreTooLowBody generateSignatureCallback={mockGenerateSignature} />);
 
-    fireEvent.click(screen.getByText("Add Stamps"));
+    fireEvent.click(screen.getByText("Verify Stamps"));
 
     await waitFor(() => expect(screen.getByText("Choose from below and verify")).toBeInTheDocument());
   });

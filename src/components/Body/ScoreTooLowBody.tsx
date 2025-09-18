@@ -176,9 +176,9 @@ const DoubleChevron = () => (
     <path
       d="M17.5 11L12.5 6L7.5 11M17.5 18L12.5 13L7.5 18"
       stroke="rgb(var(--color-background-c6dbf459))"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
