@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button } from "../Button";
 import { Hyperlink } from "./ScoreTooLowBody";
 import { ScrollableDiv } from "../ScrollableDiv";
+import { ScrollableDivWithFade } from "../ScrollableDivWithFade";
 import { useWidgetIsQuerying, useWidgetVerifyCredentials } from "../../hooks/usePassportScore";
 import { useQueryContext } from "../../hooks/useQueryContext";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
@@ -125,7 +126,7 @@ export const PlatformVerification = ({
         </button>
       </div>
 
-      <ScrollableDiv className={styles.description} invertScrollIconColor={true}>
+      <ScrollableDivWithFade className={styles.description} invertFadeColor={true}>
         {hasConfigurationError ? (
           <div>
             Something's missing! This Stamp needs an extra setup step to work properly. If you're the site owner, please
@@ -149,7 +150,7 @@ export const PlatformVerification = ({
             {platform.description}
           </div>
         )}
-      </ScrollableDiv>
+      </ScrollableDivWithFade>
       <Button
         className={utilStyles.wFull}
         invert={true}

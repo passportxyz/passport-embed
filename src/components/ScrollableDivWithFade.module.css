@@ -1,0 +1,91 @@
+.fadeContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  flex: 1; /* Take remaining height when used in flex container */
+  min-height: 0; /* Allow shrinking below content size */
+}
+
+.scrollableDiv {
+  display: grid;
+  width: 100%;
+  height: 100%;
+}
+
+.scrollableDiv > * {
+  place-self: center;
+  grid-row: 1;
+  grid-column: 1;
+}
+
+.contents {
+  /* Inner container for the scrollable content */
+  scrollbar-width: thin;
+  width: 100%;
+  place-self: stretch; /* Override the center alignment to fill the container */
+}
+
+/* Base styles for both fade overlays */
+.fadeOverlayTop,
+.fadeOverlayBottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: 30px; /* Shorter fade */
+  pointer-events: none;
+  z-index: 10;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Top fade positioning and gradient - sharper transition */
+.fadeOverlayTop {
+  top: 0;
+  background: linear-gradient(
+    to top,
+    transparent 0%,
+    rgba(var(--color-background-c6dbf459), 0) 5%,
+    rgba(var(--color-background-c6dbf459), 0.7) 50%,
+    rgba(var(--color-background-c6dbf459), 0.9) 80%
+  );
+}
+
+/* Bottom fade positioning and gradient - sharper transition */
+.fadeOverlayBottom {
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(var(--color-background-c6dbf459), 0) 5%,
+    rgba(var(--color-background-c6dbf459), 0.7) 50%,
+    rgba(var(--color-background-c6dbf459), 0.9) 80%
+  );
+}
+
+/* Visibility states with smooth transition */
+.fadeVisible {
+  opacity: 1;
+}
+
+.fadeHidden {
+  opacity: 0;
+}
+
+/* Inverted colors for light backgrounds */
+.fadeOverlayInverted.fadeOverlayTop {
+  background: linear-gradient(
+    to top,
+    transparent 0%,
+    rgba(var(--color-primary-c6dbf459), 0.8) 50%,
+    rgba(var(--color-primary-c6dbf459), 1) 100%
+  );
+}
+
+.fadeOverlayInverted.fadeOverlayBottom {
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(var(--color-primary-c6dbf459), 0.8) 50%,
+    rgba(var(--color-primary-c6dbf459), 1) 100%
+  );
+}
