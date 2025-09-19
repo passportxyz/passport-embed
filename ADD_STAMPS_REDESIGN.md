@@ -177,7 +177,6 @@ This document outlines the required changes to update the Add Stamps page (Score
 
 ## TODO Items
 
-1. [ ] Add platform icons to stamp pages data structure (requires backend API changes to include icon URLs or SVG data)
 
 ## Testing Checklist
 
@@ -188,9 +187,10 @@ This document outlines the required changes to update the Add Stamps page (Score
 5. [x] Chevron arrows appear on right of each stamp button
 6. [ ] "Explore Additional Stamps" uses new icons
 7. [x] Overall layout is more compact and organized
-8. [x] Widget maintains 355px total height
+8. [ ] Widget maintains 355px total height
 9. [x] Hover states work appropriately
-10. [x] Theme colors are used consistently
+10. [ ] Theme colors are used consistently
+11. [x] Add platform icons to stamp pages data structure (requires backend API changes to include icon URLs or SVG data)
 
 ## Development Setup
 

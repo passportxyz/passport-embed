@@ -68,6 +68,7 @@ const PlatformButton = ({
   const { data: scoreData } = useWidgetPassportScore();
   const currentScore = scoreData?.score || 0;
 
+
   return (
     <button
       className={`${styles.platformButton} ${claimed ? styles.platformButtonClaimed : ""}`}
@@ -75,6 +76,7 @@ const PlatformButton = ({
     >
       <div className={styles.platformButtonHeader}>
         <div className={styles.platformButtonTitle}>
+          {platform.icon && <span className={styles.platformIcon}>{platform.icon}</span>}
           {platform.name}
           {isDeduped && <DedupeBadge />}
         </div>
@@ -113,6 +115,12 @@ export const AddStamps = ({
           platforms: page.platforms.map((platform: any) => ({
             ...platform,
             description: <SanitizedHTMLComponent html={platform.description || ""} />,
+            icon: platform.icon ? (
+              // If it's a URL, wrap it in an img tag for sanitization
+              platform.icon.startsWith('http://') || platform.icon.startsWith('https://')
+                ? <SanitizedHTMLComponent html={`<img src="${platform.icon}" alt="${platform.name} icon" />`} />
+                : <SanitizedHTMLComponent html={platform.icon} />
+            ) : null,
             displayWeight: platform.displayWeight,
           })),
         }));

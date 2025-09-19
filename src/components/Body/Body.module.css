@@ -159,6 +159,26 @@
   gap: 8px;
 }
 
+.platformIcon {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.platformIcon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.platformIcon svg {
+  width: 100%;
+  height: 100%;
+}
+
 .platformButtonWeight {
   font-weight: 500;
   font-size: 14px;
