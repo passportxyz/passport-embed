@@ -201,7 +201,7 @@ export const AddStamps = ({
           <div key={pageIndex} className={styles.stampCategory}>
             <div className={styles.categoryHeader}>{page.header}</div>
             <div className={styles.stampsList}>
-              {page.platforms.map((platform) => (
+              {page.platforms.map((platform: Platform) => (
                 <PlatformButton key={platform.platformId} platform={platform} setOpenPlatform={setOpenPlatform} />
               ))}
             </div>

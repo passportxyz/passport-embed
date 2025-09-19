@@ -24,9 +24,9 @@ export const DarkTheme: PassportWidgetTheme = {
   },
   font: {
     family: {
-      body: '"Poppins", sans-serif',
-      heading: '"Poppins", sans-serif',
-      alt: '"DM Mono", sans-serif',
+      body: '"Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      heading: '"Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      alt: '"Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     },
   },
   position: {
