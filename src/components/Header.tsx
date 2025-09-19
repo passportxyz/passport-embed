@@ -83,7 +83,7 @@ export const Header = ({
       }}
     >
       <PassportLogo />
-      <div>Human Passport Score</div>
+      <div className={styles.title}>Human Passport Score</div>
       <div className={styles.scoreSection}>
         <ScoreDisplay />
         {collapsible && <CollapseToggle bodyIsOpen={bodyIsOpen} />}
