@@ -96,10 +96,26 @@
   width: 100%;
 }
 
+.textCenter {
+  text-align: center;
+}
+
+.iconWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
 .subtitleText {
   color: rgba(255, 255, 255, 0.7);
   font-size: 14px;
   line-height: 20px;
+}
+
+.accentText {
+  text-align: center;
+  color: rgba(var(--color-accent-c6dbf459, var(--color-primary-c6dbf459)), 1);
   text-align: center;
   font-weight: 400;
 }
@@ -299,6 +315,11 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
+}
+
+.closeIcon {
+  font-size: 18px;
+  line-height: 1;
 }
 
 .blurEffect {

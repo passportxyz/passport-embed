@@ -88,6 +88,7 @@ const PassportScore = ({
         connectWalletCallback={connectWalletCallback}
         generateSignatureCallback={generateSignatureCallback}
         showLoading={showLoading}
+        onClose={() => setBodyIsOpen(false)}
       />
     </div>
   );
