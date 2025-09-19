@@ -8,7 +8,7 @@
 
 ## 🏗️ Architecture
 
-- @architecture/build-system.md - Webpack configuration, build philosophy, React Query integration, and Passport widget body component structure
+- @architecture/build-system.md - Webpack configuration, build philosophy, React Query integration, widget body and ScrollableDiv structure
 - @architecture/msw-infrastructure.md - Complete MSW testing system refactored into dev/ directory with orchestrated build commands
 - @architecture/human-id-sdk.md - Human ID SDK integration, configuration, and comprehensive mocking implementation
 
@@ -24,7 +24,7 @@
 ## ⚠️ Gotchas
 
 - @gotchas/postcss-dependencies.md - Autoprefixer dependency resolution issues and solutions
-- @gotchas/ui-alignment.md - Text alignment issues in Passport widget, padding impacts on Stamp flow, and solutions
+- @gotchas/ui-alignment.md - Text alignment, padding issues, ScrollableDiv problems
 - @gotchas/msw-handler-issues.md - MSW handler URL mismatch and bash process termination issues
 - @gotchas/playwright-test-issues.md - Test timeouts and beforeEach navigation issues
 - @gotchas/more-options-pagination.md - Pagination issues, Vite HMR errors, Human ID SDK sync behavior
@@ -35,6 +35,8 @@
 
 - @patterns/msw-scenario-system.md - Flexible mock data architecture, TypeScript file structure, and error scenario testing patterns
 - @patterns/wallet-callback-pattern.md - Framework-agnostic wallet integration through callbacks
+- @patterns/scrollbar-positioning.md - Pattern for positioning scrollbars at widget edge
+- @patterns/safe-html-rendering.md - SanitizedHTMLComponent usage for XSS protection
 
 ## 🧪 Testing
 

@@ -1,6 +1,6 @@
 # Knowledge Map
 
-_Last updated: 2025-09-04_
+_Last updated: 2025-09-19_
 
 ## 📁 API
 
@@ -10,7 +10,7 @@ _Last updated: 2025-09-04_
 
 ## 🏗️ Architecture
 
-- [Build System and Components](./architecture/build-system.md) - Webpack configuration, build philosophy, React Query integration, and Passport widget body component structure
+- [Build System and Components](./architecture/build-system.md) - Webpack configuration, build philosophy, React Query integration, widget body and ScrollableDiv structure _(Updated 2025-09-19)_
 - [MSW Infrastructure](./architecture/msw-infrastructure.md) - Complete MSW testing system refactored into dev/ directory with orchestrated build commands
 - [Human ID SDK](./architecture/human-id-sdk.md) - Human ID SDK integration, configuration, and comprehensive mocking implementation _(Merged 2025-09-18)_
 
@@ -26,7 +26,7 @@ _Last updated: 2025-09-04_
 ## ⚠️ Gotchas
 
 - [PostCSS Dependencies](./gotchas/postcss-dependencies.md) - Autoprefixer dependency resolution issues and solutions
-- [UI Alignment](./gotchas/ui-alignment.md) - Text alignment issues in Passport widget, padding impacts on Stamp flow, and solutions
+- [UI Alignment](./gotchas/ui-alignment.md) - Text alignment, padding issues, ScrollableDiv problems _(Updated 2025-09-19)_
 - [MSW Handler Issues](./gotchas/msw-handler-issues.md) - MSW handler URL mismatch and bash process termination issues
 - [Playwright Test Issues](./gotchas/playwright-test-issues.md) - Test timeouts and beforeEach navigation issues
 - [More Options Pagination](./gotchas/more-options-pagination.md) - Pagination issues, Vite HMR errors, Human ID SDK sync behavior _(Updated 2025-09-04)_
@@ -37,6 +37,8 @@ _Last updated: 2025-09-04_
 
 - [MSW Scenario System](./patterns/msw-scenario-system.md) - Flexible mock data architecture, TypeScript file structure, and error scenario testing patterns
 - [Wallet Callback Pattern](./patterns/wallet-callback-pattern.md) - Framework-agnostic wallet integration through callbacks
+- [Scrollbar Positioning](./patterns/scrollbar-positioning.md) - Pattern for positioning scrollbars at widget edge _(New 2025-09-19)_
+- [Safe HTML Rendering](./patterns/safe-html-rendering.md) - SanitizedHTMLComponent usage for XSS protection _(New 2025-09-19)_
 
 ## 🧪 Testing
 

@@ -25,6 +25,24 @@ The Passport widget uses asymmetric padding for visual balance:
 - `src/widgets/Widget.module.css`
 - `src/components/Body/Body.module.css`
 
+## ScrollableDiv Double className Application
+
+**Date:** 2025-09-19
+ScrollableDiv was applying the passed className to both the outer and inner div, causing double padding. The className should only be on the outer div. The inner div (now called .contents) should not have the className. This caused issues where padding was applied twice when trying to position scrollbars at widget edges.
+
+**Related files:**
+
+- `src/components/ScrollableDiv.tsx`
+
+## ScrollableDiv Grid Centering Pushes Content Up
+
+**Date:** 2025-09-19
+ScrollableDiv uses CSS grid with place-self: center on all children, which vertically centers content and can push it outside the container bounds. When the content should fill the container (like for scrollable lists), the inner .contents div needs place-self: stretch to override the centering and properly fill the available space.
+
+**Related files:**
+
+- `src/components/ScrollableDiv.module.css`
+
 ## Platform Verification Height Adjustments
 
 **Date:** 2025-08-21

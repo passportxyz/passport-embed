@@ -76,3 +76,17 @@ The Passport widget has multiple body screens that handle different states:
 - `/workspace/project/src/components/Body/ScoreTooLowBody.tsx`
 - `/workspace/project/src/components/Body/CongratsBody.tsx`
 - `/workspace/project/src/components/Body/Body.module.css`
+
+## ScrollableDiv Component Structure
+
+ScrollableDiv creates a two-layer structure:
+
+- **Outer div**: Gets the passed className and scrollableDiv styles, handles actual scrolling
+- **Inner div (.contents)**: Wraps children, no longer scrollable
+
+The ref must point to the actual scrolling container (outer div) for scroll indicators to work correctly. The component expects the passed className to define a fixed height. Scroll indicators are overlaid using CSS grid positioning.
+
+**Related files:**
+
+- `/workspace/project/src/components/ScrollableDiv.tsx`
+- `/workspace/project/src/components/ScrollableDiv.module.css`
