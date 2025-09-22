@@ -11,6 +11,8 @@ import { usePlatformStatus } from "../../hooks/usePlatformStatus";
 import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
 import { Platform } from "../../hooks/stampTypes";
 import { useHumanIDVerification } from "../../hooks/useHumanIDVerification";
+import { StampClaimSuccess } from "./StampClaimSuccess";
+import { StampClaimError } from "./StampClaimError";
 
 const CloseIcon = () => (
   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -61,7 +63,7 @@ export const PlatformVerification = ({
   const { claimed } = usePlatformStatus({ platform });
   const isDeduped = usePlatformDeduplication({ platform });
   const [initiatedVerification, setInitiatedVerification] = useState(false);
-  const [failedVerification, setFailedVerification] = useState(false);
+  const [verificationComplete, setVerificationComplete] = useState(false);
   const [isOAuthPopupOpen, setIsOAuthPopupOpen] = useState(false);
   const [wasQuerying, setWasQuerying] = useState(false);
 
@@ -93,7 +95,7 @@ export const PlatformVerification = ({
     }
   }, [initiatedVerification, isQuerying]);
 
-  // Check completion and result
+  // Check completion
   useEffect(() => {
     const isFullyComplete =
       initiatedVerification &&
@@ -101,16 +103,22 @@ export const PlatformVerification = ({
       !isPending;
 
     if (isFullyComplete) {
-      if (claimed) {
-        onClose();
-      } else {
-        setFailedVerification(true);
-      }
+      setVerificationComplete(true);
       // Reset for next attempt
       setInitiatedVerification(false);
       setWasQuerying(false);
     }
-  }, [initiatedVerification, wasQuerying, isPending, claimed, onClose]);
+  }, [initiatedVerification, wasQuerying, isPending]);
+
+  // Show success screen immediately if claimed
+  if (claimed) {
+    return <StampClaimSuccess platform={platform} onBack={onClose} />;
+  }
+
+  // Show error screen after verification completes without success
+  if (verificationComplete && !claimed) {
+    return <StampClaimError platform={platform} onBack={onClose} />;
+  }
 
   return (
     <div className={styles.container}>
@@ -131,11 +139,6 @@ export const PlatformVerification = ({
           <div>
             Something's missing! This Stamp needs an extra setup step to work properly. If you're the site owner, please
             add a generateSignatureCallback to the widget configuration.
-          </div>
-        ) : failedVerification ? (
-          <div>
-            Unable to claim this Stamp. Find <Hyperlink href={platform.documentationLink}>instructions here</Hyperlink>{" "}
-            and come back after.
           </div>
         ) : (
           <div>
@@ -163,7 +166,7 @@ export const PlatformVerification = ({
 
           // Reset states for new attempt
           setInitiatedVerification(true);
-          setFailedVerification(false);
+          setVerificationComplete(false);
           setWasQuerying(false);
 
           // Handle Human ID platforms first
@@ -174,7 +177,7 @@ export const PlatformVerification = ({
               verifyCredentials(platformCredentialIds);
             } catch (error) {
               console.log("Human ID verification error:", error);
-              setFailedVerification(true);
+              setVerificationComplete(true);
               setInitiatedVerification(false); // Reset since we're not continuing
             }
             return;
@@ -187,7 +190,8 @@ export const PlatformVerification = ({
             if (!queryProps.address) {
               console.error("No address found");
               // TODO: manage error state
-              setFailedVerification(true);
+              setVerificationComplete(true);
+              setInitiatedVerification(false);
               return;
             }
 
@@ -240,11 +244,9 @@ export const PlatformVerification = ({
       >
         {hasConfigurationError
           ? "Go Back"
-          : failedVerification
-            ? "Try Again"
-            : claimed
-              ? "Already Verified"
-              : `Verify${isPending ? "ing..." : ""}`}
+          : claimed
+            ? "Already Verified"
+            : `Verify${isPending ? "ing..." : ""}`}
       </Button>
     </div>
   );
