@@ -12,7 +12,11 @@ export const usePlatformStatus = ({ platform }: { platform: Platform }) => {
     return claimedIds;
   }, [] as string[]);
 
-  const claimed = platform.credentials.some((credential) => claimedCredentialIds.includes(credential.id));
+  const claimedCredentials = platform.credentials.filter((credential) => claimedCredentialIds.includes(credential.id));
+  const claimed = claimedCredentials.length > 0;
+  const pointsGained = claimedCredentials.reduce((total, credential) => {
+    return total + parseFloat(credential.weight);
+  }, 0);
 
-  return useMemo(() => ({ claimed }), [claimed]);
+  return useMemo(() => ({ claimed, pointsGained }), [claimed, pointsGained]);
 };

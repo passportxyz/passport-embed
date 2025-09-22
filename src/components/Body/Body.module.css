@@ -73,6 +73,10 @@
   z-index: 1; /* Above blur effect */
 }
 
+.tight {
+  gap: 8px;
+}
+
 .innerText {
   flex-grow: 1;
 }
@@ -104,7 +108,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-bottom: 8px;
 }
 
 .subtitleText {
@@ -455,19 +458,16 @@
 /* Stamp Success Styles */
 .stampSuccessHeader {
   display: flex;
+  width: 100%;
   justify-content: space-between;
   align-items: center;
-  padding: 12px var(--widget-padding-x-c6dbf459);
   background-color: rgba(var(--color-background-c6dbf459), 1);
-  margin: calc(-1 * var(--widget-padding-y-c6dbf459)) calc(-1 * var(--widget-padding-x-c6dbf459)) 20px;
-  border-bottom: 1px solid rgba(var(--color-primary-c6dbf459), 0.1);
 }
 
 .stampSuccessPlatform {
   display: flex;
   align-items: center;
-  gap: 8px;
-  color: rgba(var(--color-primary-c6dbf459), 1);
+  gap: 4px;
   font-size: 14px;
   font-weight: 500;
 }
@@ -486,15 +486,14 @@
   object-fit: contain;
 }
 
-.stampSuccessPlatformName {
-  color: rgba(var(--color-primary-c6dbf459), 1);
-}
-
 .stampSuccessPoints {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(var(--color-accent-c6dbf459, var(--color-primary-c6dbf459)), 1);
+  background-color: rgba(
+    var(--color-accent-c6dbf459, var(--color-primary-c6dbf459)),
+    1
+  );
   color: rgba(var(--color-background-c6dbf459), 1);
   font-size: 16px;
   font-weight: 600;
