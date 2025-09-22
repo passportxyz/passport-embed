@@ -1,4 +1,4 @@
-import { createRef, useEffect, useState } from "react";
+import { createRef, useLayoutEffect, useState } from "react";
 import styles from "./ScrollableDivWithFade.module.css";
 
 // NOTE: MUST pass in a className for a class that defines a fixed height
@@ -15,7 +15,7 @@ export const ScrollableDivWithFade = ({
   const [showTopFade, setShowTopFade] = useState(false);
   const [showBottomFade, setShowBottomFade] = useState(false);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const onScroll = (element: HTMLDivElement) => {
       const { scrollTop, scrollHeight, clientHeight } = element;
       const isAtBottom = scrollTop + clientHeight >= scrollHeight - 1; // -1 for precision issues
@@ -53,12 +53,15 @@ export const ScrollableDivWithFade = ({
   return (
     <div className={styles.fadeContainer}>
       <div className={`${className} ${styles.scrollableDiv}`} ref={scrollContainerRef}>
-        <div className={styles.contents}>
-          {children}
-        </div>
+        <div className={styles.contents}>{children}</div>
       </div>
-      <div className={`${styles.fadeOverlayTop} ${showTopFade ? styles.fadeVisible : styles.fadeHidden} ${invertFadeColor ? styles.fadeOverlayInverted : ''}`} />
-      <div className={`${styles.fadeOverlayBottom} ${showBottomFade ? styles.fadeVisible : styles.fadeHidden} ${invertFadeColor ? styles.fadeOverlayInverted : ''}`} />
+      <div
+        className={`${styles.fadeOverlayTop} ${showTopFade ? styles.fadeVisible : styles.fadeHidden} ${invertFadeColor ? styles.fadeOverlayInverted : ""}`}
+      />
+      <div
+        className={`${styles.fadeOverlayBottom} ${showBottomFade ? styles.fadeVisible : styles.fadeHidden} ${invertFadeColor ? styles.fadeOverlayInverted : ""}`}
+      />
     </div>
   );
 };
+

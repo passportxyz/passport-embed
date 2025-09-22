@@ -67,7 +67,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 12px;
   position: relative;
   z-index: 1; /* Above blur effect */
@@ -124,11 +123,9 @@
 }
 
 .platformButton {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   width: 100%;
-  padding: 12px 16px;
+  padding: calc(0.8 * var(--widget-padding-y-c6dbf459))
+    calc(0.5 * var(--widget-padding-x-c6dbf459));
   background: rgba(var(--color-secondary-c6dbf459), 1);
   border: none;
   border-radius: 8px;
@@ -136,6 +133,13 @@
   transition: all var(--transition-speed-c6dbf459) ease;
   margin-bottom: 8px;
   color: rgba(var(--color-primary-c6dbf459), 1);
+}
+
+.platformButtonContents {
+  gap: 8px;
+  display: flex;
+  align-items: center;
+  width: 100%;
 }
 
 .platformButton:last-child {
@@ -161,14 +165,8 @@
   background: rgba(var(--color-accent-c6dbf459), 0.7);
 }
 
-.platformButtonHeader {
-  display: flex;
-  align-items: center;
-  flex: 1;
-  gap: 8px;
-}
-
 .platformButtonTitle {
+  flex-grow: 1;
   line-height: 1;
   font-weight: 500;
   text-align: left;
@@ -371,11 +369,11 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding-top: var(--widget-padding-y-c6dbf459);
 }
 
-/* Add top padding to all categories */
-.stampCategory {
-  padding-top: 12px;
+.stampCategory:first-child {
+  padding-top: 0px;
 }
 
 .categoryHeader {
@@ -384,7 +382,6 @@
   color: rgba(var(--color-primary-c6dbf459), 0.8);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 4px 0;
 }
 
 .stampsList {
@@ -396,8 +393,13 @@
 .exploreMoreSection {
   padding: 8px 0 4px;
   text-align: center;
-  border-top: 1px solid rgba(var(--color-secondary-c6dbf459), 0.3);
   margin-top: 4px;
+}
+
+.exploreMoreIcon {
+  color: rgb(var(--color-secondary-c6dbf459));
+  display: flex;
+  align-items: center;
 }
 
 .exploreMoreLink {
@@ -424,7 +426,8 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px var(--widget-padding-x-c6dbf459) 8px;
+  padding: var(--widget-padding-y-c6dbf459) var(--widget-padding-x-c6dbf459)
+    var(--widget-padding-y-c6dbf459);
   width: 100%;
   flex-shrink: 0; /* Don't shrink */
   box-sizing: border-box;
@@ -438,10 +441,10 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  color: rgba(var(--color-primary-c6dbf459), 1);
+  color: rgba(var(--color-secondary-c6dbf459), 1);
   width: 24px;
   height: 24px;
-  transition: opacity 0.2s ease;
+  transition: opacity var(--transition-speed-c6dbf459) ease;
 }
 
 .backButton:hover {
@@ -456,48 +459,42 @@
 }
 
 /* Stamp Success Styles */
-.stampSuccessHeader {
+.platformHeader {
   display: flex;
   width: 100%;
   justify-content: space-between;
-  align-items: center;
-  background-color: rgba(var(--color-background-c6dbf459), 1);
-}
-
-.stampSuccessPlatform {
-  display: flex;
   align-items: center;
   gap: 4px;
   font-size: 14px;
   font-weight: 500;
 }
 
-.stampSuccessIcon {
+.platformHeaderIcon {
   display: flex;
   align-items: center;
   width: 20px;
   height: 20px;
 }
 
-.stampSuccessIcon img,
-.stampSuccessIcon svg {
+.platformHeaderName {
+  flex-grow: 1;
+  text-align: left;
+}
+
+.platformHeaderIcon img,
+.platformHeaderIcon svg {
   width: 100%;
   height: 100%;
   object-fit: contain;
 }
 
-.stampSuccessPoints {
+.platformHeaderPoints {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: rgba(
-    var(--color-accent-c6dbf459, var(--color-primary-c6dbf459)),
-    1
-  );
-  color: rgba(var(--color-background-c6dbf459), 1);
-  font-size: 16px;
+  background-color: rgba(var(--color-primary-c6dbf459), 0.1);
   font-weight: 600;
-  padding: 4px 12px;
+  padding: 1px;
   border-radius: 6px;
   min-width: 32px;
 }

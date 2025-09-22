@@ -7,7 +7,7 @@ export const DarkTheme: PassportWidgetTheme = {
     background: "0, 0, 0",
     accent: "0, 212, 170",
     success: "164, 255, 169",
-    failure: "203, 203, 203",
+    failure: "235, 48, 45",
   },
   padding: {
     widget: {
