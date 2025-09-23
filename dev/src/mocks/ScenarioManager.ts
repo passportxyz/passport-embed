@@ -52,15 +52,6 @@ class ScenarioManager {
   getScoreResponse(address: string): Record<string, unknown> {
     const scenario = this.getCurrentScenario();
 
-    // Handle rate limiting
-    if (scenario.verificationBehavior === "rate-limit") {
-      throw new HttpResponse(null, {
-        status: 429,
-        statusText: "Too Many Requests",
-        headers: { "Retry-After": "60" },
-      });
-    }
-
     // Get the accumulated stamps for this scenario, or use base stamps
     const scenarioKey = `${this.current}_${address}`;
     const currentStamps = this.accumulatedStamps.get(scenarioKey) || scenario.passportScore.stamps;
@@ -95,6 +86,7 @@ class ScenarioManager {
     const scenario = this.getCurrentScenario();
 
     // Handle different verification behaviors
+    console.log("B", scenario.verificationBehavior)
     switch (scenario.verificationBehavior) {
       case "rate-limit":
         throw new HttpResponse(null, {
@@ -114,22 +106,12 @@ class ScenarioManager {
           }
         );
 
-      case "partial-failure": {
-        // Return success with credentialErrors for partial failures
-        const response = this.getSuccessfulVerificationResponse(address, credentialIds, scenario);
-        return {
-          ...response,
-          credentialErrors: scenario.verificationErrors || [],
-        };
-      }
-
       case "success":
       default: {
         const response = this.getSuccessfulVerificationResponse(address, credentialIds, scenario);
-        // For success scenarios, include empty credentialErrors array
         return {
           ...response,
-          credentialErrors: [],
+          credentialErrors: scenario.credentialErrors || [],
         };
       }
     }

@@ -64,10 +64,11 @@ export const PlatformVerification = ({
   const [verificationComplete, setVerificationComplete] = useState(false);
   const [isOAuthPopupOpen, setIsOAuthPopupOpen] = useState(false);
   const [wasQuerying, setWasQuerying] = useState(false);
+  const [preVerificationError, setPreVerificationError] = useState<string>("");
 
   const isQuerying = useWidgetIsQuerying();
   const queryProps = useQueryContext();
-  const { verifyCredentials, error } = useWidgetVerifyCredentials();
+  const { verifyCredentials, error, credentialErrors } = useWidgetVerifyCredentials();
   const platformCredentialIds = platform.credentials.map(({ id }) => id);
 
   const hasConfigurationError = platform.requiresSignature && !generateSignatureCallback;
@@ -110,7 +111,10 @@ export const PlatformVerification = ({
 
   // Show success screen immediately if claimed
   if (claimed || verificationComplete) {
-    return <StampClaimResult platform={platform} onBack={onClose} errors={error ? [error.toString()] : undefined} />;
+    const errors =
+      preVerificationError ? [{error: preVerificationError}] :
+      credentialErrors?.length ? credentialErrors : error ? [{error: error.toString()}] : undefined
+    return <StampClaimResult platform={platform} onBack={onClose} errors={errors} />;
   }
 
   return (
@@ -160,6 +164,7 @@ export const PlatformVerification = ({
           // Reset states for new attempt
           setInitiatedVerification(true);
           setVerificationComplete(false);
+          setPreVerificationError("");
           setWasQuerying(false);
 
           // Handle Human ID platforms first
@@ -170,6 +175,7 @@ export const PlatformVerification = ({
               verifyCredentials(platformCredentialIds);
             } catch (error) {
               console.log("Human ID verification error:", error);
+              setPreVerificationError(error instanceof Error ? error.toString() : "Unknow error verifying Human ID");
               setVerificationComplete(true);
               setInitiatedVerification(false); // Reset since we're not continuing
             }

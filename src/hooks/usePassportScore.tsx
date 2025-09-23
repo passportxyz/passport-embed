@@ -32,7 +32,7 @@ type PassportProviderPoints = {
 };
 
 export type CredentialError = {
-  provider: string;
+  provider?: string;
   error: string;
   code?: number;
 };
@@ -110,6 +110,7 @@ const useInternalVerifyCredentials = ({ apiKey, address, scorerId, embedServiceU
   return {
     ...verifyCredentialsMutation,
     verifyCredentials: verifyCredentialsMutation.mutate,
+    credentialErrors: verifyCredentialsMutation.data?.credentialErrors
   };
 };
 

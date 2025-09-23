@@ -4,13 +4,14 @@ import { Platform } from "../../hooks/stampTypes";
 import { BackToStampsButton, BackToStampsButtonProps } from "./BackToStampsButton";
 import { PlatformHeader } from "./PlatformHeader";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
+import { CredentialError } from "../../hooks/usePassportScore";
 import { AmbivalentHuman } from "../../assets/ambivalentHuman";
 import { TooltipIcon } from "../../assets/tooltipIcon";
 import { Tooltip } from "../Tooltip";
 
 type StampClaimSuccessProps = BackToStampsButtonProps & {
   platform: Platform;
-  errors?: string[];
+  errors?: CredentialError[];
 };
 
 export const StampClaimResult = ({ platform, onBack, errors }: StampClaimSuccessProps) => {
@@ -39,7 +40,7 @@ export const StampClaimResult = ({ platform, onBack, errors }: StampClaimSuccess
         {!claimed && (
           <div className={`${styles.textCenter} ${styles.learnMore}`}>
             {errors ? (
-              <Tooltip content={errors.join()}>
+              <Tooltip content={errors.map(error=>error.error).join()}>
                 <TooltipIcon />
               </Tooltip>
             ) : (

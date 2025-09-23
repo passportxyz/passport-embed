@@ -29,7 +29,7 @@ export interface Scenario {
   stampPagesBehavior?: "success" | "error" | "config-error" | "not-found" | "rate-limit";
   hasExistingSBTs?: Array<"kyc" | "phone" | "biometrics" | "clean-hands">;
   humanIdVerificationBehavior?: "success" | "failure";
-  verificationErrors?: CredentialError[];
+  credentialErrors?: CredentialError[];
 }
 
 export const scenarios: Record<string, Scenario> = {
@@ -313,22 +313,20 @@ export const scenarios: Record<string, Scenario> = {
     humanIdVerificationBehavior: "success",
   },
 
-  "partial-verification-failure": {
-    name: "partial-verification-failure",
-    description: "Some stamps fail while others succeed",
+
+  "all-verifications-fail": {
+    name: "all-verifications-fail",
+    description: "All stamp verifications fail",
     passportScore: {
       address: "0x1234567890123456789012345678901234567890",
-      score: 10,
+      score: 0,
       passingScore: false,
       threshold: 20,
-      stamps: {
-        Google: { score: 5.0, dedup: true, expirationDate: new Date() },
-        GitHub: { score: 5.0, dedup: false, expirationDate: new Date() },
-      },
+      stamps: {},
     },
-    verificationBehavior: "partial-failure",
-    canAddStamps: true,
-    verificationErrors: [
+    verificationBehavior: "success",
+    canAddStamps: false,
+    credentialErrors: [
       {
         provider: "Discord",
         error: "User not found in Discord",
@@ -343,37 +341,6 @@ export const scenarios: Record<string, Scenario> = {
         provider: "Twitter",
         error: "Request timeout while verifying Twitter",
         code: 408,
-      },
-    ],
-  },
-
-  "all-verifications-fail": {
-    name: "all-verifications-fail",
-    description: "All stamp verifications fail",
-    passportScore: {
-      address: "0x1234567890123456789012345678901234567890",
-      score: 0,
-      passingScore: false,
-      threshold: 20,
-      stamps: {},
-    },
-    verificationBehavior: "partial-failure",
-    canAddStamps: true,
-    verificationErrors: [
-      {
-        provider: "Github",
-        error: "GitHub account not found",
-        code: 403,
-      },
-      {
-        provider: "Twitter",
-        error: "Twitter account does not meet follower requirements",
-        code: 403,
-      },
-      {
-        provider: "Binance",
-        error: "Binance API temporarily unavailable",
-        code: 500,
       },
     ],
   },
