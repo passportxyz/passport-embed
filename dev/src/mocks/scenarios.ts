@@ -14,15 +14,22 @@ interface PassportScore {
   stamps: Record<string, Stamp>;
 }
 
+export interface CredentialError {
+  provider: string;
+  error: string;
+  code?: number;
+}
+
 export interface Scenario {
   name: string;
   description: string;
   passportScore: PassportScore;
-  verificationBehavior: "success" | "failure" | "rate-limit";
+  verificationBehavior: "success" | "failure" | "rate-limit" | "partial-failure";
   canAddStamps: boolean;
   stampPagesBehavior?: "success" | "error" | "config-error" | "not-found" | "rate-limit";
   hasExistingSBTs?: Array<"kyc" | "phone" | "biometrics" | "clean-hands">;
   humanIdVerificationBehavior?: "success" | "failure";
+  verificationErrors?: CredentialError[];
 }
 
 export const scenarios: Record<string, Scenario> = {
@@ -304,5 +311,70 @@ export const scenarios: Record<string, Scenario> = {
     canAddStamps: true,
     hasExistingSBTs: ["kyc"],
     humanIdVerificationBehavior: "success",
+  },
+
+  "partial-verification-failure": {
+    name: "partial-verification-failure",
+    description: "Some stamps fail while others succeed",
+    passportScore: {
+      address: "0x1234567890123456789012345678901234567890",
+      score: 10,
+      passingScore: false,
+      threshold: 20,
+      stamps: {
+        Google: { score: 5.0, dedup: true, expirationDate: new Date() },
+        GitHub: { score: 5.0, dedup: false, expirationDate: new Date() },
+      },
+    },
+    verificationBehavior: "partial-failure",
+    canAddStamps: true,
+    verificationErrors: [
+      {
+        provider: "Discord",
+        error: "User not found in Discord",
+        code: 403,
+      },
+      {
+        provider: "ETHScore#75",
+        error: "Insufficient on-chain activity",
+        code: 403,
+      },
+      {
+        provider: "Twitter",
+        error: "Request timeout while verifying Twitter",
+        code: 408,
+      },
+    ],
+  },
+
+  "all-verifications-fail": {
+    name: "all-verifications-fail",
+    description: "All stamp verifications fail",
+    passportScore: {
+      address: "0x1234567890123456789012345678901234567890",
+      score: 0,
+      passingScore: false,
+      threshold: 20,
+      stamps: {},
+    },
+    verificationBehavior: "partial-failure",
+    canAddStamps: true,
+    verificationErrors: [
+      {
+        provider: "Github",
+        error: "GitHub account not found",
+        code: 403,
+      },
+      {
+        provider: "Twitter",
+        error: "Twitter account does not meet follower requirements",
+        code: 403,
+      },
+      {
+        provider: "Binance",
+        error: "Binance API temporarily unavailable",
+        code: 500,
+      },
+    ],
   },
 };
