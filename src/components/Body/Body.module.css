@@ -61,6 +61,7 @@
 }
 
 .textBlock {
+  margin-top: var(--widget-padding-y-c6dbf459);
   text-align: center;
   flex-grow: 1;
   width: 100%;
@@ -110,7 +111,7 @@
 }
 
 .subtitleText {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(var(--color-primary-c6dbf459), 0.7);
   font-size: 14px;
   line-height: 20px;
 }
@@ -296,7 +297,7 @@
   width: 56px;
   height: 56px;
   color: white;
-  filter: drop-shadow(0px 0px 12px rgba(255, 255, 255, 1));
+  filter: drop-shadow(0px 0px 12px rgba(var(--color-primary-c6dbf459), 1));
   position: relative;
   z-index: 1; /* Above blur effect */
   flex-shrink: 0;
@@ -329,11 +330,15 @@
   height: 284px;
   left: 8px;
   top: -99px;
-  background: #006b56;
+  background: rgb(var(--color-accent-c6dbf459), 0.45);
   filter: blur(50px);
   pointer-events: none;
   z-index: 0; /* Behind other content */
   opacity: 1;
+}
+
+.altBlurColor {
+  background: rgb(var(--color-primary-c6dbf459), 0.3);
 }
 
 .collapsed .blurEffect {
@@ -422,6 +427,12 @@
   text-decoration: underline;
 }
 
+.learnMore {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .verifyHeader {
   display: flex;
   align-items: center;
@@ -460,6 +471,7 @@
 
 /* Stamp Success Styles */
 .platformHeader {
+  z-index: 1; /* Above blur effect */
   display: flex;
   width: 100%;
   justify-content: space-between;

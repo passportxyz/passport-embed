@@ -3,7 +3,6 @@ import utilStyles from "../../utilStyles.module.css";
 import { useEffect, useState } from "react";
 import { Button } from "../Button";
 import { Hyperlink } from "./ScoreTooLowBody";
-import { ScrollableDiv } from "../ScrollableDiv";
 import { ScrollableDivWithFade } from "../ScrollableDivWithFade";
 import { useWidgetIsQuerying, useWidgetVerifyCredentials } from "../../hooks/usePassportScore";
 import { useQueryContext } from "../../hooks/useQueryContext";
@@ -11,8 +10,7 @@ import { usePlatformStatus } from "../../hooks/usePlatformStatus";
 import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
 import { Platform } from "../../hooks/stampTypes";
 import { useHumanIDVerification } from "../../hooks/useHumanIDVerification";
-import { StampClaimSuccess } from "./StampClaimSuccess";
-import { StampClaimError } from "./StampClaimError";
+import { StampClaimResult } from "./StampClaimResult";
 
 const CloseIcon = () => (
   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -69,7 +67,7 @@ export const PlatformVerification = ({
 
   const isQuerying = useWidgetIsQuerying();
   const queryProps = useQueryContext();
-  const { verifyCredentials } = useWidgetVerifyCredentials();
+  const { verifyCredentials, error } = useWidgetVerifyCredentials();
   const platformCredentialIds = platform.credentials.map(({ id }) => id);
 
   const hasConfigurationError = platform.requiresSignature && !generateSignatureCallback;
@@ -111,13 +109,8 @@ export const PlatformVerification = ({
   }, [initiatedVerification, wasQuerying, isPending]);
 
   // Show success screen immediately if claimed
-  if (claimed) {
-    return <StampClaimSuccess platform={platform} onBack={onClose} />;
-  }
-
-  // Show error screen after verification completes without success
-  if (verificationComplete && !claimed) {
-    return <StampClaimError platform={platform} onBack={onClose} />;
+  if (claimed || verificationComplete) {
+    return <StampClaimResult platform={platform} onBack={onClose} errors={error ? [error.toString()] : undefined} />;
   }
 
   return (
@@ -242,11 +235,7 @@ export const PlatformVerification = ({
           }
         }}
       >
-        {hasConfigurationError
-          ? "Go Back"
-          : claimed
-            ? "Already Verified"
-            : `Verify${isPending ? "ing..." : ""}`}
+        {hasConfigurationError ? "Go Back" : claimed ? "Already Verified" : `Verify${isPending ? "ing..." : ""}`}
       </Button>
     </div>
   );

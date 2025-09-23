@@ -108,6 +108,7 @@
     "yalc": "^1.0.0-pre.53"
   },
   "dependencies": {
+    "@floating-ui/dom": "^1.7.4",
     "@holonym-foundation/human-id-sdk": "^0.0.17",
     "@tanstack/react-query": "^5.62.11",
     "axios": "^1.7.7",

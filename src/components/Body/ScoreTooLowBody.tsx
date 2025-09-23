@@ -243,9 +243,9 @@ const InitialTooLow = ({ onContinue }: { onContinue: () => void }) => {
 
   return (
     <>
-      <div className={styles.textBlock}>
+      <div className={`${styles.textBlock} ${styles.tight}`}>
         <HappyHuman />
-        <div className={styles.heading}>Increase score to participate!</div>
+        <div className={`${styles.heading} ${styles.textCenter}`}>Increase score to participate!</div>
         <div>
           Your web3 history wasn't sufficient to enable you to participate. Raise your score to {data?.threshold || 20}{" "}
           or above by verifying additional Stamps
