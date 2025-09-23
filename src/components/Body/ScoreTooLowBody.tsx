@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { SanitizedHTMLComponent } from "../SanitizedHTMLComponent";
 import { fetchStampPages } from "../../utils/stampDataApi";
 import { usePassportQueryClient } from "../../hooks/usePassportQueryClient";
-import { Platform } from "../../hooks/stampTypes";
+import { Platform, RawStampPageData, RawPlatformData } from "../../hooks/stampTypes";
 import { RightArrow } from "../../assets/rightArrow";
 import { ScrollableDivWithFade } from "../ScrollableDivWithFade";
 import { PlatformVerification } from "./PlatformVerification";
@@ -120,9 +120,9 @@ export const AddStamps = ({
       queryKey: ["stampPages", apiKey, scorerId, embedServiceUrl],
       queryFn: async () => {
         const data = await fetchStampPages({ apiKey, scorerId, embedServiceUrl });
-        return data.map((page: any) => ({
+        return data.map((page: RawStampPageData) => ({
           ...page,
-          platforms: page.platforms.map((platform: any) => ({
+          platforms: page.platforms.map((platform: RawPlatformData) => ({
             ...platform,
             description: <SanitizedHTMLComponent html={platform.description || ""} />,
             icon: platform.icon ? (

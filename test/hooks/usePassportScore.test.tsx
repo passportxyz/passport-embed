@@ -152,6 +152,93 @@ describe("Passport Score Hooks", () => {
 
       expect(mockedAxios.post).toHaveBeenCalledTimes(1);
     });
+
+    it("should return credential errors from the API response", async () => {
+      const mockCredentialErrors = [
+        { provider: "Discord", error: "User not found in Discord" },
+        { provider: "GitHub", error: "Account does not meet requirements" },
+      ];
+
+      const mockScoreWithErrors = {
+        ...mockScoreData,
+        credentialErrors: mockCredentialErrors,
+      };
+
+      mockedAxios.post.mockResolvedValueOnce({ data: mockScoreWithErrors });
+
+      const { result } = renderHook(() => useWidgetVerifyCredentials(), {
+        wrapper: createWidgetWrapper(),
+      });
+
+      await act(async () => {
+        result.current.verifyCredentials(["discord", "github"]);
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.credentialErrors).toEqual(mockCredentialErrors);
+    });
+
+    it("should return undefined credential errors when response has no errors", async () => {
+      mockedAxios.post.mockResolvedValueOnce({ data: mockScoreData });
+
+      const { result } = renderHook(() => useWidgetVerifyCredentials(), {
+        wrapper: createWidgetWrapper(),
+      });
+
+      await act(async () => {
+        result.current.verifyCredentials(["credential1"]);
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.credentialErrors).toBeUndefined();
+    });
+
+    it("should return empty array when credentialErrors is empty in response", async () => {
+      const mockScoreWithEmptyErrors = {
+        ...mockScoreData,
+        credentialErrors: [],
+      };
+
+      mockedAxios.post.mockResolvedValueOnce({ data: mockScoreWithEmptyErrors });
+
+      const { result } = renderHook(() => useWidgetVerifyCredentials(), {
+        wrapper: createWidgetWrapper(),
+      });
+
+      await act(async () => {
+        result.current.verifyCredentials(["credential1"]);
+      });
+
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      expect(result.current.credentialErrors).toEqual([]);
+    });
+
+    it("should handle API errors properly while returning undefined credentialErrors", async () => {
+      const errorMessage = "Network error";
+      mockedAxios.post.mockRejectedValueOnce(new Error(errorMessage));
+
+      const { result } = renderHook(() => useWidgetVerifyCredentials(), {
+        wrapper: createWidgetWrapper(),
+      });
+
+      await act(async () => {
+        result.current.verifyCredentials(["credential1"]);
+      });
+
+      await waitFor(() => {
+        expect(result.current.error).toBeDefined();
+        expect(result.current.credentialErrors).toBeUndefined();
+      });
+    });
   });
 
   describe("useWidgetIsQuerying", () => {

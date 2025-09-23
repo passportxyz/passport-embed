@@ -53,7 +53,8 @@ describe("Body Routing", () => {
     });
 
     render(<Body {...defaultProps} />);
-    expect(screen.getByText("You have proven your unique humanity. Please proceed!")).toBeInTheDocument();
+    expect(screen.getByText("Human Verification Complete!")).toBeInTheDocument();
+    expect(screen.getByText("You can now participate")).toBeInTheDocument();
   });
 
   it("renders ScoreTooLowBody when score is not passing", () => {

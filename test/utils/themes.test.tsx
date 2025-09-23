@@ -12,7 +12,7 @@ describe("Theme Utils", () => {
       expect(DarkTheme.colors?.secondary).toBe("109, 109, 109");
       expect(DarkTheme.colors?.background).toBe("0, 0, 0");
       expect(DarkTheme.colors?.success).toBe("164, 255, 169");
-      expect(DarkTheme.colors?.failure).toBe("203, 203, 203");
+      expect(DarkTheme.colors?.failure).toBe("235, 48, 45");
     });
 
     it("includes accent color for CTAs", () => {
@@ -27,9 +27,9 @@ describe("Theme Utils", () => {
 
     it("includes font configuration", () => {
       expect(DarkTheme.font).toBeDefined();
-      expect(DarkTheme.font?.family?.body).toBe('"Poppins", sans-serif');
-      expect(DarkTheme.font?.family?.heading).toBe('"Poppins", sans-serif');
-      expect(DarkTheme.font?.family?.alt).toBe('"DM Mono", sans-serif');
+      expect(DarkTheme.font?.family?.body).toBe('"Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif');
+      expect(DarkTheme.font?.family?.heading).toBe('"Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif');
+      expect(DarkTheme.font?.family?.alt).toBe('"Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif');
     });
   });
 
@@ -112,7 +112,7 @@ describe("Widget setTheme functionality", () => {
     expect(style.getPropertyValue("--color-background-c6dbf459")).toBe("0, 0, 0");
     expect(style.getPropertyValue("--color-accent-c6dbf459")).toBe("0, 212, 170");
     expect(style.getPropertyValue("--color-success-c6dbf459")).toBe("164, 255, 169");
-    expect(style.getPropertyValue("--color-failure-c6dbf459")).toBe("203, 203, 203");
+    expect(style.getPropertyValue("--color-failure-c6dbf459")).toBe("235, 48, 45");
   });
 
   it("handles missing accent color gracefully", () => {
@@ -163,9 +163,9 @@ describe("Widget setTheme functionality", () => {
     const widgetElement = widgetContainer.querySelector("[class*='widget']") as HTMLElement;
     const style = window.getComputedStyle(widgetElement);
 
-    expect(style.getPropertyValue("--font-family-body-c6dbf459")).toBe('"Poppins", sans-serif');
-    expect(style.getPropertyValue("--font-family-heading-c6dbf459")).toBe('"Poppins", sans-serif');
-    expect(style.getPropertyValue("--font-family-alt-c6dbf459")).toBe('"DM Mono", sans-serif');
+    expect(style.getPropertyValue("--font-family-body-c6dbf459")).toBe('"Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif');
+    expect(style.getPropertyValue("--font-family-heading-c6dbf459")).toBe('"Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif');
+    expect(style.getPropertyValue("--font-family-alt-c6dbf459")).toBe('"Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif');
   });
 
   it("allows overriding specific theme properties", () => {

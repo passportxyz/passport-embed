@@ -31,7 +31,8 @@ describe("useHumanIDVerification", () => {
   const createMockPlatform = (platformId: string): Platform => ({
     platformId,
     name: platformId,
-    description: "Test platform",
+    description: <div>Test platform</div>,
+    icon: <span>🆔</span>,
     documentationLink: "https://example.com",
     credentials: [{ id: "test-cred-1", weight: "1" }],
     displayWeight: "5",
