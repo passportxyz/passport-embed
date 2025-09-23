@@ -1,6 +1,6 @@
 # Knowledge Map
 
-_Last updated: 2025-09-19_
+_Last updated: 2025-09-23_
 
 ## 📁 API
 
@@ -32,6 +32,7 @@ _Last updated: 2025-09-19_
 - [More Options Pagination](./gotchas/more-options-pagination.md) - Pagination issues, Vite HMR errors, Human ID SDK sync behavior _(Updated 2025-09-04)_
 - [Dev Dependencies](./gotchas/dev-dependencies.md) - Dev directory yarn install failure with @human.tech/passport-embed package _(New 2025-09-04)_
 - [Webpack Chunk Splitting](./gotchas/webpack-chunk-splitting.md) - Webpack chunk splitting causes SSR errors in Next.js _(New 2025-09-04)_
+- [Mock Data Type Structure](./gotchas/mock-data-type-structure.md) - Mock data type structure verification and data flow _(New 2025-09-23)_
 
 ## 🎯 Patterns
 
