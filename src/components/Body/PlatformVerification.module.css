@@ -15,12 +15,11 @@
   flex-direction: column;
 }
 
-.headerContainer {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 500;
+.heading {
+  text-align: left;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .description {
@@ -49,4 +48,18 @@
 
 .deduplicationNotice {
   margin-bottom: 2px;
+}
+
+.buttonContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.learnMore {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }

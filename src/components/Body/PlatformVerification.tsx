@@ -11,25 +11,8 @@ import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
 import { Platform } from "../../hooks/stampTypes";
 import { useHumanIDVerification } from "../../hooks/useHumanIDVerification";
 import { StampClaimResult } from "./StampClaimResult";
-
-const CloseIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M1 11L6 6L1 1"
-      stroke="rgb(var(--color-background-c6dbf459))"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M11 1L6 6L11 11"
-      stroke="rgb(var(--color-background-c6dbf459))"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+import { PlatformHeader } from "./PlatformHeader";
+import { DocLink } from "./DocLink";
 
 const getChallenge = async (challengeUrl: string, address: string, providerType: string) => {
   const payload = {
@@ -111,26 +94,26 @@ export const PlatformVerification = ({
 
   // Show success screen immediately if claimed
   if (claimed || verificationComplete) {
-    const errors =
-      preVerificationError ? [{error: preVerificationError}] :
-      credentialErrors?.length ? credentialErrors : error ? [{error: error.toString()}] : undefined
+    const errors = preVerificationError
+      ? [{ error: preVerificationError }]
+      : credentialErrors?.length
+        ? credentialErrors
+        : error
+          ? [{ error: error.toString() }]
+          : undefined;
     return <StampClaimResult platform={platform} onBack={onClose} errors={errors} />;
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.headerContainer}>
-        <div>{platform.name}</div>
-        <button
-          onClick={onClose}
-          className={styles.closeButton}
-          disabled={isPending}
-          data-testid="close-platform-button"
-        >
-          <CloseIcon />
-        </button>
-      </div>
-
+    <>
+      <PlatformHeader
+        platform={platform}
+        showSeeDetails={false}
+        onSeeDetails={() => {}}
+        onBack={onClose}
+        points={platform.displayWeight}
+      />
+      <div className={styles.heading}>Verify the {platform.name} Stamp</div>
       <ScrollableDivWithFade className={styles.description} invertFadeColor={true}>
         {hasConfigurationError ? (
           <div>
@@ -150,10 +133,12 @@ export const PlatformVerification = ({
             {platform.description}
           </div>
         )}
+        <div className={styles.learnMore}>
+          <DocLink href={platform.documentationLink}>Learn more</DocLink>
+        </div>
       </ScrollableDivWithFade>
       <Button
         className={utilStyles.wFull}
-        invert={true}
         disabled={isPending || claimed}
         onClick={async () => {
           if (hasConfigurationError) {
@@ -241,8 +226,23 @@ export const PlatformVerification = ({
           }
         }}
       >
-        {hasConfigurationError ? "Go Back" : claimed ? "Already Verified" : `Verify${isPending ? "ing..." : ""}`}
+        {hasConfigurationError ? (
+          "Go Back"
+        ) : (
+          <div className={styles.buttonContent}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M20 6L9 17L4 12"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Verify{isPending ? "ing..." : ""}
+          </div>
+        )}
       </Button>
-    </div>
+    </>
   );
 };
