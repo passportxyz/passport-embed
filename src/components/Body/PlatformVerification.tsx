@@ -3,7 +3,6 @@ import utilStyles from "../../utilStyles.module.css";
 import { useEffect, useState } from "react";
 import { Button } from "../Button";
 import { Hyperlink } from "./ScoreTooLowBody";
-import { ScrollableDivWithFade } from "../ScrollableDivWithFade";
 import { useWidgetIsQuerying, useWidgetVerifyCredentials } from "../../hooks/usePassportScore";
 import { useQueryContext } from "../../hooks/useQueryContext";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
@@ -114,7 +113,7 @@ export const PlatformVerification = ({
         points={platform.displayWeight}
       />
       <div className={styles.heading}>Verify the {platform.name} Stamp</div>
-      <ScrollableDivWithFade className={styles.description} invertFadeColor={true}>
+      <div className={styles.description}>
         {hasConfigurationError ? (
           <div>
             Something's missing! This Stamp needs an extra setup step to work properly. If you're the site owner, please
@@ -136,7 +135,7 @@ export const PlatformVerification = ({
         <div className={styles.learnMore}>
           <DocLink href={platform.documentationLink}>Learn more</DocLink>
         </div>
-      </ScrollableDivWithFade>
+      </div>
       <Button
         className={utilStyles.wFull}
         disabled={isPending || claimed}
