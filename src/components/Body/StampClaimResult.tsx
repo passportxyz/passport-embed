@@ -6,11 +6,9 @@ import { PlatformHeader } from "./PlatformHeader";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
 import { CredentialError } from "../../hooks/usePassportScore";
 import { AmbivalentHuman } from "../../assets/ambivalentHuman";
-import { TooltipIcon } from "../../assets/tooltipIcon";
 import { Tooltip } from "../Tooltip";
-import { ReactNode, useState } from "react";
+import { useState } from "react";
 import { TextButton } from "../TextButton";
-import { Hyperlink } from "./ScoreTooLowBody";
 import { DocLink } from "./DocLink";
 
 type StampClaimSuccessProps = BackToStampsButtonProps & {
@@ -18,7 +16,7 @@ type StampClaimSuccessProps = BackToStampsButtonProps & {
   errors?: CredentialError[];
 };
 
-const ChevronRight = (props: any) => (
+const ChevronRight = (props: React.ComponentProps<typeof TextButton>) => (
   <TextButton {...props}>
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -26,7 +24,7 @@ const ChevronRight = (props: any) => (
   </TextButton>
 );
 
-const ChevronLeft = (props: any) => (
+const ChevronLeft = (props: React.ComponentProps<typeof TextButton>) => (
   <TextButton {...props}>
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M15 18L9 12L15 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

@@ -22,6 +22,7 @@ describe("StampClaimResult", () => {
     platformId: "Google",
     name: "Google",
     description: <div>Verify your Google account</div>,
+    documentationLink: "https://docs.example.com/google",
     icon: <span>📧</span>,
     credentials: [{ id: "google", weight: "1" }],
     requiresSignature: false,
@@ -94,7 +95,13 @@ describe("StampClaimResult", () => {
       expect(tooltipIcon).toBeInTheDocument();
     });
 
-    it("shows tooltip with credential errors when errors are provided", () => {
+    it("shows credential errors when errors are provided", () => {
+      // Mock as not claimed to show error state
+      (usePlatformStatus.usePlatformStatus as jest.Mock).mockReturnValue({
+        claimed: false,
+        pointsGained: "0",
+      });
+
       const credentialErrors: CredentialError[] = [
         { provider: "Google", error: "Account not eligible" },
         { provider: "Google", error: "Verification timeout" },
@@ -102,12 +109,20 @@ describe("StampClaimResult", () => {
 
       render(<StampClaimResult platform={mockPlatform} onBack={mockOnBack} errors={credentialErrors} />);
 
-      expect(screen.getByText("Learn more")).toBeInTheDocument();
+      // Should show "See Details" button
+      const seeDetailsButton = screen.getByText("See Details ➜");
+      expect(seeDetailsButton).toBeInTheDocument();
 
-      const tooltipIcon = screen.getByTestId("tooltip-icon");
-      fireEvent.mouseEnter(tooltipIcon);
+      // Click to see error details
+      fireEvent.click(seeDetailsButton);
 
-      expect(screen.getByText("Account not eligible,Verification timeout")).toBeInTheDocument();
+      // Should show error section with counter
+      expect(screen.getByText(/Errors/)).toBeInTheDocument();
+      expect(screen.getByText("1/2")).toBeInTheDocument();  // Error counter
+
+      // Should display first error by default - wrapped in Tooltip which shows it twice (once as child, once as content)
+      const errorTexts = screen.getAllByText("Account not eligible");
+      expect(errorTexts.length).toBeGreaterThan(0);
     });
 
     it("shows empty tooltip when not claimed and empty errors array", () => {

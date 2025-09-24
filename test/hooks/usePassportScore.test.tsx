@@ -53,6 +53,7 @@ describe("Passport Score Hooks", () => {
   beforeEach(() => {
     // Clear all mocks before each test
     jest.clearAllMocks();
+    jest.resetAllMocks();
   });
 
   describe("usePassportScore", () => {
@@ -178,6 +179,7 @@ describe("Passport Score Hooks", () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
+      // Check credentialErrors after mutation is successful
       expect(result.current.credentialErrors).toEqual(mockCredentialErrors);
     });
 
@@ -196,6 +198,7 @@ describe("Passport Score Hooks", () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
+      // Check credentialErrors after mutation is successful
       expect(result.current.credentialErrors).toBeUndefined();
     });
 
@@ -219,6 +222,7 @@ describe("Passport Score Hooks", () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
+      // Check credentialErrors after mutation is successful
       expect(result.current.credentialErrors).toEqual([]);
     });
 

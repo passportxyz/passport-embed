@@ -9,6 +9,7 @@ export type PassportWidgetTheme = {
         primary?: string;
         secondary?: string;
         background?: string;
+        accent: string;
         success?: string;
         failure?: string;
     };
