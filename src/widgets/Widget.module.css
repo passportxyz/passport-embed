@@ -1,9 +1,4 @@
 /*
- * Import Suisse Intl font family
- */
-@import url("../assets/fonts/fonts.css");
-
-/*
  * c6dbf459 is the first 4 bytes of
  * keccak256("passport-widgets"), used
  * as a unique postfix for the CSS
@@ -21,9 +16,15 @@
   --widget-radius-c6dbf459: 16px;
   --button-radius-c6dbf459: 8px;
   --transition-speed-c6dbf459: 50ms;
-  --font-family-body-c6dbf459: "Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-family-heading-c6dbf459: "Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-family-alt-c6dbf459: "Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family-body-c6dbf459:
+    "Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+  --font-family-heading-c6dbf459:
+    "Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
+  --font-family-alt-c6dbf459:
+    "Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
   --position-overlay-z-index-c6dbf459: 10;
 
   /* Width will be 300 unless screen
