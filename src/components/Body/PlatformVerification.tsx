@@ -12,6 +12,7 @@ import { useHumanIDVerification } from "../../hooks/useHumanIDVerification";
 import { StampClaimResult } from "./StampClaimResult";
 import { PlatformHeader } from "./PlatformHeader";
 import { DocLink } from "./DocLink";
+import { HumanTechFooter } from "./HumanTechFooter"
 
 const getChallenge = async (challengeUrl: string, address: string, providerType: string) => {
   const payload = {
@@ -242,6 +243,7 @@ export const PlatformVerification = ({
           </div>
         )}
       </Button>
+      {isHumanIDPlatform && <HumanTechFooter className={styles.platformFooter} />}
     </>
   );
 };

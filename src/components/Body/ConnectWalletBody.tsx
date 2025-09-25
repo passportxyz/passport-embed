@@ -6,7 +6,7 @@ import { PassportEmbedProps } from "../../hooks/usePassportScore";
 import { useHeaderControls } from "../../hooks/useHeaderControls";
 import { PersonIcon } from "../../assets/personIcon";
 import { WalletIcon } from "../../assets/walletIcon";
-import { HumanTechLogo } from "../../assets/humanTechLogo";
+import { HumanTechFooter } from "./HumanTechFooter";
 
 export const ConnectWalletBody = ({
   connectWalletCallback,
@@ -50,12 +50,7 @@ export const ConnectWalletBody = ({
           </div>
         </Button>
       )}
-      <div className={styles.footer}>
-        <div className={styles.footerContent}>
-          <HumanTechLogo />
-          <span className={styles.footerText}>Secured by human.tech</span>
-        </div>
-      </div>
+      <HumanTechFooter />
     </>
   );
 };

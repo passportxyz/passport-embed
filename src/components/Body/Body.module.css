@@ -38,7 +38,7 @@
   max-width: 300px;
   min-height: 300px;
   height: 300px; /* 300px body + 55px header = 355px total */
-  padding: 12px var(--widget-padding-x-c6dbf459) 20px;
+  padding: 12px var(--widget-padding-x-c6dbf459) 16px;
   position: relative;
   overflow: hidden;
 }
@@ -270,14 +270,9 @@
 }
 
 .footer {
-  margin-top: auto;
   text-align: center;
   width: 100%;
-  position: relative;
   z-index: 1; /* Above blur effect */
-}
-
-.footerContent {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -287,7 +282,6 @@
 .footerText {
   font-size: 12px;
   font-weight: 500;
-  color: #d4d4d4;
 }
 
 .iconContainer {
