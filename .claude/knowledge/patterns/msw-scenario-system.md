@@ -124,9 +124,19 @@ http.get("*/embed/stamps/metadata", () => {
 4. Write E2E test with proper waits for React Query retries
 5. Verify error message appears after retries complete
 
+## Cross-References
+
+See related MSW documentation:
+
+- **Infrastructure**: @architecture/msw-infrastructure.md - Overall MSW system architecture and organization
+- **Testing Framework**: @testing/framework-setup.md - MSW scenarios integration with test framework
+- **Mock Wallet Strategy**: @testing/mock-wallet-strategy.md - Wallet mocking approach used with scenarios
+- **Dev Environment**: @testing/msw-dev-environment.md - Visual displays and UI for scenario testing
+- **Handler Issues**: @gotchas/msw-handler-issues.md - Common problems when implementing scenarios
+
 **Related files:**
 
-- `dev/src/mocks/scenarios.ts`
-- `dev/src/mocks/handlers.ts`
-- `dev/src/mocks/ScenarioManager.ts`
-- `dev/tests/e2e/stamp-errors.spec.ts`
+- `/workspace/project/dev/src/mocks/scenarios.ts`
+- `/workspace/project/dev/src/mocks/handlers.ts`
+- `/workspace/project/dev/src/mocks/ScenarioManager.ts`
+- `/workspace/project/dev/tests/e2e/stamp-errors.spec.ts`

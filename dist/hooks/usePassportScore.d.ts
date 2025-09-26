@@ -16,6 +16,11 @@ type PassportProviderPoints = {
     dedup: boolean;
     expirationDate: Date;
 };
+export type CredentialError = {
+    provider?: string;
+    error: string;
+    code?: number;
+};
 export type PassportScore = {
     address: string;
     score: number;
@@ -24,6 +29,10 @@ export type PassportScore = {
     expirationTimestamp: Date;
     threshold: number;
     stamps: Record<string, PassportProviderPoints>;
+};
+export type VerifyCredentialsResult = {
+    score: PassportScore;
+    credentialErrors?: CredentialError[];
 };
 export type PassportEmbedResult = {
     data: PassportScore | undefined;
@@ -39,7 +48,8 @@ export declare class RateLimitError extends Error {
 }
 export declare const useWidgetPassportScore: () => PassportEmbedResult;
 export declare const useWidgetVerifyCredentials: () => {
-    verifyCredentials: import("@tanstack/react-query").UseMutateFunction<PassportScore, Error, string[] | undefined, unknown>;
+    verifyCredentials: import("@tanstack/react-query").UseMutateFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
+    credentialErrors: CredentialError[] | undefined;
     data: undefined;
     variables: undefined;
     error: null;
@@ -48,16 +58,17 @@ export declare const useWidgetVerifyCredentials: () => {
     isPending: false;
     isSuccess: false;
     status: "idle";
-    mutate: import("@tanstack/react-query").UseMutateFunction<PassportScore, Error, string[] | undefined, unknown>;
+    mutate: import("@tanstack/react-query").UseMutateFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
     reset: () => void;
     context: unknown;
     failureCount: number;
     failureReason: Error | null;
     isPaused: boolean;
     submittedAt: number;
-    mutateAsync: import("@tanstack/react-query").UseMutateAsyncFunction<PassportScore, Error, string[] | undefined, unknown>;
+    mutateAsync: import("@tanstack/react-query").UseMutateAsyncFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
 } | {
-    verifyCredentials: import("@tanstack/react-query").UseMutateFunction<PassportScore, Error, string[] | undefined, unknown>;
+    verifyCredentials: import("@tanstack/react-query").UseMutateFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
+    credentialErrors: CredentialError[] | undefined;
     data: undefined;
     variables: string[] | undefined;
     error: null;
@@ -66,16 +77,17 @@ export declare const useWidgetVerifyCredentials: () => {
     isPending: true;
     isSuccess: false;
     status: "pending";
-    mutate: import("@tanstack/react-query").UseMutateFunction<PassportScore, Error, string[] | undefined, unknown>;
+    mutate: import("@tanstack/react-query").UseMutateFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
     reset: () => void;
     context: unknown;
     failureCount: number;
     failureReason: Error | null;
     isPaused: boolean;
     submittedAt: number;
-    mutateAsync: import("@tanstack/react-query").UseMutateAsyncFunction<PassportScore, Error, string[] | undefined, unknown>;
+    mutateAsync: import("@tanstack/react-query").UseMutateAsyncFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
 } | {
-    verifyCredentials: import("@tanstack/react-query").UseMutateFunction<PassportScore, Error, string[] | undefined, unknown>;
+    verifyCredentials: import("@tanstack/react-query").UseMutateFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
+    credentialErrors: CredentialError[] | undefined;
     data: undefined;
     error: Error;
     variables: string[] | undefined;
@@ -84,17 +96,18 @@ export declare const useWidgetVerifyCredentials: () => {
     isPending: false;
     isSuccess: false;
     status: "error";
-    mutate: import("@tanstack/react-query").UseMutateFunction<PassportScore, Error, string[] | undefined, unknown>;
+    mutate: import("@tanstack/react-query").UseMutateFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
     reset: () => void;
     context: unknown;
     failureCount: number;
     failureReason: Error | null;
     isPaused: boolean;
     submittedAt: number;
-    mutateAsync: import("@tanstack/react-query").UseMutateAsyncFunction<PassportScore, Error, string[] | undefined, unknown>;
+    mutateAsync: import("@tanstack/react-query").UseMutateAsyncFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
 } | {
-    verifyCredentials: import("@tanstack/react-query").UseMutateFunction<PassportScore, Error, string[] | undefined, unknown>;
-    data: PassportScore;
+    verifyCredentials: import("@tanstack/react-query").UseMutateFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
+    credentialErrors: CredentialError[] | undefined;
+    data: VerifyCredentialsResult;
     error: null;
     variables: string[] | undefined;
     isError: false;
@@ -102,17 +115,18 @@ export declare const useWidgetVerifyCredentials: () => {
     isPending: false;
     isSuccess: true;
     status: "success";
-    mutate: import("@tanstack/react-query").UseMutateFunction<PassportScore, Error, string[] | undefined, unknown>;
+    mutate: import("@tanstack/react-query").UseMutateFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
     reset: () => void;
     context: unknown;
     failureCount: number;
     failureReason: Error | null;
     isPaused: boolean;
     submittedAt: number;
-    mutateAsync: import("@tanstack/react-query").UseMutateAsyncFunction<PassportScore, Error, string[] | undefined, unknown>;
+    mutateAsync: import("@tanstack/react-query").UseMutateAsyncFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
 };
 export declare const useVerifyCredentials: ({ apiKey, address, scorerId, embedServiceUrl }: PassportQueryProps) => {
-    verifyCredentials: import("@tanstack/react-query").UseMutateFunction<PassportScore, Error, string[] | undefined, unknown>;
+    verifyCredentials: import("@tanstack/react-query").UseMutateFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
+    credentialErrors: CredentialError[] | undefined;
     data: undefined;
     variables: undefined;
     error: null;
@@ -121,16 +135,17 @@ export declare const useVerifyCredentials: ({ apiKey, address, scorerId, embedSe
     isPending: false;
     isSuccess: false;
     status: "idle";
-    mutate: import("@tanstack/react-query").UseMutateFunction<PassportScore, Error, string[] | undefined, unknown>;
+    mutate: import("@tanstack/react-query").UseMutateFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
     reset: () => void;
     context: unknown;
     failureCount: number;
     failureReason: Error | null;
     isPaused: boolean;
     submittedAt: number;
-    mutateAsync: import("@tanstack/react-query").UseMutateAsyncFunction<PassportScore, Error, string[] | undefined, unknown>;
+    mutateAsync: import("@tanstack/react-query").UseMutateAsyncFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
 } | {
-    verifyCredentials: import("@tanstack/react-query").UseMutateFunction<PassportScore, Error, string[] | undefined, unknown>;
+    verifyCredentials: import("@tanstack/react-query").UseMutateFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
+    credentialErrors: CredentialError[] | undefined;
     data: undefined;
     variables: string[] | undefined;
     error: null;
@@ -139,16 +154,17 @@ export declare const useVerifyCredentials: ({ apiKey, address, scorerId, embedSe
     isPending: true;
     isSuccess: false;
     status: "pending";
-    mutate: import("@tanstack/react-query").UseMutateFunction<PassportScore, Error, string[] | undefined, unknown>;
+    mutate: import("@tanstack/react-query").UseMutateFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
     reset: () => void;
     context: unknown;
     failureCount: number;
     failureReason: Error | null;
     isPaused: boolean;
     submittedAt: number;
-    mutateAsync: import("@tanstack/react-query").UseMutateAsyncFunction<PassportScore, Error, string[] | undefined, unknown>;
+    mutateAsync: import("@tanstack/react-query").UseMutateAsyncFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
 } | {
-    verifyCredentials: import("@tanstack/react-query").UseMutateFunction<PassportScore, Error, string[] | undefined, unknown>;
+    verifyCredentials: import("@tanstack/react-query").UseMutateFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
+    credentialErrors: CredentialError[] | undefined;
     data: undefined;
     error: Error;
     variables: string[] | undefined;
@@ -157,17 +173,18 @@ export declare const useVerifyCredentials: ({ apiKey, address, scorerId, embedSe
     isPending: false;
     isSuccess: false;
     status: "error";
-    mutate: import("@tanstack/react-query").UseMutateFunction<PassportScore, Error, string[] | undefined, unknown>;
+    mutate: import("@tanstack/react-query").UseMutateFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
     reset: () => void;
     context: unknown;
     failureCount: number;
     failureReason: Error | null;
     isPaused: boolean;
     submittedAt: number;
-    mutateAsync: import("@tanstack/react-query").UseMutateAsyncFunction<PassportScore, Error, string[] | undefined, unknown>;
+    mutateAsync: import("@tanstack/react-query").UseMutateAsyncFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
 } | {
-    verifyCredentials: import("@tanstack/react-query").UseMutateFunction<PassportScore, Error, string[] | undefined, unknown>;
-    data: PassportScore;
+    verifyCredentials: import("@tanstack/react-query").UseMutateFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
+    credentialErrors: CredentialError[] | undefined;
+    data: VerifyCredentialsResult;
     error: null;
     variables: string[] | undefined;
     isError: false;
@@ -175,14 +192,14 @@ export declare const useVerifyCredentials: ({ apiKey, address, scorerId, embedSe
     isPending: false;
     isSuccess: true;
     status: "success";
-    mutate: import("@tanstack/react-query").UseMutateFunction<PassportScore, Error, string[] | undefined, unknown>;
+    mutate: import("@tanstack/react-query").UseMutateFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
     reset: () => void;
     context: unknown;
     failureCount: number;
     failureReason: Error | null;
     isPaused: boolean;
     submittedAt: number;
-    mutateAsync: import("@tanstack/react-query").UseMutateAsyncFunction<PassportScore, Error, string[] | undefined, unknown>;
+    mutateAsync: import("@tanstack/react-query").UseMutateAsyncFunction<VerifyCredentialsResult, Error, string[] | undefined, unknown>;
 };
 export declare const useWidgetIsQuerying: () => boolean;
 export declare const useResetWidgetPassportScore: () => {

@@ -15,23 +15,19 @@
   flex-direction: column;
 }
 
-.headerContainer {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 500;
+.heading {
+  text-align: left;
+  width: 100%;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .description {
-  margin: calc(var(--widget-padding-y-c6dbf459) / 2) 0
-    var(--widget-padding-y-c6dbf459) 0;
-
-  max-height: calc(120px - 1.5 * var(--widget-padding-y-c6dbf459));
   height: 100%;
   width: 100%;
 
   flex-grow: 1;
+  overflow-y: hidden;
 }
 
 .closeButton {
@@ -49,4 +45,22 @@
 
 .deduplicationNotice {
   margin-bottom: 2px;
+}
+
+.buttonContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.learnMore {
+  margin-top: 8px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.platformFooter {
+  color: rgba(var(--color-secondary-c6dbf459), 0.7);
 }

@@ -17,5 +17,9 @@ export default defineConfig({
   server: {
     port: 5173,
     open: true,
+    fs: {
+      // Allow serving files from parent directory for fonts
+      allow: ['..']
+    }
   },
 });

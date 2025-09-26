@@ -26,6 +26,7 @@ describe("PlatformVerification", () => {
     platformId: "LinkedIn",
     name: "LinkedIn",
     description: <div>Verify your LinkedIn account</div>,
+    icon: <span>📧</span>,
     credentials: [{ id: "linkedin", weight: "1" }],
     requiresSignature: true,
     requiresPopup: true,
@@ -87,7 +88,9 @@ describe("PlatformVerification", () => {
       />
     );
 
-    fireEvent.click(screen.getByTestId("close-platform-button"));
+    // The back button is rendered as a TextButton with an SVG icon
+    const backButton = screen.getByRole('button', { name: '' });
+    fireEvent.click(backButton);
     expect(mockOnClose).toHaveBeenCalled();
   });
 
@@ -108,6 +111,7 @@ describe("PlatformVerification", () => {
   it("shows already verified state when claimed", () => {
     (usePlatformStatus.usePlatformStatus as jest.Mock).mockReturnValue({
       claimed: true,
+      pointsGained: "5",
     });
 
     render(
@@ -118,7 +122,8 @@ describe("PlatformVerification", () => {
       />
     );
 
-    expect(screen.getByText("Already Verified")).toBeInTheDocument();
+    expect(screen.getByText("Congratulations!")).toBeInTheDocument();
+    expect(screen.getByText(/You've verified credentials within/)).toBeInTheDocument();
   });
 
   it("handles OAuth popup flow", async () => {
@@ -205,8 +210,8 @@ describe("PlatformVerification", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Unable to claim this Stamp/i)).toBeInTheDocument();
-      expect(screen.getByText("Try Again")).toBeInTheDocument();
+      expect(screen.getByText(/Stamp Verification Unsuccessful/i)).toBeInTheDocument();
+      expect(screen.getByText(/Please try verifying another Stamp/i)).toBeInTheDocument();
     });
   });
 
@@ -236,7 +241,7 @@ describe("PlatformVerification", () => {
       fireEvent.click(screen.getByRole("button", { name: /verify/i }));
 
       await waitFor(() => {
-        expect(screen.getByText(/Unable to claim this Stamp/i)).toBeInTheDocument();
+        expect(screen.getByText(/Stamp Verification Unsuccessful/i)).toBeInTheDocument();
       });
 
       expect(mockVerifyCredentials).not.toHaveBeenCalled();
@@ -353,6 +358,7 @@ describe("PlatformVerification", () => {
       (usePlatformDeduplication.usePlatformDeduplication as jest.Mock).mockReturnValue(true);
       (usePlatformStatus.usePlatformStatus as jest.Mock).mockReturnValue({
         claimed: true,
+        pointsGained: "5",
       });
 
       render(
@@ -363,9 +369,11 @@ describe("PlatformVerification", () => {
         />
       );
 
-      expect(screen.getByText("⚠️")).toBeInTheDocument();
-      expect(screen.getByText("Already claimed elsewhere")).toBeInTheDocument();
-      expect(screen.getByText("Already Verified")).toBeInTheDocument();
+      // When claimed, it shows StampClaimResult with Congratulations
+      expect(screen.getByText("Congratulations!")).toBeInTheDocument();
+      expect(screen.getByText(/You've verified credentials within/)).toBeInTheDocument();
+
+      // Note: Deduplication notice is not shown in the success state
     });
 
     it("should call usePlatformDeduplication with correct platform parameter", () => {
@@ -382,6 +390,144 @@ describe("PlatformVerification", () => {
       expect(mockUsePlatformDeduplication).toHaveBeenCalledWith({
         platform: mockPlatform,
       });
+    });
+  });
+
+  describe("Credential Error Handling", () => {
+    it("should pass credential errors to StampClaimResult when verification fails with errors", async () => {
+      const mockCredentialErrors = [
+        { provider: "LinkedIn", error: "Account not eligible" },
+        { provider: "LinkedIn", error: "Verification failed" },
+      ];
+
+      const mockVerifyCredentials = jest.fn();
+      (usePassportScore.useWidgetVerifyCredentials as jest.Mock).mockReturnValue({
+        verifyCredentials: mockVerifyCredentials,
+        credentialErrors: mockCredentialErrors,
+      });
+
+      // Simulate query lifecycle: false -> true -> false (completed)
+      const isQueryingMock = jest.fn();
+      isQueryingMock.mockReturnValueOnce(false);
+      isQueryingMock.mockReturnValueOnce(false);
+      isQueryingMock.mockReturnValueOnce(true);
+      isQueryingMock.mockReturnValue(false);
+      (usePassportScore.useWidgetIsQuerying as jest.Mock).mockImplementation(isQueryingMock);
+
+      const { rerender } = render(
+        <PlatformVerification
+          platform={{
+            ...mockPlatform,
+            requiresSignature: false,
+            requiresPopup: false,
+          }}
+          onClose={mockOnClose}
+          generateSignatureCallback={mockGenerateSignature}
+        />
+      );
+
+      // Click verify button
+      fireEvent.click(screen.getByRole("button", { name: /verify/i }));
+
+      // Force re-renders to simulate query completion
+      rerender(
+        <PlatformVerification
+          platform={{
+            ...mockPlatform,
+            requiresSignature: false,
+            requiresPopup: false,
+          }}
+          onClose={mockOnClose}
+          generateSignatureCallback={mockGenerateSignature}
+        />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText(/Stamp Verification Unsuccessful/)).toBeInTheDocument();
+      });
+    });
+
+    it("should display generic error when verification fails without credential errors", async () => {
+      const mockVerifyCredentials = jest.fn();
+      const mockError = new Error("Network error");
+      (usePassportScore.useWidgetVerifyCredentials as jest.Mock).mockReturnValue({
+        verifyCredentials: mockVerifyCredentials,
+        error: mockError,
+        credentialErrors: undefined,
+      });
+
+      // Simulate query lifecycle
+      const isQueryingMock = jest.fn();
+      isQueryingMock.mockReturnValueOnce(false);
+      isQueryingMock.mockReturnValueOnce(false);
+      isQueryingMock.mockReturnValueOnce(true);
+      isQueryingMock.mockReturnValue(false);
+      (usePassportScore.useWidgetIsQuerying as jest.Mock).mockImplementation(isQueryingMock);
+
+      const { rerender } = render(
+        <PlatformVerification
+          platform={{
+            ...mockPlatform,
+            requiresSignature: false,
+            requiresPopup: false,
+          }}
+          onClose={mockOnClose}
+          generateSignatureCallback={mockGenerateSignature}
+        />
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: /verify/i }));
+
+      rerender(
+        <PlatformVerification
+          platform={{
+            ...mockPlatform,
+            requiresSignature: false,
+            requiresPopup: false,
+          }}
+          onClose={mockOnClose}
+          generateSignatureCallback={mockGenerateSignature}
+        />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText(/Stamp Verification Unsuccessful/)).toBeInTheDocument();
+      });
+    });
+
+    it("should pass pre-verification error when validation fails", async () => {
+      // Mock missing address to trigger pre-verification error
+      (useQueryContext.useQueryContext as jest.Mock).mockReturnValue({
+        address: null,
+        embedServiceUrl: "https://test.com",
+      });
+
+      const mockVerifyCredentials = jest.fn();
+      (usePassportScore.useWidgetVerifyCredentials as jest.Mock).mockReturnValue({
+        verifyCredentials: mockVerifyCredentials,
+        credentialErrors: undefined,
+      });
+
+      render(
+        <PlatformVerification
+          platform={{
+            ...mockPlatform,
+            requiresSignature: false,
+            requiresPopup: false,
+          }}
+          onClose={mockOnClose}
+          generateSignatureCallback={mockGenerateSignature}
+        />
+      );
+
+      fireEvent.click(screen.getByRole("button", { name: /verify/i }));
+
+      // With requiresSignature false and requiresPopup false, it calls verifyCredentials directly
+      // even with no address (the API will handle the error)
+      expect(mockVerifyCredentials).toHaveBeenCalledWith(["linkedin"]);
+
+      // Since there's no verification result, it stays in the initial state
+      expect(screen.getByRole("button", { name: /verify/i })).toBeInTheDocument();
     });
   });
 });

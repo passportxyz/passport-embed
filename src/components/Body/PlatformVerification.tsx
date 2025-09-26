@@ -3,32 +3,16 @@ import utilStyles from "../../utilStyles.module.css";
 import { useEffect, useState } from "react";
 import { Button } from "../Button";
 import { Hyperlink } from "./ScoreTooLowBody";
-import { ScrollableDiv } from "../ScrollableDiv";
 import { useWidgetIsQuerying, useWidgetVerifyCredentials } from "../../hooks/usePassportScore";
 import { useQueryContext } from "../../hooks/useQueryContext";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
 import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
 import { Platform } from "../../hooks/stampTypes";
 import { useHumanIDVerification } from "../../hooks/useHumanIDVerification";
-
-const CloseIcon = () => (
-  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M1 11L6 6L1 1"
-      stroke="rgb(var(--color-background-c6dbf459))"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M11 1L6 6L11 11"
-      stroke="rgb(var(--color-background-c6dbf459))"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+import { StampClaimResult } from "./StampClaimResult";
+import { PlatformHeader } from "./PlatformHeader";
+import { DocLink } from "./DocLink";
+import { HumanTechFooter } from "./HumanTechFooter"
 
 const getChallenge = async (challengeUrl: string, address: string, providerType: string) => {
   const payload = {
@@ -60,13 +44,14 @@ export const PlatformVerification = ({
   const { claimed } = usePlatformStatus({ platform });
   const isDeduped = usePlatformDeduplication({ platform });
   const [initiatedVerification, setInitiatedVerification] = useState(false);
-  const [failedVerification, setFailedVerification] = useState(false);
+  const [verificationComplete, setVerificationComplete] = useState(false);
   const [isOAuthPopupOpen, setIsOAuthPopupOpen] = useState(false);
   const [wasQuerying, setWasQuerying] = useState(false);
+  const [preVerificationError, setPreVerificationError] = useState<string>("");
 
   const isQuerying = useWidgetIsQuerying();
   const queryProps = useQueryContext();
-  const { verifyCredentials } = useWidgetVerifyCredentials();
+  const { verifyCredentials, error, credentialErrors } = useWidgetVerifyCredentials();
   const platformCredentialIds = platform.credentials.map(({ id }) => id);
 
   const hasConfigurationError = platform.requiresSignature && !generateSignatureCallback;
@@ -92,7 +77,7 @@ export const PlatformVerification = ({
     }
   }, [initiatedVerification, isQuerying]);
 
-  // Check completion and result
+  // Check completion
   useEffect(() => {
     const isFullyComplete =
       initiatedVerification &&
@@ -100,41 +85,40 @@ export const PlatformVerification = ({
       !isPending;
 
     if (isFullyComplete) {
-      if (claimed) {
-        onClose();
-      } else {
-        setFailedVerification(true);
-      }
+      setVerificationComplete(true);
       // Reset for next attempt
       setInitiatedVerification(false);
       setWasQuerying(false);
     }
-  }, [initiatedVerification, wasQuerying, isPending, claimed, onClose]);
+  }, [initiatedVerification, wasQuerying, isPending]);
+
+  // Show success screen immediately if claimed
+  if (claimed || verificationComplete) {
+    const errors = preVerificationError
+      ? [{ error: preVerificationError }]
+      : credentialErrors?.length
+        ? credentialErrors
+        : error
+          ? [{ error: error.toString() }]
+          : undefined;
+    return <StampClaimResult platform={platform} onBack={onClose} errors={errors} />;
+  }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.headerContainer}>
-        <div>{platform.name}</div>
-        <button
-          onClick={onClose}
-          className={styles.closeButton}
-          disabled={isPending}
-          data-testid="close-platform-button"
-        >
-          <CloseIcon />
-        </button>
-      </div>
-
-      <ScrollableDiv className={styles.description} invertScrollIconColor={true}>
+    <>
+      <PlatformHeader
+        platform={platform}
+        showSeeDetails={false}
+        onSeeDetails={() => {}}
+        onBack={onClose}
+        points={platform.displayWeight}
+      />
+      <div className={styles.heading}>Verify the {platform.name} Stamp</div>
+      <div className={styles.description}>
         {hasConfigurationError ? (
           <div>
             Something's missing! This Stamp needs an extra setup step to work properly. If you're the site owner, please
             add a generateSignatureCallback to the widget configuration.
-          </div>
-        ) : failedVerification ? (
-          <div>
-            Unable to claim this Stamp. Find <Hyperlink href={platform.documentationLink}>instructions here</Hyperlink>{" "}
-            and come back after.
           </div>
         ) : (
           <div>
@@ -149,10 +133,12 @@ export const PlatformVerification = ({
             {platform.description}
           </div>
         )}
-      </ScrollableDiv>
+        <div className={styles.learnMore}>
+          <DocLink href={platform.documentationLink}>Learn more</DocLink>
+        </div>
+      </div>
       <Button
         className={utilStyles.wFull}
-        invert={true}
         disabled={isPending || claimed}
         onClick={async () => {
           if (hasConfigurationError) {
@@ -162,7 +148,8 @@ export const PlatformVerification = ({
 
           // Reset states for new attempt
           setInitiatedVerification(true);
-          setFailedVerification(false);
+          setVerificationComplete(false);
+          setPreVerificationError("");
           setWasQuerying(false);
 
           // Handle Human ID platforms first
@@ -173,7 +160,8 @@ export const PlatformVerification = ({
               verifyCredentials(platformCredentialIds);
             } catch (error) {
               console.log("Human ID verification error:", error);
-              setFailedVerification(true);
+              setPreVerificationError(error instanceof Error ? error.toString() : "Unknow error verifying Human ID");
+              setVerificationComplete(true);
               setInitiatedVerification(false); // Reset since we're not continuing
             }
             return;
@@ -186,7 +174,8 @@ export const PlatformVerification = ({
             if (!queryProps.address) {
               console.error("No address found");
               // TODO: manage error state
-              setFailedVerification(true);
+              setVerificationComplete(true);
+              setInitiatedVerification(false);
               return;
             }
 
@@ -237,14 +226,24 @@ export const PlatformVerification = ({
           }
         }}
       >
-        {hasConfigurationError
-          ? "Go Back"
-          : failedVerification
-            ? "Try Again"
-            : claimed
-              ? "Already Verified"
-              : `Verify${isPending ? "ing..." : ""}`}
+        {hasConfigurationError ? (
+          "Go Back"
+        ) : (
+          <div className={styles.buttonContent}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M20 6L9 17L4 12"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            Verify{isPending ? "ing..." : ""}
+          </div>
+        )}
       </Button>
-    </div>
+      {isHumanIDPlatform && <HumanTechFooter className={styles.platformFooter} />}
+    </>
   );
 };

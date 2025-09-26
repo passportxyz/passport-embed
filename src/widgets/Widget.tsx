@@ -16,8 +16,8 @@ export type PassportWidgetTheme = {
     primary?: string;
     secondary?: string;
     background?: string;
-    success?: string;
-    failure?: string;
+    accent: string;
+    error?: string;
   };
   padding?: {
     widget?: {
@@ -74,8 +74,8 @@ const setTheme = ({ theme, ref }: { theme?: PassportWidgetTheme; ref: RefObject<
     ["color-primary", colors?.primary],
     ["color-secondary", colors?.secondary],
     ["color-background", colors?.background],
-    ["color-success", colors?.success],
-    ["color-failure", colors?.failure],
+    ["color-accent", colors?.accent],
+    ["color-error", colors?.error],
     ["widget-padding-x", padding?.widget?.x],
     ["widget-padding-y", padding?.widget?.y],
     ["widget-radius", radius?.widget],

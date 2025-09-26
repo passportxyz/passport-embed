@@ -30,7 +30,7 @@ export function DevToolsPanel({ walletMode, onWalletModeChange }: DevToolsPanelP
     zIndex: 10000,
     boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
     minWidth: "280px",
-    maxWidth: "320px",
+    maxWidth: "300px",
     color: "#ffffff",
   };
 

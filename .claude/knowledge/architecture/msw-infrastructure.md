@@ -83,3 +83,14 @@ All scripts run from project root - dev/package.json has NO scripts:
 - Single source of truth in dev/src/mocks/
 - Clean separation: production SDK vs development environment
 - No MSW code in production bundle
+
+## Cross-References
+
+See related MSW documentation:
+
+- **Scenario System**: @patterns/msw-scenario-system.md - Detailed scenario configuration and testing patterns
+- **Testing Framework**: @testing/framework-setup.md - MSW integration with test framework setup
+- **Mock Wallet Strategy**: @testing/mock-wallet-strategy.md - Dual mocking approach for wallet and API testing
+- **Dev Environment**: @testing/msw-dev-environment.md - MSW development environment states and displays
+- **Handler Issues**: @gotchas/msw-handler-issues.md - Common MSW handler problems and solutions
+- **Human ID Mocking**: @architecture/human-id-configuration.md - Comprehensive Human ID SDK mocking implementation

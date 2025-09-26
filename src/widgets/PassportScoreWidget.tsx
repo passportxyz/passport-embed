@@ -6,11 +6,17 @@ import { Header } from "../components/Header";
 import { Body } from "../components/Body";
 import { HeaderContextProvider } from "../components/HeaderContextProvider";
 import { QueryContextProvider } from "../components/QueryContextProvider";
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { injectFonts } from "../utils/fontInjector";
 
 export type PassportScoreWidgetProps = PassportEmbedProps & GenericPassportWidgetProps;
 
 export const PassportScoreWidget = (props: PassportScoreWidgetProps) => {
+  useLayoutEffect(() => {
+    // Inject fonts on mount (client-side only)
+    injectFonts();
+  }, []);
+
   useEffect(() => {
     if (props.opRPCURL) {
       setOptimismRpcUrl(props.opRPCURL);
@@ -88,6 +94,7 @@ const PassportScore = ({
         connectWalletCallback={connectWalletCallback}
         generateSignatureCallback={generateSignatureCallback}
         showLoading={showLoading}
+        onClose={() => setBodyIsOpen(false)}
       />
     </div>
   );

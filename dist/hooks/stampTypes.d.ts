@@ -15,9 +15,11 @@ export type Platform = {
     popupUrl?: string;
     credentials: Credential[];
     displayWeight: string;
+    icon: ReactNode;
 };
-export type RawPlatformData = Omit<Platform, "description"> & {
+export type RawPlatformData = Omit<Platform, "description" | "icon"> & {
     description: string;
+    icon: string;
 };
 export type StampPage = {
     header: string;

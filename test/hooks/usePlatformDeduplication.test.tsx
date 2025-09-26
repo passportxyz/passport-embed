@@ -51,6 +51,7 @@ describe("usePlatformDeduplication", () => {
     name: "Twitter",
     description: "Connect your Twitter account",
     documentationLink: "https://docs.example.com",
+    icon: null,
     credentials: [{ id: "Twitter", weight: "1.0" }],
     displayWeight: "1.0",
   };
@@ -156,6 +157,7 @@ describe("usePlatformDeduplication", () => {
       name: "Multi Platform",
       description: "Platform with multiple credentials",
       documentationLink: "https://docs.example.com",
+      icon: null,
       credentials: [
         { id: "Twitter", weight: "1.0" },
         { id: "Discord", weight: "1.0" },

@@ -42,8 +42,12 @@ const BodyRouter = ({
   connectWalletCallback,
   generateSignatureCallback,
   showLoading,
+  collapseMode,
+  onClose,
 }: Pick<PassportEmbedProps, "connectWalletCallback" | "generateSignatureCallback"> & {
   showLoading?: boolean;
+  collapseMode: CollapseMode;
+  onClose?: () => void;
 }) => {
   const { isError, error, data } = useWidgetPassportScore();
 
@@ -57,7 +61,7 @@ const BodyRouter = ({
 
   if (data) {
     return data.passingScore ? (
-      <CongratsBody />
+      <CongratsBody collapseMode={collapseMode} onClose={onClose} />
     ) : (
       <ScoreTooLowBody generateSignatureCallback={generateSignatureCallback} />
     );
@@ -73,11 +77,13 @@ export const Body = ({
   connectWalletCallback,
   generateSignatureCallback,
   showLoading,
+  onClose,
 }: {
   className?: string;
   isOpen: boolean;
   collapseMode: CollapseMode;
   showLoading?: boolean;
+  onClose?: () => void;
 } & Pick<PassportEmbedProps, "connectWalletCallback" | "generateSignatureCallback">) => {
   return (
     <BodyWrapper className={className} isOpen={isOpen} collapseMode={collapseMode}>
@@ -85,6 +91,8 @@ export const Body = ({
         connectWalletCallback={connectWalletCallback}
         generateSignatureCallback={generateSignatureCallback}
         showLoading={showLoading}
+        collapseMode={collapseMode}
+        onClose={onClose}
       />
     </BodyWrapper>
   );

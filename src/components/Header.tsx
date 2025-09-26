@@ -1,12 +1,37 @@
 import styles from "./Header.module.css";
 import { PassportLogo } from "../assets/passportLogo";
-import { CheckmarkIcon } from "../assets/checkmarkIcon";
-import { XIcon } from "../assets/xIcon";
-import { Ellipsis } from "./Ellipsis";
-import { useHeaderControls } from "../hooks/useHeaderControls";
+import { LoadingIcon } from "../assets/loadingIcon";
 import { useWidgetIsQuerying, useWidgetPassportScore } from "../hooks/usePassportScore";
 import { displayNumber } from "../utils";
 import { Dispatch, SetStateAction } from "react";
+
+const ScoreIndicator = ({ score, threshold }: { score: number; threshold: number }) => {
+  const fillPercentage = Math.min((score / threshold) * 100, 100);
+  const angle = (fillPercentage / 100) * 360;
+
+  const gradientStyle = {
+    background: `conic-gradient(
+      from 0deg,
+      rgba(var(--color-accent-c6dbf459), 1) 0deg,
+      rgba(var(--color-accent-c6dbf459), 1) ${angle}deg,
+      rgba(var(--color-primary-c6dbf459), 1) ${angle}deg,
+      rgba(var(--color-primary-c6dbf459), 1) 360deg
+    )`,
+  };
+
+  return (
+    <div
+      className={styles.scoreIndicator}
+      role="progressbar"
+      aria-valuenow={score}
+      aria-valuemin={0}
+      aria-valuemax={threshold}
+      style={gradientStyle}
+    >
+      <div className={styles.scoreIndicatorText}>{displayNumber(score)}</div>
+    </div>
+  );
+};
 
 const ScoreDisplay = () => {
   const isQuerying = useWidgetIsQuerying();
@@ -14,16 +39,8 @@ const ScoreDisplay = () => {
 
   return (
     <>
-      {(isQuerying || !data) && <PassportLogo />}
-      {isQuerying && <Ellipsis />}
-      {!isQuerying && data && (
-        <>
-          {data.passingScore ? <CheckmarkIcon /> : <XIcon />}
-          <div className={`${data.passingScore ? styles.success : styles.failure} ${styles.score}`}>
-            {displayNumber(data.score)}
-          </div>
-        </>
-      )}
+      {isQuerying && <LoadingIcon />}
+      {!isQuerying && data && <ScoreIndicator {...data} />}
     </>
   );
 };
@@ -54,8 +71,6 @@ export const Header = ({
   setBodyIsOpen: Dispatch<SetStateAction<boolean>>;
   collapsible: boolean;
 }) => {
-  const { subtitle } = useHeaderControls();
-
   return (
     <button
       className={`${styles.container} ${bodyIsOpen || !collapsible ? styles.bodyExpanded : styles.bodyCollapsed} ${
@@ -67,12 +82,12 @@ export const Header = ({
         }
       }}
     >
-      <div className={styles.titleStack}>
-        Human Passport Score
-        <div className={styles.subtitle}>{subtitle}</div>
+      <PassportLogo />
+      <div className={styles.title}>Human Passport Score</div>
+      <div className={styles.scoreSection}>
+        <ScoreDisplay />
+        {collapsible && <CollapseToggle bodyIsOpen={bodyIsOpen} />}
       </div>
-      <ScoreDisplay />
-      {collapsible && <CollapseToggle bodyIsOpen={bodyIsOpen} />}
     </button>
   );
 };

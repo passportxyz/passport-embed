@@ -4,11 +4,9 @@ import { Button } from "../Button";
 import { useEffect, useState } from "react";
 import { PassportEmbedProps } from "../../hooks/usePassportScore";
 import { useHeaderControls } from "../../hooks/useHeaderControls";
-
-// TODO technically this might not have a threshold of 20, but
-// how would we know at this point before we've made a request
-// to the backend? Do we do a pre-check? Or let the integrator
-// pass in an override?
+import { PersonIcon } from "../../assets/personIcon";
+import { WalletIcon } from "../../assets/walletIcon";
+import { HumanTechFooter } from "./HumanTechFooter";
 
 export const ConnectWalletBody = ({
   connectWalletCallback,
@@ -17,25 +15,25 @@ export const ConnectWalletBody = ({
   const { setSubtitle } = useHeaderControls();
 
   useEffect(() => {
-    setSubtitle("CONNECT WALLET");
+    setSubtitle(""); // Remove subtitle for new design
   });
 
   return (
     <>
+      <div className={styles.blurEffect}></div>
       <div className={styles.textBlock}>
-        <div className={styles.heading}>Proof of Unique Humanity</div>
-        <div>
-          Your Human Passport score represents the likelihood that you’re a unique human, rather than a bot or bad
-          actor.
+        <div className={styles.iconContainer}>
+          <PersonIcon />
         </div>
-        <div className={utilStyles.bold}>
-          {connectWalletCallback ? "Connect your wallet" : "Connect to the dapp"} and build up a score of 20 or more to
-          participate.
+        <div className={styles.smallHeading}>Proof of Personhood</div>
+        <div className={styles.subtitleText}>
+          {connectWalletCallback ? "Connect your wallet" : "Connect to the dapp"} and build up a score greater than 20
+          to participate
         </div>
       </div>
       {connectWalletCallback && (
         <Button
-          className={utilStyles.wFull}
+          className={`${utilStyles.wFull} ${styles.button}`}
           disabled={isConnecting}
           onClick={async () => {
             try {
@@ -46,9 +44,13 @@ export const ConnectWalletBody = ({
             }
           }}
         >
-          {isConnecting ? "Connecting..." : "Connect Wallet"}
+          <div className={styles.buttonContent}>
+            <WalletIcon />
+            <span>{isConnecting ? "Connecting..." : "Connect wallet"}</span>
+          </div>
         </Button>
       )}
+      <HumanTechFooter />
     </>
   );
 };

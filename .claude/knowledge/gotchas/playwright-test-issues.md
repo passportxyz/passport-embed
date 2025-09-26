@@ -4,7 +4,7 @@
 
 **Issue**: Default Playwright timeouts are too long for this project's simple tests, causing tests to hang and crash the CLI when they fail.
 
-**Solution**: Set shorter timeouts in playwright.config.ts to fail fast:
+**Solution**: Set shorter timeouts in `/workspace/project/dev/playwright.config.ts` to fail fast:
 
 - Test timeout: 10000ms (10 seconds per test)
 - Action timeout: 3000ms (3 seconds for clicks, types)
@@ -15,7 +15,7 @@ This prevents tests from hanging and provides faster feedback during development
 
 **Related files:**
 
-- `dev/playwright.config.ts`
+- `/workspace/project/dev/playwright.config.ts`
 
 ## Playwright beforeEach Navigation Issues (2025-09-02)
 
@@ -49,5 +49,5 @@ test("test name", async ({ page }) => {
 
 **Related files:**
 
-- `dev/tests/e2e/stamp-errors.spec.ts`
-- `dev/src/mocks/ScenarioManager.ts`
+- `/workspace/project/dev/tests/e2e/stamp-errors.spec.ts`
+- `/workspace/project/dev/src/mocks/ScenarioManager.ts`

@@ -1,14 +1,29 @@
-# Human ID SDK RPC Configuration
+# Human ID SDK Integration and Configuration
+
+## Overview
+
+The Human ID SDK is integrated to handle specific platform types that require SBT-based credentials for identity verification.
+
+## Platform Types
+
+Platforms that use Human ID verification:
+
+- **HumanIdKyc** - Government ID verification
+- **HumanIdPhone** - Phone number verification
+- **Biometrics** - Biometric verification
+- **CleanHands** - CleanHands verification
+
+## RPC Configuration
 
 The Human ID SDK requires an Optimism RPC URL to check for SBTs on-chain.
 
-## Configuration Flow
+### Configuration Flow
 
 1. Configured at the widget level in PassportScoreWidget via `props.opRPCURL`
 2. Default fallback to `https://mainnet.optimism.io`
 3. The `setOptimismRpcUrl` function is called once on mount to configure the SDK globally
 
-## Usage
+### Usage
 
 ```typescript
 <PassportScoreWidget
@@ -17,9 +32,35 @@ The Human ID SDK requires an Optimism RPC URL to check for SBTs on-chain.
 />
 ```
 
-## Global Configuration
+### Global Configuration
 
 The RPC URL is set globally for the Human ID SDK, so it only needs to be configured once when the widget mounts.
+
+## Implementation Components
+
+### 1. SBT Validation
+
+Functions to check if user already has credentials on-chain
+
+### 2. Platform ID Mapping
+
+Maps platform types to Human ID credential types
+
+### 3. Initialization and Request Flow
+
+Handles Human ID provider initialization and verification request
+
+### 4. Integration Points
+
+Integrates with existing verification flow in PlatformVerification component
+
+## Hook Extraction
+
+The Human ID logic was extracted into a custom `useHumanIDVerification` hook with:
+
+- Clear inputs (platform, address)
+- Clear outputs (verification status)
+- Self-contained logic for Human ID operations
 
 ## External Calls and Mocking Strategy
 
@@ -44,7 +85,7 @@ Successfully implemented Human ID SDK mocking for development using Vite alias a
 ### Implementation:
 
 1. **Vite Alias** - Conditionally overrides @holonym-foundation/human-id-sdk when VITE_ENABLE_MSW=true
-2. **Mock SDK** - Located at dev/src/mocks/mockHumanIdSdk.ts, mimics real SDK interface
+2. **Mock SDK** - Located at `/workspace/project/dev/src/mocks/mockHumanIdSdk.ts`, mimics real SDK interface
 3. **No External Calls** - Prevents iframe loading, blockchain queries, and API calls
 4. **Scenario Control** - Mock behavior controlled by MSW scenarios (success/failure, existing SBTs)
 
@@ -72,12 +113,20 @@ Successfully implemented Human ID SDK mocking for development using Vite alias a
 - "[Mock Human ID] requestSBT called for kyc"
 - "[Mock Human ID] Verification successful"
 
+## Cross-References
+
+See related documentation:
+
+- **Platform Identification**: @api/platform-identification.md - Platform name vs platformId mismatch and migration requirements
+- **MSW Infrastructure**: @architecture/msw-infrastructure.md - Overall MSW system architecture including Human ID mocking
+- **MSW Scenario System**: @patterns/msw-scenario-system.md - Scenario configuration for Human ID verification testing
+
 **Related files:**
 
-- `src/widgets/PassportScoreWidget.tsx`
-- `dev/src/mocks/handlers.ts`
-- `src/hooks/useHumanIDVerification.tsx`
-- `src/components/Body/PlatformVerification.tsx`
-- `dev/vite.config.ts`
-- `dev/src/mocks/mockHumanIdSdk.ts`
-- `dev/src/mocks/scenarios.ts`
+- `/workspace/project/src/widgets/PassportScoreWidget.tsx`
+- `/workspace/project/dev/src/mocks/handlers.ts`
+- `/workspace/project/src/hooks/useHumanIDVerification.tsx`
+- `/workspace/project/src/components/Body/PlatformVerification.tsx`
+- `/workspace/project/dev/vite.config.ts`
+- `/workspace/project/dev/src/mocks/mockHumanIdSdk.ts`
+- `/workspace/project/dev/src/mocks/scenarios.ts`
