@@ -16,6 +16,7 @@ import { usePlatformStatus } from "../../hooks/usePlatformStatus";
 import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
 import { HappyHuman } from "../../assets/happyHuman";
 import { HouseIcon } from "../../assets/houseIcon";
+import { BackButton } from "./PlatformHeader";
 
 export const Hyperlink = ({
   href,
@@ -87,28 +88,17 @@ const PlatformButton = ({
   );
 };
 
-const BackArrow = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M19 12H5M5 12L12 5M5 12L12 19"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 export const AddStamps = ({
   generateSignatureCallback,
   onBack,
 }: {
   generateSignatureCallback: ((message: string) => Promise<string | undefined>) | undefined;
-  onBack?: () => void;
+  onBack: () => void;
 }) => {
   const { scorerId, apiKey, embedServiceUrl } = useQueryContext();
   const queryClient = usePassportQueryClient();
   const [openPlatform, setOpenPlatform] = useState<Platform | null>(null);
+  const [savedScrollPosition, setSavedScrollPosition] = useState(0);
 
   const {
     data: stampPages,
@@ -169,26 +159,20 @@ export const AddStamps = ({
       </div>
     );
 
-  if (openPlatform) {
-    return (
-      <PlatformVerification
-        platform={openPlatform}
-        onClose={() => setOpenPlatform(null)}
-        generateSignatureCallback={generateSignatureCallback}
-      />
-    );
-  }
-
   return (
-    <div className={styles.addStampsWrapper}>
-      {onBack && (
-        <div className={styles.verifyHeader}>
-          <button onClick={onBack} className={styles.backButton}>
-            <BackArrow />
-          </button>
-          <span className={styles.verifyTitle}>Verify Activities</span>
-        </div>
-      )}
+    <>
+      {openPlatform && (<PlatformVerification
+            platform={openPlatform}
+            onClose={() => setOpenPlatform(null)}
+            generateSignatureCallback={generateSignatureCallback}
+          />)
+      }
+
+    <div className={`${styles.addStampsWrapper} ${openPlatform ? styles.hiddenAddStamps : styles.visibleAddStamps}`}>
+      <div className={styles.verifyHeader}>
+        <BackButton onBack={onBack} />
+        <span className={styles.verifyTitle}>Verify Activities</span>
+      </div>
       <ScrollableDivWithFade className={styles.allStampsContainer}>
         {stampPages.map((page, pageIndex) => (
           <div key={pageIndex} className={styles.stampCategory}>
@@ -211,6 +195,7 @@ export const AddStamps = ({
         </div>
       </ScrollableDivWithFade>
     </div>
+    </>
   );
 };
 

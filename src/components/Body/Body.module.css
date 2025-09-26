@@ -44,7 +44,7 @@
 }
 
 /* Remove all padding when showing Add Stamps view so scrollable div can extend to edges */
-.expanded:has(.allStampsContainer) {
+.expanded:has(.visibleAddStamps) {
   padding: 0;
 }
 
@@ -346,10 +346,17 @@
 
 /* All stamps view wrapper */
 .addStampsWrapper {
-  display: flex;
   flex-direction: column;
   height: 100%;
   width: 100%;
+}
+
+.visibleAddStamps {
+  display: flex;
+}
+
+.hiddenAddStamps {
+  display: none;
 }
 
 /* All stamps view styles */
@@ -438,25 +445,8 @@
   box-sizing: border-box;
 }
 
-.backButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  color: rgba(var(--color-secondary-c6dbf459), 1);
-  width: 24px;
-  height: 24px;
-  transition: opacity var(--transition-speed-c6dbf459) ease;
-}
-
-.backButton:hover {
-  opacity: 0.7;
-}
-
 .verifyTitle {
+  line-height: 16px;
   font-size: 16px;
   font-weight: 600;
   color: rgba(var(--color-primary-c6dbf459), 1);
@@ -473,6 +463,7 @@
   gap: 4px;
   font-size: 14px;
   font-weight: 500;
+  line-height: 16px;
 }
 
 .platformHeaderIcon {
@@ -569,4 +560,8 @@
   padding: var(--widget-padding-y-c6dbf459) var(--widget-padding-x-c6dbf459);
   font-size: 12px;
   font-weight: 500;
+}
+
+.backButton {
+  padding: 1px 0;
 }

@@ -1,4 +1,4 @@
-import { createRef, useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState, useRef, useEffect } from "react";
 import styles from "./ScrollableDivWithFade.module.css";
 
 // NOTE: MUST pass in a className for a class that defines a fixed height
@@ -11,7 +11,7 @@ export const ScrollableDivWithFade = ({
   className: string;
   invertFadeColor?: boolean;
 }) => {
-  const scrollContainerRef = createRef<HTMLDivElement>();
+  const scrollContainerRef = useRef();
   const [showTopFade, setShowTopFade] = useState(false);
   const [showBottomFade, setShowBottomFade] = useState(false);
 
