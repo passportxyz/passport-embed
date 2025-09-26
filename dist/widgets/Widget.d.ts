@@ -10,8 +10,7 @@ export type PassportWidgetTheme = {
         secondary?: string;
         background?: string;
         accent: string;
-        success?: string;
-        failure?: string;
+        error?: string;
     };
     padding?: {
         widget?: {

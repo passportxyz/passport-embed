@@ -8,5 +8,5 @@ export declare const ScoreTooLowBody: ({ generateSignatureCallback, }: {
 }) => import("react/jsx-runtime").JSX.Element;
 export declare const AddStamps: ({ generateSignatureCallback, onBack, }: {
     generateSignatureCallback: ((message: string) => Promise<string | undefined>) | undefined;
-    onBack?: () => void;
+    onBack: () => void;
 }) => import("react/jsx-runtime").JSX.Element;

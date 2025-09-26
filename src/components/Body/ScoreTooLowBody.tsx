@@ -98,7 +98,6 @@ export const AddStamps = ({
   const { scorerId, apiKey, embedServiceUrl } = useQueryContext();
   const queryClient = usePassportQueryClient();
   const [openPlatform, setOpenPlatform] = useState<Platform | null>(null);
-  const [savedScrollPosition, setSavedScrollPosition] = useState(0);
 
   const {
     data: stampPages,
