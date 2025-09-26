@@ -11,13 +11,13 @@ The library uses webpack to build both ESM and CJS bundles:
   - babel-loader with presets for env, react, and typescript
   - css-loader and postcss-loader for CSS modules
   - style-loader for injecting styles
-- **Tree-shaking**: Enabled with `sideEffects: false` in package.json
+- **Tree-shaking**: Enabled with `sideEffects: false` in `/workspace/project/package.json`
 - **TypeScript**: Declarations generated separately using tsc
 
 **Related files:**
 
-- `webpack.config.js`
-- `package.json`
+- `/workspace/project/webpack.config.js`
+- `/workspace/project/package.json`
 
 ## Build Philosophy - Integrator Flexibility
 
@@ -32,8 +32,8 @@ This approach ensures the widget can be dropped into any React app regardless of
 
 **Related files:**
 
-- `webpack.config.js`
-- `src/components/*.module.css`
+- `/workspace/project/webpack.config.js`
+- `/workspace/project/src/components/*.module.css`
 
 ## React Query Integration
 
@@ -47,9 +47,9 @@ The SDK uses @tanstack/react-query for efficient data fetching:
 
 **Related files:**
 
-- `src/components/QueryContextProvider.tsx`
-- `src/hooks/usePassportQueryClient.tsx`
-- `src/hooks/usePassportScore.tsx`
+- `/workspace/project/src/components/QueryContextProvider.tsx`
+- `/workspace/project/src/hooks/usePassportQueryClient.tsx`
+- `/workspace/project/src/hooks/usePassportScore.tsx`
 
 ## Passport Widget Body Component Structure
 
@@ -71,8 +71,22 @@ The Passport widget has multiple body screens that handle different states:
 
 **Related files:**
 
-- `src/components/Body/ConnectWalletBody.tsx`
-- `src/components/Body/CheckingBody.tsx`
-- `src/components/Body/ScoreTooLowBody.tsx`
-- `src/components/Body/CongratsBody.tsx`
-- `src/components/Body/Body.module.css`
+- `/workspace/project/src/components/Body/ConnectWalletBody.tsx`
+- `/workspace/project/src/components/Body/CheckingBody.tsx`
+- `/workspace/project/src/components/Body/ScoreTooLowBody.tsx`
+- `/workspace/project/src/components/Body/CongratsBody.tsx`
+- `/workspace/project/src/components/Body/Body.module.css`
+
+## ScrollableDiv Component Structure
+
+ScrollableDiv creates a two-layer structure:
+
+- **Outer div**: Gets the passed className and scrollableDiv styles, handles actual scrolling
+- **Inner div (.contents)**: Wraps children, no longer scrollable
+
+The ref must point to the actual scrolling container (outer div) for scroll indicators to work correctly. The component expects the passed className to define a fixed height. Scroll indicators are overlaid using CSS grid positioning.
+
+**Related files:**
+
+- `/workspace/project/src/components/ScrollableDiv.tsx`
+- `/workspace/project/src/components/ScrollableDiv.module.css`

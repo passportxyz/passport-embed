@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { useState, useEffect } from "react";
 import { Buffer } from "buffer";
-import { PassportScoreWidget, usePassportScore, CollapseMode } from "@human.tech/passport-embed";
+import { PassportScoreWidget, usePassportScore, CollapseMode, DarkTheme } from "@human.tech/passport-embed";
 import { setupMocks } from "./setupMocks";
 import { DevToolsPanel } from "./components/DevToolsPanel";
 
@@ -171,13 +171,7 @@ const Dashboard = ({ walletMode }: { walletMode: "metamask" | "mock" }) => {
         connectWalletCallback={handleConnect}
         generateSignatureCallback={handleSign}
         opRPCURL={import.meta.env.VITE_OP_RPC_URL as string}
-        /*
-        theme={{
-          colors: {
-            primary: "255, 255, 0",
-          },
-        }}
-        */
+        theme={DarkTheme}
       />
       <DirectPassportDataAccess address={address} />
     </div>

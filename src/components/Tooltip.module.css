@@ -1,0 +1,91 @@
+/* Tooltip.module.css */
+.trigger {
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.tooltip {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  padding: 12px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #e5e7eb;
+  background-color: #1f2937;
+  border: 1px solid #374151;
+  border-radius: 8px;
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.25),
+    0 10px 10px -5px rgba(0, 0, 0, 0.15);
+  max-width: 320px;
+  pointer-events: none;
+  animation: fadeIn 200ms ease-in;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+}
+
+.arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background-color: #1f2937;
+  border: 1px solid #374151;
+  transform: rotate(45deg);
+  z-index: 0;
+}
+
+/* Arrow border styling based on placement */
+.tooltip[data-placement^="top"] .arrow {
+  border-top: none;
+  border-left: none;
+}
+
+.tooltip[data-placement^="bottom"] .arrow {
+  border-bottom: none;
+  border-right: none;
+}
+
+.tooltip[data-placement^="left"] .arrow {
+  border-left: none;
+  border-bottom: none;
+}
+
+.tooltip[data-placement^="right"] .arrow {
+  border-right: none;
+  border-top: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Mobile support - keep tooltip visible on tap */
+@media (hover: none) and (pointer: coarse) {
+  .tooltip {
+    pointer-events: auto;
+  }
+}
+
+/* Optional: Fade out animation when you add exit animations */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}

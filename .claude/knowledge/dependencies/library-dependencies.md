@@ -23,5 +23,5 @@ The library is built with:
 
 **Related files:**
 
-- `package.json`
-- `src/index.ts`
+- `/workspace/project/package.json`
+- `/workspace/project/src/index.ts`

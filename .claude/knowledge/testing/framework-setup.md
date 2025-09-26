@@ -33,9 +33,12 @@ The project uses multiple testing frameworks:
 
 ## Key Test Scenarios
 
-- `low-score`: Tests "Add Stamps" flow
+- `default`: Normal user with score 25.5 (passing)
+- `low-score`: Tests "Add Stamps" flow (score 12.5)
+- `high-score`: Power user with score 45.5 (many stamps)
 - `no-stamps`: Tests initial onboarding
 - `rate-limited`: Tests 429 error handling
+- `verification-fails`: Tests verification failure handling
 - `verification-adds-stamps`: Tests score increase after adding stamps
 - `near-threshold`: Tests edge cases near passing threshold
 
@@ -82,9 +85,19 @@ The dev app provides a complete MSW testing environment:
   3. Click Connect
   4. Instantly test any scenario
 
+## Cross-References
+
+See related MSW documentation:
+
+- **Infrastructure**: @architecture/msw-infrastructure.md - Overall MSW system architecture and organization
+- **Scenario System**: @patterns/msw-scenario-system.md - Detailed scenario configuration and testing patterns
+- **Mock Wallet Strategy**: @testing/mock-wallet-strategy.md - Dual mocking approach combining wallet and API mocking
+- **Dev Environment**: @testing/msw-dev-environment.md - MSW development environment states and UI displays
+- **E2E Configuration**: @testing/e2e-test-configuration.md - Playwright E2E test setup with MSW scenarios
+
 **Related files:**
 
-- `dev/src/mocks/scenarios.ts`
-- `dev/src/mocks/handlers.ts`
-- `dev/src/components/ScenarioSwitcher.tsx`
-- `dev/src/index.tsx`
+- `/workspace/project/dev/src/mocks/scenarios.ts`
+- `/workspace/project/dev/src/mocks/handlers.ts`
+- `/workspace/project/dev/src/components/ScenarioSwitcher.tsx`
+- `/workspace/project/dev/src/index.tsx`

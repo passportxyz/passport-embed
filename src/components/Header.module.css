@@ -3,13 +3,12 @@
   font-size: inherit;
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
   align-items: center;
   gap: 8px;
   margin: 0;
 
   width: 100%;
-  padding: var(--widget-padding-y-c6dbf459) var(--widget-padding-x-c6dbf459);
+  padding: 8px 12px;
   box-sizing: border-box;
 
   border-width: 1px;
@@ -18,18 +17,18 @@
   border-top-right-radius: var(--widget-radius-c6dbf459);
   border-color: rgba(var(--color-secondary-c6dbf459), 1);
 
-  background-color: rgba(var(--color-background-c6dbf459), 1);
-  background-image: linear-gradient(
-    to bottom,
-    rgba(var(--color-background-c6dbf459), 1),
-    rgba(var(--color-secondary-c6dbf459), 0.2)
-  );
+  background: rgba(var(--color-background-c6dbf459), 1);
 
-  height: 60px;
+  height: 55px;
 
   transition: border-radius 100ms ease-in-out;
 
   color: inherit;
+}
+
+.title {
+  flex-grow: 1;
+  text-align: left;
 }
 
 .containerCollapseButton {
@@ -58,30 +57,27 @@
   transform: rotate(180deg);
 }
 
-.titleStack {
-  flex-grow: 1;
-
+.scoreIndicator {
+  position: relative;
+  width: 40px;
+  height: 32px;
   display: flex;
-  flex-direction: column;
-  align-items: start;
-
-  line-height: 1.1;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.subtitle {
-  font-weight: 700;
-  font-size: 16px;
-}
-
-.success {
-  color: rgba(var(--color-success-c6dbf459), 1);
-}
-
-.failure {
-  color: rgba(var(--color-failure-c6dbf459), 1);
-}
-
-.score {
+.scoreIndicatorText {
+  position: relative;
+  z-index: 1;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
+  color: rgba(var(--color-background-c6dbf459), 1);
+}
+
+.scoreSection {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }

@@ -31,6 +31,12 @@ type PassportProviderPoints = {
   expirationDate: Date;
 };
 
+export type CredentialError = {
+  provider?: string;
+  error: string;
+  code?: number;
+};
+
 export type PassportScore = {
   address: string;
   score: number;
@@ -39,6 +45,11 @@ export type PassportScore = {
   expirationTimestamp: Date;
   threshold: number;
   stamps: Record<string, PassportProviderPoints>;
+};
+
+export type VerifyCredentialsResult = {
+  score: PassportScore;
+  credentialErrors?: CredentialError[];
 };
 
 export type PassportEmbedResult = {
@@ -89,7 +100,8 @@ const useInternalVerifyCredentials = ({ apiKey, address, scorerId, embedServiceU
           credentialIds,
         }),
       onSuccess: (data) => {
-        queryClient.setQueryData(queryKey, data);
+        // Only update the cached score, not the credentialErrors
+        queryClient.setQueryData(queryKey, data.score);
       },
     },
     queryClient
@@ -98,6 +110,7 @@ const useInternalVerifyCredentials = ({ apiKey, address, scorerId, embedServiceU
   return {
     ...verifyCredentialsMutation,
     verifyCredentials: verifyCredentialsMutation.mutate,
+    credentialErrors: verifyCredentialsMutation.data?.credentialErrors
   };
 };
 
@@ -180,6 +193,11 @@ type EmbedScoreResponse = {
       dedup: boolean;
     };
   };
+  credentialErrors?: Array<{
+    provider: string;
+    error: string;
+    code?: number;
+  }>;
 };
 
 // Any errors are automatically propagated into the react-query hook response (i.e. isError, error)
@@ -245,7 +263,7 @@ const verifyStampsForPassport = async ({
   credentialIds,
 }: PassportQueryProps & {
   credentialIds?: string[];
-}): Promise<PassportScore> => {
+}): Promise<VerifyCredentialsResult> => {
   try {
     const scoreData = (
       await axios.post<EmbedScoreResponse>(
@@ -263,7 +281,10 @@ const verifyStampsForPassport = async ({
         }
       )
     ).data;
-    return processScoreResponse(scoreData);
+    return {
+      score: processScoreResponse(scoreData),
+      credentialErrors: scoreData.credentialErrors,
+    };
   } catch (error) {
     throw processScoreResponseError(error);
   }

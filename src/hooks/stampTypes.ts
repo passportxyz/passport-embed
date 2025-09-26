@@ -18,10 +18,12 @@ export type Platform = {
   popupUrl?: string;
   credentials: Credential[];
   displayWeight: string;
+  icon: ReactNode; // Processed icon element (img, svg, or emoji)
 };
 
-export type RawPlatformData = Omit<Platform, "description"> & {
+export type RawPlatformData = Omit<Platform, "description" | "icon"> & {
   description: string;
+  icon: string; // Raw icon string from API (URL, SVG, or emoji)
 };
 
 export type StampPage = {

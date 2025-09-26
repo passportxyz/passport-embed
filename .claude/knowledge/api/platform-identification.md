@@ -21,6 +21,6 @@ Need to update all backend communication to use `platform.platformId` while keep
 
 **Related files:**
 
-- `src/components/Body/PlatformVerification.tsx`
-- `src/components/Body/ScoreTooLowBody.tsx`
-- `src/hooks/useStampPages.tsx`
+- `/workspace/project/src/components/Body/PlatformVerification.tsx`
+- `/workspace/project/src/components/Body/ScoreTooLowBody.tsx`
+- `/workspace/project/src/hooks/useStampPages.tsx`

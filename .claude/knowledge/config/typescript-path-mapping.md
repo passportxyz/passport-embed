@@ -4,7 +4,7 @@ When using Vite alias to override a package with local source code, TypeScript i
 
 ## Solution
 
-Add path mapping in `tsconfig.json`:
+Add path mapping in `/workspace/project/dev/tsconfig.json`:
 
 ```json
 "paths": {
@@ -23,5 +23,5 @@ This tells TypeScript to use the local source files instead of the installed pac
 
 **Related files:**
 
-- `dev/tsconfig.json`
-- `dev/vite.config.ts`
+- `/workspace/project/dev/tsconfig.json`
+- `/workspace/project/dev/vite.config.ts`

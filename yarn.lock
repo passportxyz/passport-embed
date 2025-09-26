@@ -1131,14 +1131,34 @@
     ethereum-cryptography "^2.0.0"
     micro-ftch "^0.3.1"
 
+"@floating-ui/core@^1.7.3":
+  version "1.7.3"
+  resolved "https://registry.npmjs.org/@floating-ui/core/-/core-1.7.3.tgz"
+  integrity sha512-sGnvb5dmrJaKEZ+LDIpguvdX3bDlEllmv4/ClQ9awcmCZrlx5jQyyMWFM5kBI+EyNOCDDiKk8il0zeuX3Zlg/w==
+  dependencies:
+    "@floating-ui/utils" "^0.2.10"
+
+"@floating-ui/dom@^1.7.4":
+  version "1.7.4"
+  resolved "https://registry.npmjs.org/@floating-ui/dom/-/dom-1.7.4.tgz"
+  integrity sha512-OOchDgh4F2CchOX94cRVqhvy7b3AFb+/rQXyswmzmGakRfkMgoWVjfnLWkRirfLEfuD4ysVW16eXzwt3jHIzKA==
+  dependencies:
+    "@floating-ui/core" "^1.7.3"
+    "@floating-ui/utils" "^0.2.10"
+
+"@floating-ui/utils@^0.2.10":
+  version "0.2.10"
+  resolved "https://registry.npmjs.org/@floating-ui/utils/-/utils-0.2.10.tgz"
+  integrity sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==
+
 "@holonym-foundation/human-id-interface-core@0.0.9":
   version "0.0.9"
-  resolved "https://registry.yarnpkg.com/@holonym-foundation/human-id-interface-core/-/human-id-interface-core-0.0.9.tgz#0354e58b9ba61e5691989781bd9b2b8086d09c55"
+  resolved "https://registry.npmjs.org/@holonym-foundation/human-id-interface-core/-/human-id-interface-core-0.0.9.tgz"
   integrity sha512-Yaz3047jznZuaqMjyFck/lUbUp68E1VXHHKsHAvWtBytoC0Ql5h2HKyrYQ9k39/uS+H3l3BFNB6oF/MxnDPECw==
 
 "@holonym-foundation/human-id-sdk@^0.0.17":
   version "0.0.17"
-  resolved "https://registry.yarnpkg.com/@holonym-foundation/human-id-sdk/-/human-id-sdk-0.0.17.tgz#ccfb7473c519ceaff20c136a0dda63ca093164d5"
+  resolved "https://registry.npmjs.org/@holonym-foundation/human-id-sdk/-/human-id-sdk-0.0.17.tgz"
   integrity sha512-PFMgr3hxKa2XTKWtMnUTLDIvg9mdVZ4uu5CD60jZHl8mospH6RPUJ6CrnBmsAInRmzph5WzBECRmDUUVnAdr9w==
   dependencies:
     "@holonym-foundation/human-id-interface-core" "0.0.9"

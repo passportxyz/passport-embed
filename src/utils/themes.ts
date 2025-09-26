@@ -5,8 +5,8 @@ export const DarkTheme: PassportWidgetTheme = {
     primary: "255, 255, 255",
     secondary: "109, 109, 109",
     background: "0, 0, 0",
-    success: "164, 255, 169",
-    failure: "203, 203, 203",
+    accent: "0, 212, 170",
+    error: "235, 48, 45",
   },
   padding: {
     widget: {
@@ -23,9 +23,9 @@ export const DarkTheme: PassportWidgetTheme = {
   },
   font: {
     family: {
-      body: '"Poppins", sans-serif',
-      heading: '"Poppins", sans-serif',
-      alt: '"DM Mono", sans-serif',
+      body: '"Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      heading: '"Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+      alt: '"Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
     },
   },
   position: {
@@ -39,7 +39,7 @@ export const LightTheme: PassportWidgetTheme = {
     primary: "55, 55, 55",
     secondary: "201, 201, 201",
     background: "255, 255, 255",
-    success: "36, 212, 83",
-    failure: "55, 55, 55",
+    accent: "0, 212, 170",
+    error: "55, 55, 55",
   },
 };

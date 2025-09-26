@@ -1,6 +1,7 @@
 .textButton {
-  padding: 4px 8px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
 
   background-color: transparent;
   color: inherit;

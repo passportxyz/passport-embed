@@ -1,18 +1,28 @@
 import { useMemo } from "react";
 import { useWidgetPassportScore } from "./usePassportScore";
 import { Platform } from "./stampTypes";
+import { displayNumber } from "../utils";
 
-export const usePlatformStatus = ({ platform }: { platform: Platform }) => {
+export const usePlatformStatus = ({
+  platform,
+}: {
+  platform: Platform;
+}): {
+  claimed: boolean;
+  pointsGained: string;
+} => {
   const { data } = useWidgetPassportScore();
 
-  const claimedCredentialIds = Object.entries(data?.stamps || {}).reduce((claimedIds, [id, { score }]) => {
-    if (score > 0) {
-      claimedIds.push(id);
+  const rawPointsGained = Object.entries(data?.stamps || {}).reduce((total, [id, { score }]) => {
+    if (score > 0 && platform.credentials.some((credential) => credential.id === id)) {
+      total += score;
     }
-    return claimedIds;
-  }, [] as string[]);
+    return total;
+  }, 0);
 
-  const claimed = platform.credentials.some((credential) => claimedCredentialIds.includes(credential.id));
+  const claimed = rawPointsGained > 0;
 
-  return useMemo(() => ({ claimed }), [claimed]);
+  const pointsGained = displayNumber(rawPointsGained);
+
+  return useMemo(() => ({ claimed, pointsGained }), [claimed, pointsGained]);
 };

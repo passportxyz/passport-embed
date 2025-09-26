@@ -17,6 +17,7 @@ describe("usePlatformStatus Hook", () => {
       { id: "cred2", weight: "2" },
     ],
     description: <div>Test</div>,
+    icon: <span>📧</span>,
     documentationLink: "test.com",
     displayWeight: "3",
   };

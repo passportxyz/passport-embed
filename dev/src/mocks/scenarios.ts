@@ -14,15 +14,22 @@ interface PassportScore {
   stamps: Record<string, Stamp>;
 }
 
+export interface CredentialError {
+  provider: string;
+  error: string;
+  code?: number;
+}
+
 export interface Scenario {
   name: string;
   description: string;
   passportScore: PassportScore;
-  verificationBehavior: "success" | "failure" | "rate-limit";
+  verificationBehavior: "success" | "failure" | "rate-limit" | "partial-failure";
   canAddStamps: boolean;
   stampPagesBehavior?: "success" | "error" | "config-error" | "not-found" | "rate-limit";
   hasExistingSBTs?: Array<"kyc" | "phone" | "biometrics" | "clean-hands">;
   humanIdVerificationBehavior?: "success" | "failure";
+  credentialErrors?: CredentialError[];
 }
 
 export const scenarios: Record<string, Scenario> = {
@@ -304,5 +311,37 @@ export const scenarios: Record<string, Scenario> = {
     canAddStamps: true,
     hasExistingSBTs: ["kyc"],
     humanIdVerificationBehavior: "success",
+  },
+
+
+  "all-verifications-fail": {
+    name: "all-verifications-fail",
+    description: "All stamp verifications fail",
+    passportScore: {
+      address: "0x1234567890123456789012345678901234567890",
+      score: 0,
+      passingScore: false,
+      threshold: 20,
+      stamps: {},
+    },
+    verificationBehavior: "success",
+    canAddStamps: false,
+    credentialErrors: [
+      {
+        provider: "Discord",
+        error: "User not found in Discord",
+        code: 403,
+      },
+      {
+        provider: "ETHScore#75",
+        error: "Insufficient on-chain activity",
+        code: 403,
+      },
+      {
+        provider: "Twitter",
+        error: "Request timeout while verifying Twitter",
+        code: 408,
+      },
+    ],
   },
 };

@@ -13,7 +13,8 @@ export const setupTestQueryClient = () => {
   });
 
   afterEach(() => {
-    usePassportQueryClient().clear();
+    const { result } = renderHook(() => usePassportQueryClient());
+    result.current.clear();
   });
 };
 

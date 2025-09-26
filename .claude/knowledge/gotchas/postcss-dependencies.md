@@ -1,23 +1,15 @@
 # PostCSS Dependencies Gotchas
 
-## PostCSS Autoprefixer Dependency Issue
+## PostCSS Autoprefixer Dependency (RESOLVED)
 
-**Date:** 2025-08-21  
-The example app fails to start because it's trying to load PostCSS config from the parent package.json which references autoprefixer, but autoprefixer is not installed in the example app's node_modules. The parent package.json has a postcss configuration that requires autoprefixer.
+**Date:** 2025-08-21
+**Status:** ✅ RESOLVED - Autoprefixer is now a devDependency in `/workspace/project/package.json`
 
-**Related files:**
+**Original Issue:** The dev app failed to start because it tried to load PostCSS config from the parent `/workspace/project/package.json` which references autoprefixer, but autoprefixer wasn't installed in the dev app's node_modules.
 
-- `package.json`
-- `example/package.json`
-
-## PostCSS Autoprefixer Dependency Resolution
-
-**Date:** 2025-08-21  
-When running the example app, Vite searches for PostCSS config and finds it in the parent package.json which has autoprefixer configured. Initially this caused an error because autoprefixer wasn't in the example's node_modules.
-
-**Solution:** After running `yarn install` in the parent directory, autoprefixer becomes available and the dev server works correctly. No separate PostCSS config file is needed for the example app - it successfully uses the parent's PostCSS configuration once the parent dependencies are installed.
+**Solution:** Autoprefixer is now properly included as a devDependency in the root `/workspace/project/package.json`. Running `yarn install` in the parent directory ensures autoprefixer is available, and the dev server works correctly.
 
 **Related files:**
 
-- `package.json`
-- `example/package.json`
+- `/workspace/project/package.json`
+- `/workspace/project/dev/package.json`

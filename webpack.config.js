@@ -110,6 +110,10 @@ const createConfig = (target) => ({
           },
         ],
       },
+      {
+        test: /\.(woff|woff2|eot|ttf|otf)$/,
+        type: "asset/inline", // Inline fonts as base64 data URLs
+      },
     ],
   },
   optimization: {
