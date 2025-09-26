@@ -564,7 +564,7 @@
 .error {
   box-sizing: border-box;
   width: 100%;
-  background-color: rgba(var(--color-failure-c6dbf459), 0.4);
+  background-color: rgba(var(--color-error-c6dbf459), 0.4);
   border-radius: calc(0.5 * var(--widget-radius-c6dbf459));
   padding: var(--widget-padding-y-c6dbf459) var(--widget-padding-x-c6dbf459);
   font-size: 12px;

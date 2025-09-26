@@ -1,6 +1,6 @@
 # Knowledge Map
 
-_Last updated: 2025-09-23_
+_Last updated: 2025-09-26_
 
 ## 📁 API
 
@@ -40,6 +40,7 @@ _Last updated: 2025-09-23_
 - [Wallet Callback Pattern](./patterns/wallet-callback-pattern.md) - Framework-agnostic wallet integration through callbacks
 - [Scrollbar Positioning](./patterns/scrollbar-positioning.md) - Pattern for positioning scrollbars at widget edge _(New 2025-09-19)_
 - [Safe HTML Rendering](./patterns/safe-html-rendering.md) - SanitizedHTMLComponent usage for XSS protection _(New 2025-09-19)_
+- [Color System](./patterns/color-system.md) - Standardized color variable naming and theme configuration _(New 2025-09-26)_
 
 ## 🧪 Testing
 

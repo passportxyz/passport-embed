@@ -38,6 +38,7 @@
 - @patterns/wallet-callback-pattern.md - Framework-agnostic wallet integration through callbacks
 - @patterns/scrollbar-positioning.md - Pattern for positioning scrollbars at widget edge
 - @patterns/safe-html-rendering.md - SanitizedHTMLComponent usage for XSS protection
+- @patterns/color-system.md - Standardized color variable naming and theme configuration
 
 ## 🧪 Testing
 

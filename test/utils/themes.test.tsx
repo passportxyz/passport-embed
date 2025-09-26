@@ -11,8 +11,7 @@ describe("Theme Utils", () => {
       expect(DarkTheme.colors?.primary).toBe("255, 255, 255");
       expect(DarkTheme.colors?.secondary).toBe("109, 109, 109");
       expect(DarkTheme.colors?.background).toBe("0, 0, 0");
-      expect(DarkTheme.colors?.success).toBe("164, 255, 169");
-      expect(DarkTheme.colors?.failure).toBe("235, 48, 45");
+      expect(DarkTheme.colors?.error).toBe("235, 48, 45");
     });
 
     it("includes accent color for CTAs", () => {
@@ -39,8 +38,7 @@ describe("Theme Utils", () => {
       expect(LightTheme.colors?.primary).toBe("55, 55, 55");
       expect(LightTheme.colors?.secondary).toBe("201, 201, 201");
       expect(LightTheme.colors?.background).toBe("255, 255, 255");
-      expect(LightTheme.colors?.success).toBe("36, 212, 83");
-      expect(LightTheme.colors?.failure).toBe("55, 55, 55");
+      expect(LightTheme.colors?.error).toBe("55, 55, 55");
     });
 
     it("includes accent color for CTAs", () => {
@@ -111,8 +109,7 @@ describe("Widget setTheme functionality", () => {
     expect(style.getPropertyValue("--color-secondary-c6dbf459")).toBe("109, 109, 109");
     expect(style.getPropertyValue("--color-background-c6dbf459")).toBe("0, 0, 0");
     expect(style.getPropertyValue("--color-accent-c6dbf459")).toBe("0, 212, 170");
-    expect(style.getPropertyValue("--color-success-c6dbf459")).toBe("164, 255, 169");
-    expect(style.getPropertyValue("--color-failure-c6dbf459")).toBe("235, 48, 45");
+    expect(style.getPropertyValue("--color-error-c6dbf459")).toBe("235, 48, 45");
   });
 
   it("handles missing accent color gracefully", () => {
@@ -216,8 +213,7 @@ describe("Widget setTheme functionality", () => {
         secondary: "40, 50, 60",
         background: "70, 80, 90",
         accent: "100, 110, 120",
-        success: "130, 140, 150",
-        failure: "160, 170, 180",
+        error: "160, 170, 180",
       },
       padding: {
         widget: { x: "10px", y: "15px" },
@@ -246,8 +242,7 @@ describe("Widget setTheme functionality", () => {
     expect(style.getPropertyValue("--color-secondary-c6dbf459")).toBe("40, 50, 60");
     expect(style.getPropertyValue("--color-background-c6dbf459")).toBe("70, 80, 90");
     expect(style.getPropertyValue("--color-accent-c6dbf459")).toBe("100, 110, 120");
-    expect(style.getPropertyValue("--color-success-c6dbf459")).toBe("130, 140, 150");
-    expect(style.getPropertyValue("--color-failure-c6dbf459")).toBe("160, 170, 180");
+    expect(style.getPropertyValue("--color-error-c6dbf459")).toBe("160, 170, 180");
     expect(style.getPropertyValue("--widget-padding-x-c6dbf459")).toBe("10px");
     expect(style.getPropertyValue("--widget-padding-y-c6dbf459")).toBe("15px");
     expect(style.getPropertyValue("--font-family-body-c6dbf459")).toBe("Helvetica, sans-serif");
