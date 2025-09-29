@@ -17,6 +17,7 @@ import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
 import { HappyHuman } from "../../assets/happyHuman";
 import { HouseIcon } from "../../assets/houseIcon";
 import { BackButton } from "./PlatformHeader";
+import { displayNumber } from "../../utils";
 
 export const Hyperlink = ({
   href,
@@ -113,6 +114,7 @@ export const AddStamps = ({
           ...page,
           platforms: page.platforms.map((platform: RawPlatformData) => ({
             ...platform,
+            displayWeight: displayNumber(parseFloat(platform.displayWeight)),
             description: <SanitizedHTMLComponent html={platform.description || ""} />,
             icon: platform.icon ? (
               // If it's a URL, wrap it in an img tag for sanitization
@@ -160,40 +162,41 @@ export const AddStamps = ({
 
   return (
     <>
-      {openPlatform && (<PlatformVerification
-            platform={openPlatform}
-            onClose={() => setOpenPlatform(null)}
-            generateSignatureCallback={generateSignatureCallback}
-          />)
-      }
+      {openPlatform && (
+        <PlatformVerification
+          platform={openPlatform}
+          onClose={() => setOpenPlatform(null)}
+          generateSignatureCallback={generateSignatureCallback}
+        />
+      )}
 
-    <div className={`${styles.addStampsWrapper} ${openPlatform ? styles.hiddenAddStamps : styles.visibleAddStamps}`}>
-      <div className={styles.verifyHeader}>
-        <BackButton onBack={onBack} />
-        <span className={styles.verifyTitle}>Verify Activities</span>
-      </div>
-      <ScrollableDivWithFade className={styles.allStampsContainer}>
-        {stampPages.map((page, pageIndex) => (
-          <div key={pageIndex} className={styles.stampCategory}>
-            <div className={styles.categoryHeader}>{page.header}</div>
-            <div className={styles.stampsList}>
-              {page.platforms.map((platform: Platform) => (
-                <PlatformButton key={platform.platformId} platform={platform} setOpenPlatform={setOpenPlatform} />
-              ))}
-            </div>
-          </div>
-        ))}
-        <div className={styles.exploreMoreSection}>
-          <Hyperlink href="https://app.passport.xyz" className={styles.exploreMoreLink}>
-            <span className={styles.exploreMoreIcon}>
-              <HouseIcon />
-            </span>
-            <span>Explore Additional Stamps</span>
-            <ArrowUpRightIcon />
-          </Hyperlink>
+      <div className={`${styles.addStampsWrapper} ${openPlatform ? styles.hiddenAddStamps : styles.visibleAddStamps}`}>
+        <div className={styles.verifyHeader}>
+          <BackButton onBack={onBack} />
+          <span className={styles.verifyTitle}>Verify Activities</span>
         </div>
-      </ScrollableDivWithFade>
-    </div>
+        <ScrollableDivWithFade className={styles.allStampsContainer}>
+          {stampPages.map((page, pageIndex) => (
+            <div key={pageIndex} className={styles.stampCategory}>
+              <div className={styles.categoryHeader}>{page.header}</div>
+              <div className={styles.stampsList}>
+                {page.platforms.map((platform: Platform) => (
+                  <PlatformButton key={platform.platformId} platform={platform} setOpenPlatform={setOpenPlatform} />
+                ))}
+              </div>
+            </div>
+          ))}
+          <div className={styles.exploreMoreSection}>
+            <Hyperlink href="https://app.passport.xyz" className={styles.exploreMoreLink}>
+              <span className={styles.exploreMoreIcon}>
+                <HouseIcon />
+              </span>
+              <span>Explore Additional Stamps</span>
+              <ArrowUpRightIcon />
+            </Hyperlink>
+          </div>
+        </ScrollableDivWithFade>
+      </div>
     </>
   );
 };

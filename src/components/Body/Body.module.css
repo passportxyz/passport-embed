@@ -553,6 +553,7 @@
 }
 
 .error {
+  overflow: hidden;
   box-sizing: border-box;
   width: 100%;
   background-color: rgba(var(--color-error-c6dbf459), 0.4);

@@ -6,7 +6,8 @@ import { displayNumber } from "../utils";
 import { Dispatch, SetStateAction } from "react";
 
 const ScoreIndicator = ({ score, threshold }: { score: number; threshold: number }) => {
-  const fillPercentage = Math.min((score / threshold) * 100, 100);
+  const formattedScore = displayNumber(score);
+  const fillPercentage = Math.min((parseFloat(formattedScore) / threshold) * 100, 100);
   const angle = (fillPercentage / 100) * 360;
 
   const gradientStyle = {
@@ -28,7 +29,7 @@ const ScoreIndicator = ({ score, threshold }: { score: number; threshold: number
       aria-valuemax={threshold}
       style={gradientStyle}
     >
-      <div className={styles.scoreIndicatorText}>{displayNumber(score)}</div>
+      <div className={styles.scoreIndicatorText}>{formattedScore}</div>
     </div>
   );
 };
