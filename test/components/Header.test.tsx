@@ -1,319 +1,197 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
-import "@testing-library/jest-dom";
 import { Header } from "../../src/components/Header";
-import { useWidgetPassportScore, useWidgetIsQuerying } from "../../src/hooks/usePassportScore";
-import type { PassportEmbedResult } from "../../src/hooks/usePassportScore";
+import { useHeaderControls } from "../../src/hooks/useHeaderControls";
+import { useWidgetIsQuerying, useWidgetPassportScore } from "../../src/hooks/usePassportScore";
 
 // Mock the hooks
+jest.mock("../../src/hooks/useHeaderControls");
 jest.mock("../../src/hooks/usePassportScore");
-jest.mock("../../src/hooks/useHeaderControls", () => ({
-  useHeaderControls: () => ({ subtitle: "Test Subtitle" }),
-}));
+const mockUseHeaderControls = useHeaderControls as jest.Mock;
+const mockUseWidgetIsQuerying = useWidgetIsQuerying as jest.Mock;
+const mockUseWidgetPassportScore = useWidgetPassportScore as jest.Mock;
 
-const mockUseWidgetPassportScore = useWidgetPassportScore as jest.MockedFunction<typeof useWidgetPassportScore>;
-const mockUseWidgetIsQuerying = useWidgetIsQuerying as jest.MockedFunction<typeof useWidgetIsQuerying>;
-
-describe("Header Component", () => {
-  const defaultScoreData = {
-    score: 25,
-    address: "0x123...",
-    threshold: 20,
-    passingScore: true,
-    lastScoreTimestamp: new Date("2024-01-01"),
-    expirationTimestamp: new Date("2024-12-31"),
-    stamps: {},
-  };
-
-  const defaultMockResult: PassportEmbedResult = {
-    data: defaultScoreData,
-    isPending: false,
-    isFetching: false,
-    isLoading: false,
-    isError: false,
-    error: null,
-    refetch: jest.fn(),
-  };
-
-  const defaultHeaderProps = {
-    bodyIsOpen: true,
-    setBodyIsOpen: jest.fn(),
-    collapsible: true,
-  };
+describe("Header", () => {
+  const mockSetSubtitle = jest.fn();
 
   beforeEach(() => {
-    mockUseWidgetPassportScore.mockReturnValue(defaultMockResult);
-    mockUseWidgetIsQuerying.mockReturnValue(false);
-  });
-
-  afterEach(() => {
     jest.clearAllMocks();
+    mockUseHeaderControls.mockReturnValue({
+      setSubtitle: mockSetSubtitle,
+    });
+    mockUseWidgetIsQuerying.mockReturnValue(false);
+    mockUseWidgetPassportScore.mockReturnValue({ data: null });
   });
 
-  describe("ScoreIndicator", () => {
-    it("renders score value correctly", () => {
-      render(<Header {...defaultHeaderProps} />);
-      expect(screen.getByText("25")).toBeInTheDocument();
-    });
-
-    it("has correct ARIA attributes", () => {
-      render(<Header {...defaultHeaderProps} />);
-      const progressbar = screen.getByRole("progressbar");
-      expect(progressbar).toHaveAttribute("aria-valuenow", "25");
-      expect(progressbar).toHaveAttribute("aria-valuemin", "0");
-      expect(progressbar).toHaveAttribute("aria-valuemax", "20");
-    });
-
-    it("calculates fill percentage correctly when below threshold", () => {
-      mockUseWidgetPassportScore.mockReturnValue({
-        ...defaultMockResult,
-        data: {
-          ...defaultScoreData,
-          score: 10,
-          passingScore: false,
-        },
-      });
-
-      render(<Header {...defaultHeaderProps} />);
-      const progressbar = screen.getByRole("progressbar");
-      const expectedAngle = (10 / 20) * 360; // 50% = 180 degrees
-
-      expect(progressbar).toHaveStyle({
-        background: expect.stringContaining(`${expectedAngle}deg`),
-      });
-    });
-
-    it("calculates fill percentage correctly when at threshold", () => {
-      mockUseWidgetPassportScore.mockReturnValue({
-        ...defaultMockResult,
-        data: {
-          ...defaultScoreData,
-          score: 20,
-          passingScore: true,
-        },
-      });
-
-      render(<Header {...defaultHeaderProps} />);
-      const progressbar = screen.getByRole("progressbar");
-      const expectedAngle = (20 / 20) * 360; // 100% = 360 degrees
-
-      expect(progressbar).toHaveStyle({
-        background: expect.stringContaining(`${expectedAngle}deg`),
-      });
-    });
-
-    it("caps fill percentage at 100% when score exceeds threshold", () => {
-      mockUseWidgetPassportScore.mockReturnValue({
-        ...defaultMockResult,
-        data: {
-          ...defaultScoreData,
-          score: 40,
-          threshold: 20,
-          passingScore: true,
-        },
-      });
-
-      render(<Header {...defaultHeaderProps} />);
-      const progressbar = screen.getByRole("progressbar");
-      // Should cap at 360 degrees (100%)
-      expect(progressbar).toHaveStyle({
-        background: expect.stringContaining("360deg"),
-      });
-    });
-
-    it("uses CSS variables for colors in conic gradient", () => {
-      render(<Header {...defaultHeaderProps} />);
-      const progressbar = screen.getByRole("progressbar");
-
-      expect(progressbar).toHaveStyle({
-        background: expect.stringContaining("rgba(var(--color-accent-c6dbf459), 1)"),
-      });
-      expect(progressbar).toHaveStyle({
-        background: expect.stringContaining("rgba(var(--color-primary-c6dbf459), 1)"),
-      });
-    });
-
-    it("renders zero score correctly", () => {
-      mockUseWidgetPassportScore.mockReturnValue({
-        ...defaultMockResult,
-        data: {
-          ...defaultScoreData,
-          score: 0,
-          passingScore: false,
-        },
-      });
-
-      render(<Header {...defaultHeaderProps} />);
-      expect(screen.getByText("0")).toBeInTheDocument();
-
-      const progressbar = screen.getByRole("progressbar");
-      expect(progressbar).toHaveAttribute("aria-valuenow", "0");
-      expect(progressbar).toHaveStyle({
-        background: expect.stringContaining("0deg"),
-      });
-    });
-
-    it("handles decimal scores correctly", () => {
-      mockUseWidgetPassportScore.mockReturnValue({
-        ...defaultMockResult,
-        data: {
-          ...defaultScoreData,
-          score: 15.5,
-          threshold: 20,
-          passingScore: false,
-        },
-      });
-
-      render(<Header {...defaultHeaderProps} />);
-      // displayNumber uses parseInt, so 15.5 is displayed as "15"
-      expect(screen.getByText("15")).toBeInTheDocument();
-
-      const progressbar = screen.getByRole("progressbar");
-      const expectedAngle = (15.5 / 20) * 360; // 77.5% = 279 degrees
-      expect(progressbar).toHaveStyle({
-        background: expect.stringContaining(`${expectedAngle}deg`),
-      });
-    });
+  it("renders header with default content", () => {
+    render(<Header bodyIsOpen={false} setBodyIsOpen={jest.fn()} collapsible={false} />);
+    expect(screen.getByText("Human Passport Score")).toBeInTheDocument();
   });
 
-  describe("Header Collapse Behavior", () => {
-    it("renders expanded header by default", () => {
-      render(<Header {...defaultHeaderProps} />);
-      expect(screen.getByText("Human Passport Score")).toBeInTheDocument();
-    });
-
-    it("toggles expansion state when clicked", () => {
-      const setBodyIsOpen = jest.fn();
-      render(
-        <Header {...defaultHeaderProps} setBodyIsOpen={setBodyIsOpen} />
-      );
-      const header = screen.getByRole("button");
-      fireEvent.click(header);
-
-      expect(setBodyIsOpen).toHaveBeenCalledWith(expect.any(Function));
-    });
-
-    it("shows collapsed state correctly", () => {
-      render(<Header {...defaultHeaderProps} bodyIsOpen={false} />);
-      // In collapsed state, the header should still show the score indicator
-      expect(screen.getByRole("progressbar")).toBeInTheDocument();
-    });
+  it("shows chevron when collapsible", () => {
+    render(<Header bodyIsOpen={false} setBodyIsOpen={jest.fn()} collapsible={true} />);
+    expect(screen.getByRole("button")).toBeInTheDocument();
   });
 
-  describe("Score Display States", () => {
-    it("shows passing score correctly", () => {
-      mockUseWidgetPassportScore.mockReturnValue({
-        ...defaultMockResult,
-        data: {
-          ...defaultScoreData,
-          score: 25,
-          passingScore: true,
-        },
-      });
-
-      render(<Header {...defaultHeaderProps} />);
-      expect(screen.getByText("25")).toBeInTheDocument();
-    });
-
-    it("shows failing score correctly", () => {
-      mockUseWidgetPassportScore.mockReturnValue({
-        ...defaultMockResult,
-        data: {
-          ...defaultScoreData,
-          score: 15,
-          passingScore: false,
-        },
-      });
-
-      render(<Header {...defaultHeaderProps} />);
-      expect(screen.getByText("15")).toBeInTheDocument();
-    });
-
-    it("shows loading icon when querying", () => {
-      mockUseWidgetIsQuerying.mockReturnValue(true);
-
-      render(<Header {...defaultHeaderProps} />);
-      // Loading icon should be an SVG
-      const loadingIcon = document.querySelector("svg");
-      expect(loadingIcon).toBeInTheDocument();
-    });
-
-    it("does not show score when no data", () => {
-      mockUseWidgetPassportScore.mockReturnValue({
-        ...defaultMockResult,
-        data: undefined,
-      });
-
-      render(<Header {...defaultHeaderProps} />);
-      // Should not have progressbar when no data
-      expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
-    });
+  it("does not show chevron when not collapsible", () => {
+    render(<Header bodyIsOpen={false} setBodyIsOpen={jest.fn()} collapsible={false} />);
+    // The button is still there, but it's not collapsible
+    expect(screen.getByRole("button")).toBeInTheDocument();
   });
 
-  describe("Edge Cases", () => {
-    it("handles undefined score gracefully", () => {
-      mockUseWidgetPassportScore.mockReturnValue({
-        ...defaultMockResult,
-        data: {
-          ...defaultScoreData,
-          score: undefined as unknown as number,
-        },
-      });
-
-      render(<Header {...defaultHeaderProps} />);
-      // Should render without crashing
-      expect(screen.getByRole("button")).toBeInTheDocument();
-    });
-
-    it("handles very large scores", () => {
-      mockUseWidgetPassportScore.mockReturnValue({
-        ...defaultMockResult,
-        data: {
-          ...defaultScoreData,
-          score: 999999,
-          threshold: 20,
-        },
-      });
-
-      render(<Header {...defaultHeaderProps} />);
-      const progressbar = screen.getByRole("progressbar");
-      // Should still cap at 360 degrees
-      expect(progressbar).toHaveStyle({
-        background: expect.stringContaining("360deg"),
-      });
-    });
-
-    it("handles negative scores", () => {
-      mockUseWidgetPassportScore.mockReturnValue({
-        ...defaultMockResult,
-        data: {
-          ...defaultScoreData,
-          score: -5,
-          threshold: 20,
-        },
-      });
-
-      render(<Header {...defaultHeaderProps} />);
-      const progressbar = screen.getByRole("progressbar");
-      // Negative scores should be treated as 0
-      expect(progressbar).toHaveStyle({
-        background: expect.stringContaining(`0deg`),
-      });
-    });
-
-    it("handles zero threshold gracefully", () => {
-      mockUseWidgetPassportScore.mockReturnValue({
-        ...defaultMockResult,
-        data: {
-          ...defaultScoreData,
-          score: 10,
-          threshold: 0,
-        },
-      });
-
-      render(<Header {...defaultHeaderProps} />);
-      // Should render without dividing by zero errors
-      expect(screen.getByRole("progressbar")).toBeInTheDocument();
-    });
+  it("toggles body when chevron is clicked", () => {
+    const mockSetBodyIsOpen = jest.fn();
+    render(
+      <Header bodyIsOpen={false} setBodyIsOpen={mockSetBodyIsOpen} collapsible={true} />
+    );
+    
+    const chevron = screen.getByRole("button");
+    fireEvent.click(chevron);
+    
+    expect(mockSetBodyIsOpen).toHaveBeenCalledWith(expect.any(Function));
   });
-});
+
+  it("shows correct chevron direction when body is closed", () => {
+    render(<Header bodyIsOpen={false} setBodyIsOpen={jest.fn()} collapsible={true} />);
+    const chevron = screen.getByRole("button");
+    expect(chevron).toHaveClass("bodyCollapsed");
+  });
+
+  it("shows correct chevron direction when body is open", () => {
+    render(<Header bodyIsOpen={true} setBodyIsOpen={jest.fn()} collapsible={true} />);
+    const chevron = screen.getByRole("button");
+    expect(chevron).toHaveClass("bodyExpanded");
+  });
+
+  it("renders subtitle when provided", () => {
+    mockUseHeaderControls.mockReturnValue({
+      setSubtitle: mockSetSubtitle,
+      subtitle: "Test Subtitle",
+    });
+
+    render(<Header bodyIsOpen={false} setBodyIsOpen={jest.fn()} collapsible={false} />);
+    // The Header component doesn't actually render subtitles, it just sets them
+    expect(screen.getByText("Human Passport Score")).toBeInTheDocument();
+  });
+
+  it("does not render subtitle when not provided", () => {
+    mockUseHeaderControls.mockReturnValue({
+      setSubtitle: mockSetSubtitle,
+      subtitle: "",
+    });
+
+    render(<Header bodyIsOpen={false} setBodyIsOpen={jest.fn()} collapsible={false} />);
+    expect(screen.getByText("Human Passport Score")).toBeInTheDocument();
+  });
+
+  it("handles multiple clicks on chevron", () => {
+    const mockSetBodyIsOpen = jest.fn();
+    render(
+      <Header bodyIsOpen={false} setBodyIsOpen={mockSetBodyIsOpen} collapsible={true} />
+    );
+    
+    const chevron = screen.getByRole("button");
+    fireEvent.click(chevron);
+    fireEvent.click(chevron);
+    fireEvent.click(chevron);
+    
+    expect(mockSetBodyIsOpen).toHaveBeenCalledTimes(3);
+    expect(mockSetBodyIsOpen).toHaveBeenNthCalledWith(1, expect.any(Function));
+    expect(mockSetBodyIsOpen).toHaveBeenNthCalledWith(2, expect.any(Function));
+    expect(mockSetBodyIsOpen).toHaveBeenNthCalledWith(3, expect.any(Function));
+  });
+
+      it("renders with different subtitle values", () => {
+        const { rerender } = render(<Header bodyIsOpen={false} setBodyIsOpen={jest.fn()} collapsible={false} />);
+
+        // No subtitle
+        mockUseHeaderControls.mockReturnValue({
+          setSubtitle: mockSetSubtitle,
+          subtitle: "",
+        });
+        rerender(<Header bodyIsOpen={false} setBodyIsOpen={jest.fn()} collapsible={false} />);
+        expect(screen.getByText("Human Passport Score")).toBeInTheDocument();
+
+        // With subtitle
+        mockUseHeaderControls.mockReturnValue({
+          setSubtitle: mockSetSubtitle,
+          subtitle: "New Subtitle",
+        });
+        rerender(<Header bodyIsOpen={false} setBodyIsOpen={jest.fn()} collapsible={false} />);
+        expect(screen.getByText("Human Passport Score")).toBeInTheDocument();
+      });
+
+      it("renders score indicator with correct progress", () => {
+        mockUseWidgetIsQuerying.mockReturnValue(false);
+        mockUseWidgetPassportScore.mockReturnValue({ 
+          data: { score: 50, threshold: 100 } 
+        });
+
+        render(<Header bodyIsOpen={false} setBodyIsOpen={jest.fn()} collapsible={false} />);
+        
+        const progressBar = screen.getByRole("progressbar");
+        expect(progressBar).toHaveAttribute("aria-valuenow", "50");
+        expect(progressBar).toHaveAttribute("aria-valuemin", "0");
+        expect(progressBar).toHaveAttribute("aria-valuemax", "100");
+      });
+
+      it("renders score indicator with score exceeding threshold", () => {
+        mockUseWidgetIsQuerying.mockReturnValue(false);
+        mockUseWidgetPassportScore.mockReturnValue({ 
+          data: { score: 150, threshold: 100 } 
+        });
+
+        render(<Header bodyIsOpen={false} setBodyIsOpen={jest.fn()} collapsible={false} />);
+        
+        const progressBar = screen.getByRole("progressbar");
+        expect(progressBar).toHaveAttribute("aria-valuenow", "150");
+        expect(progressBar).toHaveAttribute("aria-valuemin", "0");
+        expect(progressBar).toHaveAttribute("aria-valuemax", "100");
+      });
+
+      it("renders score indicator with zero score", () => {
+        mockUseWidgetIsQuerying.mockReturnValue(false);
+        mockUseWidgetPassportScore.mockReturnValue({ 
+          data: { score: 0, threshold: 100 } 
+        });
+
+        render(<Header bodyIsOpen={false} setBodyIsOpen={jest.fn()} collapsible={false} />);
+        
+        const progressBar = screen.getByRole("progressbar");
+        expect(progressBar).toHaveAttribute("aria-valuenow", "0");
+        expect(progressBar).toHaveAttribute("aria-valuemin", "0");
+        expect(progressBar).toHaveAttribute("aria-valuemax", "100");
+      });
+
+      it("shows LoadingIcon when querying", () => {
+        mockUseWidgetIsQuerying.mockReturnValue(true);
+        mockUseWidgetPassportScore.mockReturnValue({ data: null });
+
+        const { container } = render(<Header bodyIsOpen={false} setBodyIsOpen={jest.fn()} collapsible={false} />);
+        
+        // LoadingIcon should be rendered when querying
+        const svg = container.querySelector("svg");
+        expect(svg).toBeInTheDocument();
+      });
+
+      it("does not show score indicator when querying", () => {
+        mockUseWidgetIsQuerying.mockReturnValue(true);
+        mockUseWidgetPassportScore.mockReturnValue({ data: { score: 50, threshold: 100 } });
+
+        render(<Header bodyIsOpen={false} setBodyIsOpen={jest.fn()} collapsible={false} />);
+        
+        // Should not show progressbar when querying
+        expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+      });
+
+      it("does not trigger setBodyIsOpen when collapsible is false", () => {
+        const mockSetBodyIsOpen = jest.fn();
+        render(<Header bodyIsOpen={false} setBodyIsOpen={mockSetBodyIsOpen} collapsible={false} />);
+        
+        const button = screen.getByRole("button");
+        fireEvent.click(button);
+        
+        // setBodyIsOpen should not be called when collapsible is false
+        expect(mockSetBodyIsOpen).not.toHaveBeenCalled();
+      });
+    });

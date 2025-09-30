@@ -7,6 +7,8 @@ import {
   useWidgetIsQuerying,
   useWidgetPassportScore,
   useResetWidgetPassportScore,
+  useVerifyCredentials,
+  RateLimitError,
 } from "../../src/hooks/usePassportScore";
 import { QueryContext } from "../../src/contexts/QueryContext";
 import { setupTestQueryClient } from "../testUtils";
@@ -315,4 +317,352 @@ describe("Passport Score Hooks", () => {
 
     expect(mockedAxios.get).toHaveBeenCalledTimes(1);
   });
+
+  describe("RateLimitError", () => {
+    it("should create RateLimitError with correct name and message", () => {
+      const errorMessage = "Rate limit exceeded";
+      const error = new RateLimitError(errorMessage);
+      
+      expect(error).toBeInstanceOf(Error);
+      expect(error).toBeInstanceOf(RateLimitError);
+      expect(error.name).toBe("RateLimitError");
+      expect(error.message).toBe(errorMessage);
+    });
+  });
+
+  describe("useVerifyCredentials", () => {
+    it("should use default embed service URL when not provided", async () => {
+      mockedAxios.post.mockResolvedValueOnce({ data: mockScoreData });
+
+      const { result } = renderHook(() =>
+        useVerifyCredentials({
+          apiKey: "test-api-key",
+          address: "0x123",
+          scorerId: "test-scorer",
+          embedServiceUrl: undefined, // This should trigger the default URL fallback
+        })
+      );
+
+      await act(async () => {
+        result.current.verifyCredentials(["credential1"]);
+      });
+
+      // Verify that the API was called with the default URL
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        expect.stringContaining("https://embed.passport.xyz"), // Default URL
+        expect.objectContaining({
+          credentialIds: ["credential1"],
+        }),
+        expect.any(Object)
+      );
+    });
+
+    it("should use provided embed service URL when available", async () => {
+      mockedAxios.post.mockResolvedValueOnce({ data: mockScoreData });
+
+      const customUrl = "https://custom-api.com";
+      const { result } = renderHook(() =>
+        useVerifyCredentials({
+          apiKey: "test-api-key",
+          address: "0x123",
+          scorerId: "test-scorer",
+          embedServiceUrl: customUrl,
+        })
+      );
+
+      await act(async () => {
+        result.current.verifyCredentials(["credential1"]);
+      });
+
+      // Verify that the API was called with the custom URL
+      expect(mockedAxios.post).toHaveBeenCalledWith(
+        expect.stringContaining(customUrl),
+        expect.objectContaining({
+          credentialIds: ["credential1"],
+        }),
+        expect.any(Object)
+      );
+    });
+  });
+
+  describe("Rate limit error handling", () => {
+    describe("processScoreResponseError mapping for GET (lines 250-253)", () => {
+      it("maps 429 with x-ratelimit-limit=0 to permission RateLimitError", async () => {
+        const rateLimitError: any = new Error("Rate limit exceeded");
+        rateLimitError.response = { status: 429, headers: { "x-ratelimit-limit": "0" } };
+
+        (mockedAxios as any).isAxiosError = () => true;
+        mockedAxios.get.mockRejectedValueOnce(rateLimitError);
+
+        const { result } = renderHook(() =>
+          usePassportScore({
+            apiKey: "test-api-key",
+            address: "0x123",
+            scorerId: "test-scorer",
+            embedServiceUrl: "https://test.com",
+          })
+        );
+
+        await waitFor(() => {
+          expect(result.current.isError).toBe(true);
+        });
+
+        expect(result.current.error).toBeInstanceOf(RateLimitError);
+        expect((result.current.error as RateLimitError).message).toBe(
+          "This API key does not have permission to access the Embed API."
+        );
+      });
+
+      it("maps 429 without x-ratelimit-limit to generic RateLimitError", async () => {
+        const rateLimitError: any = new Error("Rate limit exceeded");
+        rateLimitError.response = { status: 429, headers: {} };
+
+        (mockedAxios as any).isAxiosError = () => true;
+        mockedAxios.get.mockRejectedValueOnce(rateLimitError);
+
+        const { result } = renderHook(() =>
+          usePassportScore({
+            apiKey: "test-api-key",
+            address: "0x123",
+            scorerId: "test-scorer",
+            embedServiceUrl: "https://test.com",
+          })
+        );
+
+        await waitFor(() => {
+          expect(result.current.isError).toBe(true);
+        });
+
+        expect(result.current.error).toBeInstanceOf(RateLimitError);
+        expect((result.current.error as RateLimitError).message).toBe("Rate limit exceeded.");
+      });
+
+      it("maps 429 with non-zero x-ratelimit-limit to generic RateLimitError", async () => {
+        const rateLimitError: any = new Error("Rate limit exceeded");
+        rateLimitError.response = { status: 429, headers: { "x-ratelimit-limit": "100" } };
+
+        (mockedAxios as any).isAxiosError = () => true;
+        mockedAxios.get.mockRejectedValueOnce(rateLimitError);
+
+        const { result } = renderHook(() =>
+          usePassportScore({
+            apiKey: "test-api-key",
+            address: "0x123",
+            scorerId: "test-scorer",
+            embedServiceUrl: "https://test.com",
+          })
+        );
+
+        await waitFor(() => {
+          expect(result.current.isError).toBe(true);
+        });
+
+        expect(result.current.error).toBeInstanceOf(RateLimitError);
+        expect((result.current.error as RateLimitError).message).toBe("Rate limit exceeded.");
+      });
+    });
+    it("should handle 429 rate limit error with x-ratelimit-limit header set to 0 in usePassportScore", async () => {
+      // Create a proper axios error that will be recognized by isAxiosError
+      const rateLimitError = new Error("Rate limit exceeded");
+      Object.assign(rateLimitError, {
+        response: {
+          status: 429,
+          headers: {
+            "x-ratelimit-limit": "0",
+          },
+        },
+        isAxiosError: true,
+        config: {},
+        code: "ECONNABORTED",
+        request: {},
+      });
+
+      mockedAxios.post.mockRejectedValueOnce(rateLimitError);
+
+      const { result } = renderHook(() =>
+        usePassportScore({
+          apiKey: "test-api-key",
+          address: "0x123",
+          scorerId: "test-scorer",
+          embedServiceUrl: "https://test.com",
+        })
+      );
+
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
+
+      // The error should be processed and potentially transformed
+      expect(result.current.error).toBeDefined();
+    });
+
+    it("should handle 429 rate limit error without x-ratelimit-limit header in usePassportScore", async () => {
+      // Create a proper axios error that will be recognized by isAxiosError
+      const rateLimitError = new Error("Rate limit exceeded");
+      Object.assign(rateLimitError, {
+        response: {
+          status: 429,
+          headers: {},
+        },
+        isAxiosError: true,
+        config: {},
+        code: "ECONNABORTED",
+        request: {},
+      });
+
+      mockedAxios.post.mockRejectedValueOnce(rateLimitError);
+
+      const { result } = renderHook(() =>
+        usePassportScore({
+          apiKey: "test-api-key",
+          address: "0x123",
+          scorerId: "test-scorer",
+          embedServiceUrl: "https://test.com",
+        })
+      );
+
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
+
+      // The error should be processed and potentially transformed
+      expect(result.current.error).toBeDefined();
+    });
+
+    it("should handle 429 rate limit error with non-zero x-ratelimit-limit header in usePassportScore", async () => {
+      // Create a proper axios error that will be recognized by isAxiosError
+      const rateLimitError = new Error("Rate limit exceeded");
+      Object.assign(rateLimitError, {
+        response: {
+          status: 429,
+          headers: {
+            "x-ratelimit-limit": "100",
+          },
+        },
+        isAxiosError: true,
+        config: {},
+        code: "ECONNABORTED",
+        request: {},
+      });
+
+      mockedAxios.post.mockRejectedValueOnce(rateLimitError);
+
+      const { result } = renderHook(() =>
+        usePassportScore({
+          apiKey: "test-api-key",
+          address: "0x123",
+          scorerId: "test-scorer",
+          embedServiceUrl: "https://test.com",
+        })
+      );
+
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
+
+      // The error should be processed and potentially transformed
+      expect(result.current.error).toBeDefined();
+    });
+
+    it("should handle 429 rate limit error with x-ratelimit-limit header set to 0 in useWidgetVerifyCredentials", async () => {
+      // Create a proper axios error that will be recognized by isAxiosError
+      const rateLimitError = new Error("Rate limit exceeded");
+      Object.assign(rateLimitError, {
+        response: {
+          status: 429,
+          headers: {
+            "x-ratelimit-limit": "0",
+          },
+        },
+        isAxiosError: true,
+        config: {},
+        code: "ECONNABORTED",
+        request: {},
+      });
+
+      mockedAxios.post.mockRejectedValueOnce(rateLimitError);
+
+      const { result } = renderHook(() => useWidgetVerifyCredentials(), {
+        wrapper: createWidgetWrapper(),
+      });
+
+      await act(async () => {
+        result.current.verifyCredentials(["credential1"]);
+      });
+
+      await waitFor(() => {
+        expect(result.current.error).toBeDefined();
+      });
+
+      // The error should be processed and potentially transformed
+      expect(result.current.error).toBeDefined();
+    });
+
+    it("should handle 429 rate limit error without x-ratelimit-limit header in useWidgetVerifyCredentials", async () => {
+      // Create a proper axios error that will be recognized by isAxiosError
+      const rateLimitError = new Error("Rate limit exceeded");
+      Object.assign(rateLimitError, {
+        response: {
+          status: 429,
+          headers: {},
+        },
+        isAxiosError: true,
+        config: {},
+        code: "ECONNABORTED",
+        request: {},
+      });
+
+      mockedAxios.post.mockRejectedValueOnce(rateLimitError);
+
+      const { result } = renderHook(() => useWidgetVerifyCredentials(), {
+        wrapper: createWidgetWrapper(),
+      });
+
+      await act(async () => {
+        result.current.verifyCredentials(["credential1"]);
+      });
+
+      await waitFor(() => {
+        expect(result.current.error).toBeDefined();
+      });
+
+      // The error should be processed and potentially transformed
+      expect(result.current.error).toBeDefined();
+    });
+
+    it("should handle 429 rate limit error with non-zero x-ratelimit-limit header in useWidgetVerifyCredentials", async () => {
+      // Create a proper axios error that will be recognized by isAxiosError
+      const rateLimitError = new Error("Rate limit exceeded");
+      Object.assign(rateLimitError, {
+        response: {
+          status: 429,
+          headers: {
+            "x-ratelimit-limit": "100",
+          },
+        },
+        isAxiosError: true,
+        config: {},
+        code: "ECONNABORTED",
+        request: {},
+      });
+
+      mockedAxios.post.mockRejectedValueOnce(rateLimitError);
+
+      const { result } = renderHook(() => useWidgetVerifyCredentials(), {
+        wrapper: createWidgetWrapper(),
+      });
+
+      await act(async () => {
+        result.current.verifyCredentials(["credential1"]);
+      });
+
+      await waitFor(() => {
+        expect(result.current.error).toBeDefined();
+      });
+
+      // The error should be processed and potentially transformed
+      expect(result.current.error).toBeDefined();
+    });
+  });
+
 });
