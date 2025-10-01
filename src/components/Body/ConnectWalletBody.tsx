@@ -22,7 +22,7 @@ export const ConnectWalletBody = ({
     <>
       <div className={styles.blurEffect}></div>
       <div className={styles.textBlock}>
-        <div className={styles.iconContainer}>
+        <div className={`${styles.iconContainer} ${styles.connectIconContainer}`}>
           <PersonIcon />
         </div>
         <div className={styles.smallHeading}>Proof of Personhood</div>

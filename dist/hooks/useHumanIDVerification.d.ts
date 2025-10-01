@@ -10,7 +10,6 @@ interface UseHumanIDVerificationReturn {
     isCheckingSBT: boolean;
     isVerifying: boolean;
     verifyHumanID: () => Promise<boolean>;
-    error: Error | null;
 }
 export declare const useHumanIDVerification: ({ platform, address, enabled, }: UseHumanIDVerificationParams) => UseHumanIDVerificationReturn;
 export {};

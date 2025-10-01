@@ -48,6 +48,10 @@
   padding: 0;
 }
 
+.expanded:has(.lowScoreContainer) {
+  padding: 16px var(--widget-padding-x-c6dbf459) 16px;
+}
+
 .overlay {
   position: absolute;
 
@@ -77,6 +81,20 @@
   gap: 8px;
 }
 
+.lowScoreContainer {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+}
+
+.lowScoreDescription {
+  margin-top: -2px;
+  line-height: 20px;
+}
+
 .innerText {
   flex-grow: 1;
 }
@@ -96,7 +114,7 @@
   text-align: left;
   font-size: 16px;
   font-weight: 600;
-  line-height: 28px;
+  line-height: 16px;
   width: 100%;
 }
 
@@ -199,27 +217,25 @@
 
 .platformButtonWeight {
   font-weight: 500;
-  font-size: 14px;
+  font-size: 13px;
   color: rgba(var(--color-primary-c6dbf459), 0.9);
   margin-right: 8px;
 }
 
 .platformButtonScore {
-  font-weight: 400;
+  font-weight: 500;
   font-size: 13px;
   margin-right: 8px;
   display: flex;
   align-items: center;
 }
 
-.scoreValue {
+.scoreDenominator {
   color: rgba(var(--color-accent-c6dbf459), 1);
-  font-weight: 500;
 }
 
-.scoreDivider {
+.scoreNumerator {
   color: rgba(var(--color-primary-c6dbf459), 1);
-  font-weight: 500;
 }
 
 .platformButtonChevron {
@@ -300,6 +316,10 @@
 .iconContainer svg {
   width: 56px;
   height: 56px;
+}
+
+.connectIconContainer {
+  margin-top: 16px;
 }
 
 .button {
@@ -553,6 +573,7 @@
 }
 
 .error {
+  overflow: hidden;
   box-sizing: border-box;
   width: 100%;
   background-color: rgba(var(--color-error-c6dbf459), 0.4);

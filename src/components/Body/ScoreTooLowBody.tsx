@@ -17,6 +17,7 @@ import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
 import { HappyHuman } from "../../assets/happyHuman";
 import { HouseIcon } from "../../assets/houseIcon";
 import { BackButton } from "./PlatformHeader";
+import { displayNumber } from "../../utils";
 
 export const Hyperlink = ({
   href,
@@ -74,8 +75,8 @@ const PlatformButton = ({
         {isDeduped && <DedupeBadge />}
         {claimed ? (
           <div className={styles.platformButtonScore}>
-            <span className={styles.scoreDivider}>{pointsGained}</span>
-            <span className={styles.scoreValue}>/{platform.displayWeight}</span>
+            <span className={styles.scoreNumerator}>{pointsGained}</span>
+            <span className={styles.scoreDenominator}>/{platform.displayWeight}</span>
           </div>
         ) : (
           <div className={styles.platformButtonWeight}>{platform.displayWeight}</div>
@@ -113,6 +114,7 @@ export const AddStamps = ({
           ...page,
           platforms: page.platforms.map((platform: RawPlatformData) => ({
             ...platform,
+            displayWeight: displayNumber(parseFloat(platform.displayWeight)),
             description: <SanitizedHTMLComponent html={platform.description || ""} />,
             icon: platform.icon ? (
               // If it's a URL, wrap it in an img tag for sanitization
@@ -160,40 +162,41 @@ export const AddStamps = ({
 
   return (
     <>
-      {openPlatform && (<PlatformVerification
-            platform={openPlatform}
-            onClose={() => setOpenPlatform(null)}
-            generateSignatureCallback={generateSignatureCallback}
-          />)
-      }
+      {openPlatform && (
+        <PlatformVerification
+          platform={openPlatform}
+          onClose={() => setOpenPlatform(null)}
+          generateSignatureCallback={generateSignatureCallback}
+        />
+      )}
 
-    <div className={`${styles.addStampsWrapper} ${openPlatform ? styles.hiddenAddStamps : styles.visibleAddStamps}`}>
-      <div className={styles.verifyHeader}>
-        <BackButton onBack={onBack} />
-        <span className={styles.verifyTitle}>Verify Activities</span>
-      </div>
-      <ScrollableDivWithFade className={styles.allStampsContainer}>
-        {stampPages.map((page, pageIndex) => (
-          <div key={pageIndex} className={styles.stampCategory}>
-            <div className={styles.categoryHeader}>{page.header}</div>
-            <div className={styles.stampsList}>
-              {page.platforms.map((platform: Platform) => (
-                <PlatformButton key={platform.platformId} platform={platform} setOpenPlatform={setOpenPlatform} />
-              ))}
-            </div>
-          </div>
-        ))}
-        <div className={styles.exploreMoreSection}>
-          <Hyperlink href="https://app.passport.xyz" className={styles.exploreMoreLink}>
-            <span className={styles.exploreMoreIcon}>
-              <HouseIcon />
-            </span>
-            <span>Explore Additional Stamps</span>
-            <ArrowUpRightIcon />
-          </Hyperlink>
+      <div className={`${styles.addStampsWrapper} ${openPlatform ? styles.hiddenAddStamps : styles.visibleAddStamps}`}>
+        <div className={styles.verifyHeader}>
+          <BackButton onBack={onBack} />
+          <span className={styles.verifyTitle}>Verify Activities</span>
         </div>
-      </ScrollableDivWithFade>
-    </div>
+        <ScrollableDivWithFade className={styles.allStampsContainer}>
+          {stampPages.map((page, pageIndex) => (
+            <div key={pageIndex} className={styles.stampCategory}>
+              <div className={styles.categoryHeader}>{page.header}</div>
+              <div className={styles.stampsList}>
+                {page.platforms.map((platform: Platform) => (
+                  <PlatformButton key={platform.platformId} platform={platform} setOpenPlatform={setOpenPlatform} />
+                ))}
+              </div>
+            </div>
+          ))}
+          <div className={styles.exploreMoreSection}>
+            <Hyperlink href="https://app.passport.xyz" className={styles.exploreMoreLink}>
+              <span className={styles.exploreMoreIcon}>
+                <HouseIcon />
+              </span>
+              <span>Explore Additional Stamps</span>
+              <ArrowUpRightIcon />
+            </Hyperlink>
+          </div>
+        </ScrollableDivWithFade>
+      </div>
     </>
   );
 };
@@ -210,36 +213,20 @@ const ArrowUpRightIcon = () => (
   </svg>
 );
 
-const DoubleChevron = () => (
-  <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M17.5 11L12.5 6L7.5 11M17.5 18L12.5 13L7.5 18"
-      stroke="rgb(var(--color-background-c6dbf459))"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 const InitialTooLow = ({ onContinue }: { onContinue: () => void }) => {
   const { data } = useWidgetPassportScore();
 
   return (
-    <>
-      <div className={`${styles.textBlock} ${styles.tight}`}>
-        <HappyHuman />
-        <div className={`${styles.heading} ${styles.textCenter}`}>Increase score to participate!</div>
-        <div>
-          Your web3 history wasn't sufficient to enable you to participate. Raise your score to {data?.threshold || 20}{" "}
-          or above by verifying additional Stamps
-        </div>
+    <div className={styles.lowScoreContainer}>
+      <HappyHuman />
+      <div className={`${styles.heading} ${styles.textCenter}`}>Increase score to participate!</div>
+      <div className={styles.lowScoreDescription}>
+        Your web3 history wasn't sufficient to enable you to participate. Raise your score to {data?.threshold || 20} or
+        above by verifying additional Stamps
       </div>
       <Button className={utilStyles.wFull} onClick={onContinue}>
-        <div className={styles.buttonContent}>
-          <DoubleChevron /> Verify Stamps
-        </div>
+        <div className={styles.buttonContent}>Verify Stamps</div>
       </Button>
-    </>
+    </div>
   );
 };
