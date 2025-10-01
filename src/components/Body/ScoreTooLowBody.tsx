@@ -75,8 +75,8 @@ const PlatformButton = ({
         {isDeduped && <DedupeBadge />}
         {claimed ? (
           <div className={styles.platformButtonScore}>
-            <span className={styles.scoreDivider}>{pointsGained}</span>
-            <span className={styles.scoreValue}>/{platform.displayWeight}</span>
+            <span className={styles.scoreNumerator}>{pointsGained}</span>
+            <span className={styles.scoreDenominator}>/{platform.displayWeight}</span>
           </div>
         ) : (
           <div className={styles.platformButtonWeight}>{platform.displayWeight}</div>

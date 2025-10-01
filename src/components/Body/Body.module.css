@@ -199,27 +199,25 @@
 
 .platformButtonWeight {
   font-weight: 500;
-  font-size: 14px;
+  font-size: 13px;
   color: rgba(var(--color-primary-c6dbf459), 0.9);
   margin-right: 8px;
 }
 
 .platformButtonScore {
-  font-weight: 400;
+  font-weight: 500;
   font-size: 13px;
   margin-right: 8px;
   display: flex;
   align-items: center;
 }
 
-.scoreValue {
+.scoreDenominator {
   color: rgba(var(--color-accent-c6dbf459), 1);
-  font-weight: 500;
 }
 
-.scoreDivider {
+.scoreNumerator {
   color: rgba(var(--color-primary-c6dbf459), 1);
-  font-weight: 500;
 }
 
 .platformButtonChevron {

@@ -113,7 +113,7 @@ export const PlatformVerification = ({
         onBack={onClose}
         points={platform.displayWeight}
       />
-      <div className={styles.heading}>Verify the {platform.name} Stamp</div>
+      <div className={styles.heading}>Verify {platform.name} Stamp</div>
       <div className={styles.description}>
         {hasConfigurationError ? (
           <div>

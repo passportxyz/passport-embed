@@ -12,13 +12,32 @@ export const injectFonts = () => {
     return;
   }
 
+  // Create preload links for all font weights to force eager loading
+  const fonts = [
+    SuisseIntlRegular,
+    SuisseIntlMedium,
+    SuisseIntlSemibold,
+    SuisseIntlBold,
+  ];
+
+  fonts.forEach((fontUrl) => {
+    const preloadLink = document.createElement('link');
+    preloadLink.rel = 'preload';
+    preloadLink.as = 'font';
+    preloadLink.type = 'font/woff2';
+    preloadLink.href = fontUrl;
+    preloadLink.crossOrigin = 'anonymous';
+    preloadLink.setAttribute('data-passport-font-preload', 'true');
+    document.head.appendChild(preloadLink);
+  });
+
   const fontStyles = `
     @font-face {
       font-family: 'Suisse Intl';
       src: url('${SuisseIntlRegular}') format('woff2');
       font-weight: 400;
       font-style: normal;
-      font-display: swap;
+      font-display: block;
     }
 
     @font-face {
@@ -26,7 +45,7 @@ export const injectFonts = () => {
       src: url('${SuisseIntlMedium}') format('woff2');
       font-weight: 500;
       font-style: normal;
-      font-display: swap;
+      font-display: block;
     }
 
     @font-face {
@@ -34,7 +53,7 @@ export const injectFonts = () => {
       src: url('${SuisseIntlSemibold}') format('woff2');
       font-weight: 600;
       font-style: normal;
-      font-display: swap;
+      font-display: block;
     }
 
     @font-face {
@@ -42,7 +61,7 @@ export const injectFonts = () => {
       src: url('${SuisseIntlBold}') format('woff2');
       font-weight: 700;
       font-style: normal;
-      font-display: swap;
+      font-display: block;
     }
   `;
 
