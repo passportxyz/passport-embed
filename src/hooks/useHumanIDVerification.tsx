@@ -22,7 +22,6 @@ interface UseHumanIDVerificationReturn {
   isCheckingSBT: boolean;
   isVerifying: boolean;
   verifyHumanID: () => Promise<boolean>; // Returns true on success, throws on error
-  error: Error | null;
 }
 
 const HUMAN_ID_PLATFORMS = ["HumanIdKyc", "HumanIdPhone", "Biometrics", "CleanHands"];
@@ -58,7 +57,6 @@ export const useHumanIDVerification = ({
   const [hasExistingSBT, setHasExistingSBT] = useState(false);
   const [isCheckingSBT, setIsCheckingSBT] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
 
   const isHumanIDPlatform = useMemo(() => HUMAN_ID_PLATFORMS.includes(platform.platformId), [platform.platformId]);
 
@@ -135,19 +133,14 @@ export const useHumanIDVerification = ({
 
   const verifyHumanID = useCallback(async (): Promise<boolean> => {
     if (!isHumanIDPlatform) {
-      const error = new Error(`Platform ${platform.name} is not a Human ID platform`);
-      setError(error);
-      throw error;
+      throw new Error(`Platform ${platform.name} is not a Human ID platform`);
     }
 
     if (!address) {
-      const error = new Error("No address provided");
-      setError(error);
-      throw error;
+      throw new Error("No address provided");
     }
 
     setIsVerifying(true);
-    setError(null);
 
     try {
       // Check if user already has the SBT
@@ -169,10 +162,8 @@ export const useHumanIDVerification = ({
       setHasExistingSBT(true);
       return true;
     } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-      console.error("Human ID verification error:", error);
-      setError(error);
-      throw error;
+      console.error("Human ID verification error:", err);
+      throw err;
     } finally {
       setIsVerifying(false);
     }
@@ -184,6 +175,5 @@ export const useHumanIDVerification = ({
     isCheckingSBT,
     isVerifying,
     verifyHumanID,
-    error,
   };
 };

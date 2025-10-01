@@ -213,36 +213,20 @@ const ArrowUpRightIcon = () => (
   </svg>
 );
 
-const DoubleChevron = () => (
-  <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path
-      d="M17.5 11L12.5 6L7.5 11M17.5 18L12.5 13L7.5 18"
-      stroke="rgb(var(--color-background-c6dbf459))"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 const InitialTooLow = ({ onContinue }: { onContinue: () => void }) => {
   const { data } = useWidgetPassportScore();
 
   return (
-    <>
-      <div className={`${styles.textBlock} ${styles.tight}`}>
-        <HappyHuman />
-        <div className={`${styles.heading} ${styles.textCenter}`}>Increase score to participate!</div>
-        <div>
-          Your web3 history wasn't sufficient to enable you to participate. Raise your score to {data?.threshold || 20}{" "}
-          or above by verifying additional Stamps
-        </div>
+    <div className={styles.lowScoreContainer}>
+      <HappyHuman />
+      <div className={`${styles.heading} ${styles.textCenter}`}>Increase score to participate!</div>
+      <div className={styles.lowScoreDescription}>
+        Your web3 history wasn't sufficient to enable you to participate. Raise your score to {data?.threshold || 20} or
+        above by verifying additional Stamps
       </div>
       <Button className={utilStyles.wFull} onClick={onContinue}>
-        <div className={styles.buttonContent}>
-          <DoubleChevron /> Verify Stamps
-        </div>
+        <div className={styles.buttonContent}>Verify Stamps</div>
       </Button>
-    </>
+    </div>
   );
 };

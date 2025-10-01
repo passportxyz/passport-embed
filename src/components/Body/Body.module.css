@@ -48,6 +48,10 @@
   padding: 0;
 }
 
+.expanded:has(.lowScoreContainer) {
+  padding: 16px var(--widget-padding-x-c6dbf459) 16px;
+}
+
 .overlay {
   position: absolute;
 
@@ -77,6 +81,20 @@
   gap: 8px;
 }
 
+.lowScoreContainer {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+}
+
+.lowScoreDescription {
+  margin-top: -2px;
+  line-height: 20px;
+}
+
 .innerText {
   flex-grow: 1;
 }
@@ -96,7 +114,7 @@
   text-align: left;
   font-size: 16px;
   font-weight: 600;
-  line-height: 28px;
+  line-height: 16px;
   width: 100%;
 }
 
@@ -298,6 +316,10 @@
 .iconContainer svg {
   width: 56px;
   height: 56px;
+}
+
+.connectIconContainer {
+  margin-top: 16px;
 }
 
 .button {

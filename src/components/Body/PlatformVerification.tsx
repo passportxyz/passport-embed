@@ -13,6 +13,7 @@ import { StampClaimResult } from "./StampClaimResult";
 import { PlatformHeader } from "./PlatformHeader";
 import { DocLink } from "./DocLink";
 import { HumanTechFooter } from "./HumanTechFooter";
+import { getErrorMessage } from "../../utils";
 
 const getChallenge = async (challengeUrl: string, address: string, providerType: string) => {
   const payload = {
@@ -99,7 +100,7 @@ export const PlatformVerification = ({
       : credentialErrors?.length
         ? credentialErrors
         : error
-          ? [{ error: error instanceof Error ? error.message : "Unknown query error" }]
+          ? [{ error: getErrorMessage(error) }]
           : undefined;
     return <StampClaimResult platform={platform} onBack={onClose} errors={errors} />;
   }
@@ -160,7 +161,7 @@ export const PlatformVerification = ({
               verifyCredentials(platformCredentialIds);
             } catch (error) {
               console.log("Human ID verification error:", error);
-              setPreVerificationError(error instanceof Error ? error.message : "Unknown error verifying Human ID");
+              setPreVerificationError(getErrorMessage(error));
               setVerificationComplete(true);
               setInitiatedVerification(false); // Reset since we're not continuing
             }
@@ -239,7 +240,7 @@ export const PlatformVerification = ({
                 strokeLinejoin="round"
               />
             </svg>
-            Verify{isPending ? "ing..." : ""}
+            Verify{initiatedVerification ? "ing..." : ""}
           </div>
         )}
       </Button>
