@@ -109,8 +109,8 @@ describe("StampClaimResult", () => {
 
       render(<StampClaimResult platform={mockPlatform} onBack={mockOnBack} errors={credentialErrors} />);
 
-      // Should show "See Details" button
-      const seeDetailsButton = screen.getByText("See Details ➜");
+      // Should show "Details" button
+      const seeDetailsButton = screen.getByText("Details ➜");
       expect(seeDetailsButton).toBeInTheDocument();
 
       // Click to see error details
@@ -118,7 +118,7 @@ describe("StampClaimResult", () => {
 
       // Should show error section with counter
       expect(screen.getByText(/Errors/)).toBeInTheDocument();
-      expect(screen.getByText("1/2")).toBeInTheDocument();  // Error counter
+      expect(screen.getByText("1/2")).toBeInTheDocument(); // Error counter
 
       // Should display first error by default - wrapped in Tooltip which shows it twice (once as child, once as content)
       const errorTexts = screen.getAllByText("Account not eligible");
@@ -180,16 +180,17 @@ describe("StampClaimResult", () => {
       });
       rerender(<StampClaimResult platform={mockPlatform} onBack={mockOnBack} />);
 
-      const blurElement = document.querySelector('.blurEffect');
-      expect(blurElement).toHaveClass('altBlurColor');
+      const blurElement = document.querySelector(".blurEffect");
+      expect(blurElement).toHaveClass("altBlurColor");
 
       (usePlatformStatus.usePlatformStatus as jest.Mock).mockReturnValue({
         claimed: true,
       });
       rerender(<StampClaimResult platform={mockPlatform} onBack={mockOnBack} />);
 
-      const blurElementSuccess = document.querySelector('.blurEffect');
-      expect(blurElementSuccess).not.toHaveClass('altBlurColor');
+      const blurElementSuccess = document.querySelector(".blurEffect");
+      expect(blurElementSuccess).not.toHaveClass("altBlurColor");
     });
   });
 });
+

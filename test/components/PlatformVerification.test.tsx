@@ -105,7 +105,11 @@ describe("PlatformVerification", () => {
       />
     );
 
-    expect(screen.getByText("Verifying...")).toBeInTheDocument();
+    // The button shows "Verify" with a checkmark icon when not clicked
+    expect(screen.getByText("Verify")).toBeInTheDocument();
+    // The button is disabled when verification is pending
+    const verifyButton = screen.getByRole('button', { name: /verify/i });
+    expect(verifyButton).toBeDisabled();
   });
 
   it("shows already verified state when claimed", () => {

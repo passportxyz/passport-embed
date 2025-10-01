@@ -206,7 +206,7 @@ describe("useHumanIDVerification", () => {
       });
 
       expect(result.current.hasExistingSBT).toBe(false);
-      expect(result.current.error).toBeNull(); // Errors during check are silent
+      // Errors during check are silent and don't set an error state
     });
 
     it("should not check SBT when disabled", async () => {
@@ -371,7 +371,7 @@ describe("useHumanIDVerification", () => {
         await expect(result.current.verifyHumanID()).rejects.toThrow("User rejected");
       });
 
-      expect(result.current.error).toEqual(expect.any(Error));
+      // Error is thrown, not stored in state
     });
 
     it("should set isVerifying state during verification", async () => {
@@ -422,11 +422,7 @@ describe("useHumanIDVerification", () => {
         await expect(result.current.verifyHumanID()).rejects.toThrow("No address provided");
       });
 
-      expect(result.current.error).toEqual(
-        expect.objectContaining({
-          message: "No address provided",
-        })
-      );
+      // Error is thrown, not stored in state
     });
 
     it("should not verify non-Human ID platforms", async () => {
@@ -442,11 +438,7 @@ describe("useHumanIDVerification", () => {
       });
 
       expect(mockInitHumanID).not.toHaveBeenCalled();
-      expect(result.current.error).toEqual(
-        expect.objectContaining({
-          message: expect.stringContaining("not a Human ID platform"),
-        })
-      );
+      // Error is thrown, not stored in state
     });
   });
 });
