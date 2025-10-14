@@ -7,6 +7,8 @@ export const DarkTheme: PassportWidgetTheme = {
     background: "0, 0, 0",
     accent: "0, 212, 170",
     error: "235, 48, 45",
+    white: "255, 255, 255",
+    black: "0, 0, 0",
   },
   padding: {
     widget: {
@@ -37,9 +39,9 @@ export const LightTheme: PassportWidgetTheme = {
   ...DarkTheme,
   colors: {
     primary: "55, 55, 55",
-    secondary: "201, 201, 201",
+    secondary: "215, 215, 215",
     background: "255, 255, 255",
-    accent: "0, 212, 170",
+    accent: "113, 248, 194",
     error: "55, 55, 55",
   },
 };
