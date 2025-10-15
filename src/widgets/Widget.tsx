@@ -18,6 +18,8 @@ export type PassportWidgetTheme = {
     background?: string;
     accent: string;
     error?: string;
+    white?: string;
+    black?: string;
   };
   padding?: {
     widget?: {
@@ -76,6 +78,8 @@ const setTheme = ({ theme, ref }: { theme?: PassportWidgetTheme; ref: RefObject<
     ["color-background", colors?.background],
     ["color-accent", colors?.accent],
     ["color-error", colors?.error],
+    ["color-white", colors?.white],
+    ["color-black", colors?.black],
     ["widget-padding-x", padding?.widget?.x],
     ["widget-padding-y", padding?.widget?.y],
     ["widget-radius", radius?.widget],

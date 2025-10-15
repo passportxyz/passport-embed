@@ -11,6 +11,8 @@ export type PassportWidgetTheme = {
         background?: string;
         accent: string;
         error?: string;
+        white?: string;
+        black?: string;
     };
     padding?: {
         widget?: {

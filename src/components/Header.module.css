@@ -73,7 +73,7 @@
   z-index: 1;
   font-size: 20px;
   font-weight: 600;
-  color: rgba(var(--color-background-c6dbf459), 1);
+  color: rgba(var(--color-black-c6dbf459), 1);
 }
 
 .scoreSection {

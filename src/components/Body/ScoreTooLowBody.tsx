@@ -69,7 +69,11 @@ const PlatformButton = ({
     >
       <div className={styles.platformButtonContents}>
         <div className={styles.platformButtonTitle}>
-          {platform.icon && <span className={styles.platformIcon}>{platform.icon}</span>}
+          {platform.icon && (
+            <div className={styles.platformIconBackground}>
+              <span className={styles.platformIcon}>{platform.icon}</span>
+            </div>
+          )}
           {platform.name}
         </div>
         {isDeduped && <DedupeBadge />}

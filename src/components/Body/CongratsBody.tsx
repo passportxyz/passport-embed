@@ -1,5 +1,3 @@
-import { useEffect } from "react";
-import { useHeaderControls } from "../../hooks/useHeaderControls";
 import { HappyHuman } from "../../assets/happyHuman";
 import { Button } from "../Button";
 import styles from "./Body.module.css";
@@ -11,18 +9,18 @@ interface CongratsBodyProps {
 }
 
 export const CongratsBody = ({ collapseMode, onClose }: CongratsBodyProps) => {
-  const { setSubtitle } = useHeaderControls();
-
-  useEffect(() => {
-    setSubtitle("CONGRATULATIONS");
-  });
-
   const shouldShowCloseButton = collapseMode && collapseMode !== "off";
 
   return (
     <>
       <div className={styles.blurEffect}></div>
-      <div className={shouldShowCloseButton ? styles.textBlock : `${styles.textBlock} ${styles.extraBottomMarginForBodyWithoutButton}`}>
+      <div
+        className={
+          shouldShowCloseButton
+            ? styles.textBlock
+            : `${styles.textBlock} ${styles.extraBottomMarginForBodyWithoutButton}`
+        }
+      >
         <div className={styles.iconWrapper}>
           <HappyHuman />
         </div>
