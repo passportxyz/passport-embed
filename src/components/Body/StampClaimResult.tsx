@@ -99,7 +99,7 @@ export const StampClaimResult = ({ platform, onBack, errors }: StampClaimSuccess
             <div className={`${styles.heading} ${styles.textCenter}`}>
               {claimed ? "Congratulations!" : "Stamp Verification Unsuccessful"}
             </div>
-            <div className={styles.textCenter}>
+            <div className={styles.accentText}>
               {claimed ? (
                 <>
                   You've verified credentials within

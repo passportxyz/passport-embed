@@ -136,7 +136,11 @@
 
 .accentText {
   text-align: center;
-  color: rgba(var(--color-accent-c6dbf459, var(--color-primary-c6dbf459)), 1);
+  color: color-mix(
+    in srgb,
+    rgb(var(--color-accent-c6dbf459)) 60%,
+    rgb(var(--color-primary-c6dbf459)) 40%
+  );
   text-align: center;
   font-weight: 400;
 }
@@ -166,7 +170,7 @@
 }
 
 .platformButton:hover {
-  background: rgba(var(--color-secondary-c6dbf459), 0.8);
+  filter: brightness(0.95);
 }
 
 .platformButton:disabled {
@@ -181,7 +185,8 @@
 }
 
 .platformButtonClaimed:hover {
-  background: rgba(var(--color-accent-c6dbf459), 0.7);
+  background: rgba(var(--color-accent-c6dbf459), 0.8);
+  filter: brightness(0.95);
 }
 
 .platformButtonTitle {
@@ -202,6 +207,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  color: rgb(var(--color-black-c6dbf459));
 }
 
 .platformIcon img {
@@ -213,6 +219,16 @@
 .platformIcon svg {
   width: 100%;
   height: 100%;
+}
+
+.platformIconBackground {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: rgb(var(--color-white-c6dbf459));
+  border-radius: calc(var(--button-radius-c6dbf459) / 3);
 }
 
 .platformButtonWeight {
@@ -231,7 +247,11 @@
 }
 
 .scoreDenominator {
-  color: rgba(var(--color-accent-c6dbf459), 1);
+  color: color-mix(
+    in srgb,
+    rgba(var(--color-accent-c6dbf459), 0.8) 80%,
+    rgb(var(--color-primary-c6dbf459)) 20%
+  );
 }
 
 .scoreNumerator {
@@ -344,7 +364,7 @@
   height: 284px;
   left: 8px;
   top: -99px;
-  background: rgb(var(--color-accent-c6dbf459), 0.45);
+  background: rgb(var(--color-accent-c6dbf459), 0.55);
   filter: blur(50px);
   pointer-events: none;
   z-index: 0; /* Behind other content */
@@ -352,6 +372,7 @@
 }
 
 .altBlurColor {
+  top: -160px;
   background: rgb(var(--color-primary-c6dbf459), 0.3);
 }
 
@@ -452,6 +473,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  font-weight: 500;
 }
 
 .verifyHeader {
