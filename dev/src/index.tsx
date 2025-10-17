@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { useState, useEffect } from "react";
 import { Buffer } from "buffer";
-import { PassportScoreWidget, usePassportScore, CollapseMode, DarkTheme } from "@human.tech/passport-embed";
+import { PassportScoreWidget, usePassportScore, CollapseMode, DarkTheme, LightTheme } from "@human.tech/passport-embed";
 import { setupMocks } from "./setupMocks";
 import { DevToolsPanel } from "./components/DevToolsPanel";
 
@@ -124,7 +124,7 @@ const mockWallet = {
   },
 };
 
-const Dashboard = ({ walletMode }: { walletMode: "metamask" | "mock" }) => {
+const Dashboard = ({ walletMode, theme }: { walletMode: "metamask" | "mock"; theme: "dark" | "light" }) => {
   const [address, setAddress] = useState<string | undefined>();
   const [collapseMode, setCollapseMode] = useState<CollapseMode>("shift");
 
@@ -171,7 +171,7 @@ const Dashboard = ({ walletMode }: { walletMode: "metamask" | "mock" }) => {
         connectWalletCallback={handleConnect}
         generateSignatureCallback={handleSign}
         opRPCURL={import.meta.env.VITE_OP_RPC_URL as string}
-        theme={DarkTheme}
+        theme={theme === "dark" ? DarkTheme : LightTheme}
       />
       <DirectPassportDataAccess address={address} />
     </div>
@@ -181,10 +181,18 @@ const Dashboard = ({ walletMode }: { walletMode: "metamask" | "mock" }) => {
 export const App = () => {
   const showMocks = import.meta.env.VITE_ENABLE_MSW === "true";
   const [walletMode, setWalletMode] = useState<"metamask" | "mock">(showMocks ? "mock" : "metamask");
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
 
   return (
     <>
-      <Dashboard walletMode={walletMode} />
+      <div style={{ position: "fixed", top: "1rem", right: "1rem", zIndex: 1000 }}>
+        <label style={{ marginRight: "0.5rem", fontWeight: "bold" }}>Theme:</label>
+        <select value={theme} onChange={(e) => setTheme(e.target.value as "dark" | "light")}>
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
+        </select>
+      </div>
+      <Dashboard walletMode={walletMode} theme={theme} />
       {showMocks && <DevToolsPanel walletMode={walletMode} onWalletModeChange={setWalletMode} />}
     </>
   );
