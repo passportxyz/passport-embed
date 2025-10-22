@@ -10,10 +10,7 @@
   border-bottom-right-radius: var(--widget-radius-c6dbf459);
 
   /* Use gradient if available, fallback to solid background */
-  background: var(
-    --background-gradient-c6dbf459,
-    rgba(var(--color-background-c6dbf459), 1)
-  );
+  background: rgba(var(--color-background-c6dbf459), 1);
 
   display: flex;
   flex-direction: column;
@@ -277,10 +274,11 @@
   color: inherit;
   text-decoration: none;
   font-weight: 700;
+  opacity: 1;
 }
 
 .link:hover {
-  text-decoration: underline;
+  opacity: 0.6;
 }
 
 .navigationButtons {
@@ -313,11 +311,12 @@
   align-items: center;
   justify-content: center;
   gap: 4px;
+  color: rgb(var(--color-secondary-c6dbf459));
 }
 
 .footerText {
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 450;
 }
 
 .iconContainer {
@@ -327,7 +326,6 @@
   width: 56px;
   height: 56px;
   color: white;
-  filter: drop-shadow(0px 0px 12px rgba(var(--color-primary-c6dbf459), 1));
   position: relative;
   z-index: 1; /* Above blur effect */
   flex-shrink: 0;
@@ -381,7 +379,9 @@
 }
 
 .loadingText {
-  text-align: left;
+  margin-top: 8px;
+  color: rgb(var(--color-secondary-c6dbf459));
+  text-align: center;
   flex-grow: 1;
 }
 
@@ -472,8 +472,8 @@
 .learnMore {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 500;
+  gap: 6px;
+  font-weight: 450;
 }
 
 .verifyHeader {

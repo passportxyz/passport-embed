@@ -14,7 +14,7 @@ import { PlatformVerification } from "./PlatformVerification";
 import { useQueryContext } from "../../hooks/useQueryContext";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
 import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
-import { HappyHuman } from "../../assets/happyHuman";
+import { WinkingHuman } from "../../assets/winkingHuman";
 import { HouseIcon } from "../../assets/houseIcon";
 import { BackButton } from "./PlatformHeader";
 import { displayNumber } from "../../utils";
@@ -222,7 +222,7 @@ const InitialTooLow = ({ onContinue }: { onContinue: () => void }) => {
 
   return (
     <div className={styles.lowScoreContainer}>
-      <HappyHuman />
+      <WinkingHuman />
       <div className={`${styles.heading} ${styles.textCenter}`}>Increase score to participate!</div>
       <div className={styles.lowScoreDescription}>
         Your web3 history wasn't sufficient to enable you to participate. Raise your score to {data?.threshold || 20} or
