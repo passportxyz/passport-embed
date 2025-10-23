@@ -1,8 +1,15 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import styles from "./Body.module.css";
 import { loadingAnimationData } from "../../assets/humanTechLoading";
-import Lottie from "lottie-react";
 import { useTheme, parseRgbColor } from "../../contexts/ThemeContext";
+
+// Type for lottie-react module
+type LottieComponent = React.ComponentType<{
+  animationData: unknown;
+  loop?: boolean;
+  autoplay?: boolean;
+  style?: React.CSSProperties;
+}>;
 
 export const CheckingBody = () => {
   const { theme } = useTheme();
@@ -22,6 +29,21 @@ export const CheckingBody = () => {
 };
 
 function DynamicAnimation({ color = [0, 0, 0] }) {
+  const [Lottie, setLottie] = useState<LottieComponent | null>(null);
+
+  // Dynamically import lottie-react only in browser environment
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      import("lottie-react")
+        .then((mod) => {
+          setLottie(() => mod.default);
+        })
+        .catch((err) => {
+          console.error("Failed to load lottie-react:", err);
+        });
+    }
+  }, []);
+
   // Convert RGB values (0-255) to Lottie format (0-1)
   const normalizedColor = useMemo(() => {
     return color.map((c) => c / 255);
@@ -56,6 +78,11 @@ function DynamicAnimation({ color = [0, 0, 0] }) {
 
     return modified;
   }, [normalizedColor]);
+
+  // Show loading placeholder while Lottie is being loaded
+  if (!Lottie) {
+    return <div style={{ width: 100, height: 100 }} />;
+  }
 
   return <Lottie animationData={animationData} loop={true} autoplay={true} style={{ width: 100, height: 100 }} />;
 }
