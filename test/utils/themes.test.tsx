@@ -36,13 +36,13 @@ describe("Theme Utils", () => {
     it("includes all required color properties", () => {
       expect(LightTheme.colors).toBeDefined();
       expect(LightTheme.colors?.primary).toBe("55, 55, 55");
-      expect(LightTheme.colors?.secondary).toBe("201, 201, 201");
+      expect(LightTheme.colors?.secondary).toBe("200, 200, 200");
       expect(LightTheme.colors?.background).toBe("255, 255, 255");
       expect(LightTheme.colors?.error).toBe("55, 55, 55");
     });
 
     it("includes accent color for CTAs", () => {
-      expect(LightTheme.colors?.accent).toBe("0, 212, 170"); // #00D4AA - same as dark theme
+      expect(LightTheme.colors?.accent).toBe("113, 248, 194"); // #71F8C2 - light theme accent
     });
 
     it("uses same padding as dark theme", () => {

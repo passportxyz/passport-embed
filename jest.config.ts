@@ -9,6 +9,7 @@ const config: JestConfigWithTsJest = {
   },
   moduleNameMapper: {
     "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+    "^lottie-react$": "<rootDir>/test/__mocks__/lottie-react.tsx",
   },
   setupFilesAfterEnv: ["<rootDir>/src/jest.setup.ts"],
 };

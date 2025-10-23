@@ -388,10 +388,11 @@ describe("Passport Score Hooks", () => {
   describe("Rate limit error handling", () => {
     describe("processScoreResponseError mapping for GET (lines 250-253)", () => {
       it("maps 429 with x-ratelimit-limit=0 to permission RateLimitError", async () => {
-        const rateLimitError: any = new Error("Rate limit exceeded");
-        rateLimitError.response = { status: 429, headers: { "x-ratelimit-limit": "0" } };
+        const rateLimitError = Object.assign(new Error("Rate limit exceeded"), {
+          response: { status: 429, headers: { "x-ratelimit-limit": "0" } },
+        });
 
-        (mockedAxios as any).isAxiosError = () => true;
+        (mockedAxios.isAxiosError as unknown as jest.Mock) = jest.fn(() => true);
         mockedAxios.get.mockRejectedValueOnce(rateLimitError);
 
         const { result } = renderHook(() =>
@@ -414,10 +415,11 @@ describe("Passport Score Hooks", () => {
       });
 
       it("maps 429 without x-ratelimit-limit to generic RateLimitError", async () => {
-        const rateLimitError: any = new Error("Rate limit exceeded");
-        rateLimitError.response = { status: 429, headers: {} };
+        const rateLimitError = Object.assign(new Error("Rate limit exceeded"), {
+          response: { status: 429, headers: {} },
+        });
 
-        (mockedAxios as any).isAxiosError = () => true;
+        (mockedAxios.isAxiosError as unknown as jest.Mock) = jest.fn(() => true);
         mockedAxios.get.mockRejectedValueOnce(rateLimitError);
 
         const { result } = renderHook(() =>
@@ -438,10 +440,11 @@ describe("Passport Score Hooks", () => {
       });
 
       it("maps 429 with non-zero x-ratelimit-limit to generic RateLimitError", async () => {
-        const rateLimitError: any = new Error("Rate limit exceeded");
-        rateLimitError.response = { status: 429, headers: { "x-ratelimit-limit": "100" } };
+        const rateLimitError = Object.assign(new Error("Rate limit exceeded"), {
+          response: { status: 429, headers: { "x-ratelimit-limit": "100" } },
+        });
 
-        (mockedAxios as any).isAxiosError = () => true;
+        (mockedAxios.isAxiosError as unknown as jest.Mock) = jest.fn(() => true);
         mockedAxios.get.mockRejectedValueOnce(rateLimitError);
 
         const { result } = renderHook(() =>

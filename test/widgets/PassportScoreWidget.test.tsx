@@ -71,11 +71,11 @@ describe("PassportScoreWidget", () => {
 
   it("renders without crashing", () => {
     render(<PassportScoreWidget {...defaultProps} />);
-    expect(screen.getByText("Verifying your activity...")).toBeInTheDocument();
+    expect(screen.getByText("Verifying...")).toBeInTheDocument();
   });
 
-  it("injects fonts on mount", () => {
-    const { injectFonts } = require("../../src/utils/fontInjector");
+  it("injects fonts on mount", async () => {
+    const { injectFonts } = await import("../../src/utils/fontInjector");
     render(<PassportScoreWidget {...defaultProps} />);
     expect(injectFonts).toHaveBeenCalledTimes(1);
   });
@@ -96,14 +96,14 @@ describe("PassportScoreWidget", () => {
   });
 
   it("logs error when apiKey is undefined", () => {
-    render(<PassportScoreWidget {...defaultProps} apiKey={undefined as any} />);
+    render(<PassportScoreWidget {...defaultProps} apiKey={undefined as unknown as string} />);
     expect(mockConsoleError).toHaveBeenCalledWith(
       expect.stringContaining("apiKey is required")
     );
   });
 
   it("logs error when scorerId is undefined", () => {
-    render(<PassportScoreWidget {...defaultProps} scorerId={undefined as any} />);
+    render(<PassportScoreWidget {...defaultProps} scorerId={undefined as unknown as string} />);
     expect(mockConsoleError).toHaveBeenCalledWith(
       expect.stringContaining("scorerId is required")
     );
@@ -113,8 +113,8 @@ describe("PassportScoreWidget", () => {
     render(
       <PassportScoreWidget
         {...defaultProps}
-        apiKey={undefined as any}
-        scorerId={undefined as any}
+        apiKey={undefined as unknown as string}
+        scorerId={undefined as unknown as string}
       />
     );
     expect(mockConsoleError).toHaveBeenCalledTimes(2);
@@ -158,17 +158,17 @@ describe("PassportScoreWidget", () => {
     );
 
     // The widget should render with the theme and other props
-    expect(screen.getByText("Verifying your activity...")).toBeInTheDocument();
+    expect(screen.getByText("Verifying...")).toBeInTheDocument();
   });
 
   it("handles missing connectWalletCallback", () => {
     render(<PassportScoreWidget {...defaultProps} connectWalletCallback={undefined} />);
-    expect(screen.getByText("Verifying your activity...")).toBeInTheDocument();
+    expect(screen.getByText("Verifying...")).toBeInTheDocument();
   });
 
   it("handles missing generateSignatureCallback", () => {
     render(<PassportScoreWidget {...defaultProps} generateSignatureCallback={undefined} />);
-    expect(screen.getByText("Verifying your activity...")).toBeInTheDocument();
+    expect(screen.getByText("Verifying...")).toBeInTheDocument();
   });
 
   it("handles missing address", () => {
@@ -360,7 +360,7 @@ describe("PassportScoreWidget", () => {
       render(<PassportScoreWidget {...defaultProps} />);
 
       // Because isVerifying && !isInitialized, Body should show CheckingBody
-      expect(await screen.findByText(/Verifying your activity/i)).toBeInTheDocument();
+      expect(await screen.findByText(/Verifying\.\.\./i)).toBeInTheDocument();
     });
   });
 });

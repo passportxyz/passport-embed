@@ -1,4 +1,3 @@
-import React from "react";
 import { renderHook } from "@testing-library/react";
 import { usePlatformDeduplication } from "../../src/hooks/usePlatformDeduplication";
 import { useWidgetPassportScore } from "../../src/hooks/usePassportScore";

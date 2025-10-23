@@ -144,7 +144,7 @@ describe("Widget", () => {
 
   it("handles null theme", () => {
     const { container } = render(
-      <Widget theme={null as any}>
+      <Widget theme={null as unknown as PassportWidgetTheme}>
         <div>Test content</div>
       </Widget>
     );

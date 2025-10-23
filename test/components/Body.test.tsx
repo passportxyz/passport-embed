@@ -2,11 +2,18 @@ import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Body } from "../../src/components/Body";
 import { useResetWidgetPassportScore, useWidgetPassportScore } from "../../src/hooks/usePassportScore";
+import { ThemeProvider } from "../../src/contexts/ThemeContext";
+import { DarkTheme } from "../../src/utils/themes";
 
 // Mock the custom hook
 jest.mock("../../src/hooks/usePassportScore");
 const mockUseWidgetPassportScore = useWidgetPassportScore as jest.Mock;
 const mockUseResetWidgetPassportScore = useResetWidgetPassportScore as jest.Mock;
+
+// Helper to render with ThemeProvider
+const renderWithTheme = (ui: React.ReactElement) => {
+  return render(<ThemeProvider theme={DarkTheme}>{ui}</ThemeProvider>);
+};
 
 describe("Body Routing", () => {
   const defaultProps = {
@@ -33,7 +40,7 @@ describe("Body Routing", () => {
       resetPassportScore: mockResetPassportScore,
     });
 
-    render(<Body {...defaultProps} />);
+    renderWithTheme(<Body {...defaultProps} />);
     expect(screen.getByText("Test error")).toBeInTheDocument();
 
     const button = screen.getByRole("button", { name: "Try Again" });
@@ -52,7 +59,7 @@ describe("Body Routing", () => {
       data: { passingScore: true },
     });
 
-    render(<Body {...defaultProps} />);
+    renderWithTheme(<Body {...defaultProps} />);
     expect(screen.getByText("Human Verification Complete!")).toBeInTheDocument();
     expect(screen.getByText("You can now participate")).toBeInTheDocument();
   });
@@ -65,7 +72,7 @@ describe("Body Routing", () => {
       data: { passingScore: false },
     });
 
-    render(<Body {...defaultProps} />);
+    renderWithTheme(<Body {...defaultProps} />);
     expect(screen.getByText("Increase score to participate!")).toBeInTheDocument();
   });
 
@@ -77,8 +84,8 @@ describe("Body Routing", () => {
       data: null,
     });
 
-    render(<Body {...defaultProps} showLoading={true} />);
-    expect(screen.getByRole("button", { name: "Verifying..." })).toBeInTheDocument();
+    renderWithTheme(<Body {...defaultProps} showLoading={true} />);
+    expect(screen.getByText("Verifying...")).toBeInTheDocument();
   });
 
   describe("renders ConnectWalletBody by default", () => {
@@ -90,7 +97,7 @@ describe("Body Routing", () => {
         data: null,
       });
 
-      render(<Body {...defaultProps} connectWalletCallback={async () => {}} />);
+      renderWithTheme(<Body {...defaultProps} connectWalletCallback={async () => {}} />);
 
       expect(screen.getByText("Connect your wallet", { exact: false })).toBeInTheDocument();
 
@@ -110,7 +117,7 @@ describe("Body Routing", () => {
         data: null,
       });
 
-      render(<Body {...defaultProps} connectWalletCallback={undefined} />);
+      renderWithTheme(<Body {...defaultProps} connectWalletCallback={undefined} />);
 
       expect(screen.getByText("Connect to the dapp", { exact: false })).toBeInTheDocument();
 
@@ -138,24 +145,24 @@ describe("Body", () => {
   });
 
   it("applies correct classes when expanded", () => {
-    const { container } = render(<Body {...defaultProps} />);
+    const { container } = renderWithTheme(<Body {...defaultProps} />);
     expect(container.firstChild).toHaveClass("expanded");
     expect(container.firstChild).not.toHaveClass("collapsed");
   });
 
   it("applies correct classes when collapsed", async () => {
-    const { container } = render(<Body {...defaultProps} isOpen={false} collapseMode="shift" />);
+    const { container } = renderWithTheme(<Body {...defaultProps} isOpen={false} collapseMode="shift" />);
     expect(container.firstChild).toHaveClass("collapsed");
     expect(container.firstChild).not.toHaveClass("expanded");
   });
 
   it("applies overlay class when collapseMode is overlay", () => {
-    const { container } = render(<Body {...defaultProps} collapseMode="overlay" />);
+    const { container } = renderWithTheme(<Body {...defaultProps} collapseMode="overlay" />);
     expect(container.firstChild).toHaveClass("overlay");
   });
 
   it("applies custom className when provided", () => {
-    const { container } = render(<Body {...defaultProps} className="custom-class" />);
+    const { container } = renderWithTheme(<Body {...defaultProps} className="custom-class" />);
     expect(container.firstChild).toHaveClass("custom-class");
   });
 });

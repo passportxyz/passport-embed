@@ -55,9 +55,8 @@ describe("Button", () => {
   });
 
   it("forwards ref correctly", () => {
-    const ref = React.createRef<HTMLButtonElement>();
     render(<Button>Button with ref</Button>);
-    
+
     // Button component doesn't forward refs, so we just test it renders
     expect(screen.getByText("Button with ref")).toBeInTheDocument();
   });

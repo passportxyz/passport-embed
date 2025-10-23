@@ -40,8 +40,8 @@ describe("StampClaimResult", () => {
     const error = { error: "Test error" };
     render(<StampClaimResult platform={mockPlatform} onBack={mockOnBack} errors={[error]} />);
     
-    // Click "See Details" to show errors
-    const seeDetailsButton = screen.getByText("See Details ➜");
+    // Click "Details" to show errors
+    const seeDetailsButton = screen.getByText("Details ➜");
     fireEvent.click(seeDetailsButton);
     
     expect(screen.getByText("Test error")).toBeInTheDocument();
@@ -55,8 +55,8 @@ describe("StampClaimResult", () => {
 
     render(<StampClaimResult platform={mockPlatform} onBack={mockOnBack} errors={errors} />);
     
-    // Click "See Details" to show errors
-    const seeDetailsButton = screen.getByText("See Details ➜");
+    // Click "Details" to show errors
+    const seeDetailsButton = screen.getByText("Details ➜");
     fireEvent.click(seeDetailsButton);
     
     expect(screen.getByText("First error")).toBeInTheDocument();
@@ -71,8 +71,8 @@ describe("StampClaimResult", () => {
 
     render(<StampClaimResult platform={mockPlatform} onBack={mockOnBack} errors={errors} />);
     
-    // Click "See Details" to show errors
-    const seeDetailsButton = screen.getByText("See Details ➜");
+    // Click "Details" to show errors
+    const seeDetailsButton = screen.getByText("Details ➜");
     fireEvent.click(seeDetailsButton);
     
     // Find the navigation arrows
@@ -103,8 +103,8 @@ describe("StampClaimResult", () => {
 
     render(<StampClaimResult platform={mockPlatform} onBack={mockOnBack} errors={errors} />);
     
-    // Click "See Details" to show errors
-    const seeDetailsButton = screen.getByText("See Details ➜");
+    // Click "Details" to show errors
+    const seeDetailsButton = screen.getByText("Details ➜");
     fireEvent.click(seeDetailsButton);
     
     // Find the navigation arrows
@@ -135,8 +135,8 @@ describe("StampClaimResult", () => {
 
     render(<StampClaimResult platform={mockPlatform} onBack={mockOnBack} errors={errors} />);
     
-    // Click "See Details" to show errors
-    const seeDetailsButton = screen.getByText("See Details ➜");
+    // Click "Details" to show errors
+    const seeDetailsButton = screen.getByText("Details ➜");
     fireEvent.click(seeDetailsButton);
     
     // Find the navigation arrows
@@ -192,8 +192,8 @@ describe("StampClaimResult", () => {
 
         render(<StampClaimResult platform={mockPlatform} onBack={mockOnBack} errors={errors} />);
         
-        // Click "See Details" to show errors
-        const seeDetailsButton = screen.getByText("See Details ➜");
+        // Click "Details" to show errors
+        const seeDetailsButton = screen.getByText("Details ➜");
         fireEvent.click(seeDetailsButton);
         
         // Find the navigation arrows
@@ -227,10 +227,10 @@ describe("StampClaimResult", () => {
           { error: "Error 3" },
         ];
 
-        const { rerender } = render(<StampClaimResult platform={mockPlatform} onBack={mockOnBack} errors={errors} />);
-        
-        // Click "See Details" to show errors
-        const seeDetailsButton = screen.getByText("See Details ➜");
+        render(<StampClaimResult platform={mockPlatform} onBack={mockOnBack} errors={errors} />);
+
+        // Click "Details" to show errors
+        const seeDetailsButton = screen.getByText("Details ➜");
         fireEvent.click(seeDetailsButton);
         
         // Find the navigation arrows
@@ -283,8 +283,8 @@ describe("StampClaimResult", () => {
 
     render(<StampClaimResult platform={mockPlatform} onBack={mockOnBack} errors={errors} />);
     
-    // Click "See Details" to show errors
-    const seeDetailsButton = screen.getByText("See Details ➜");
+    // Click "Details" to show errors
+    const seeDetailsButton = screen.getByText("Details ➜");
     fireEvent.click(seeDetailsButton);
     
     // Verify we're at first error
