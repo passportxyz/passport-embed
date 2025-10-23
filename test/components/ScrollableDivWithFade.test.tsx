@@ -347,15 +347,11 @@ describe("ScrollableDivWithFade", () => {
   it("covers addEventListener optional chaining when ref is null initially", () => {
     // This test covers line 38: scrollContainerRef.current?.addEventListener
     // We render and immediately check - during initial render cycle, refs might be null
-    let container: any;
-    expect(() => {
-      const result = render(
-        <ScrollableDivWithFade className="test-class">
-          <div>Test content</div>
-        </ScrollableDivWithFade>
-      );
-      container = result.container;
-    }).not.toThrow();
+    const { container } = render(
+      <ScrollableDivWithFade className="test-class">
+        <div>Test content</div>
+      </ScrollableDivWithFade>
+    );
 
     // The component should render without errors even if ref is temporarily null during setup
     expect(container.firstChild).toBeInTheDocument();

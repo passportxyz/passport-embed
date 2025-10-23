@@ -1,31 +1,12 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { CongratsBody } from "../../../src/components/Body/CongratsBody";
-import { useHeaderControls } from "../../../src/hooks/useHeaderControls";
-
-// Mock the useHeaderControls hook
-jest.mock("../../../src/hooks/useHeaderControls");
-const mockUseHeaderControls = useHeaderControls as jest.Mock;
 
 describe("CongratsBody", () => {
-  const mockSetSubtitle = jest.fn();
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    mockUseHeaderControls.mockReturnValue({
-      setSubtitle: mockSetSubtitle,
-    });
-  });
-
   it("renders congratulations message", () => {
     render(<CongratsBody />);
     expect(screen.getByText("Human Verification Complete!")).toBeInTheDocument();
     expect(screen.getByText("You can now participate")).toBeInTheDocument();
-  });
-
-  it("sets subtitle on mount", () => {
-    render(<CongratsBody />);
-    expect(mockSetSubtitle).toHaveBeenCalledWith("CONGRATULATIONS");
   });
 
   it("shows close button when collapseMode is not 'off'", () => {

@@ -2,6 +2,7 @@ import styles from "./Widget.module.css";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { RefObject, useEffect, useRef } from "react";
 import { usePassportQueryClient } from "../hooks/usePassportQueryClient";
+import { ThemeProvider } from "../contexts/ThemeContext";
 
 export type CollapseMode = "shift" | "overlay" | "off";
 
@@ -56,7 +57,9 @@ export const Widget = ({ children, theme, className }: GenericPassportWidgetProp
 
   return (
     <div className={`${styles.widget} ${className}`} ref={widgetRef}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider theme={theme}>{children}</ThemeProvider>
+      </QueryClientProvider>
     </div>
   );
 };

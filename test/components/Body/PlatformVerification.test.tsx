@@ -34,7 +34,6 @@ describe("PlatformVerification", () => {
   };
 
   const mockOnClose = jest.fn();
-  const mockGenerateSignatureCallback = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
