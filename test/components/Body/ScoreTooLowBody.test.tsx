@@ -353,8 +353,8 @@ describe("ScoreTooLowBody", () => {
       mockFetchStampPages.mockResolvedValue(mockRawStampPageData);
 
       // Mock useQuery to capture the queryFn and execute it
-      let capturedQueryFn: any;
-      mockUseQuery.mockImplementation((queryConfig, queryClient) => {
+      let capturedQueryFn: () => Promise<unknown>;
+      mockUseQuery.mockImplementation((queryConfig) => {
         capturedQueryFn = queryConfig.queryFn;
         return {
           data: null,
@@ -370,9 +370,12 @@ describe("ScoreTooLowBody", () => {
       fireEvent.click(verifyButton);
 
       // Execute the captured queryFn to cover lines 111-114
-      if (capturedQueryFn) {
-        const result = await capturedQueryFn();
-        
+      if (capturedQueryFn!) {
+        const result = (await capturedQueryFn()) as Array<{
+          header: string;
+          platforms: Array<{ platformId: string; name: string }>;
+        }>;
+
         // Verify that the data was transformed correctly
         expect(result).toHaveLength(1);
         expect(result[0]).toHaveProperty("header", "Social");

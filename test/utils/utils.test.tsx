@@ -6,7 +6,7 @@ describe("displayNumber", () => {
   });
 
   it("returns '0' for null input", () => {
-    expect(displayNumber(null as any)).toBe("0");
+    expect(displayNumber(null as unknown as number)).toBe("0");
   });
 
   it("returns '0' for 0 input", () => {

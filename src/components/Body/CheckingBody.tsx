@@ -33,17 +33,21 @@ function DynamicAnimation({ color = [0, 0, 0] }) {
     const modified = JSON.parse(JSON.stringify(loadingAnimationData));
 
     // Recursive function to update colors in the animation tree
-    const updateColors = (obj: any) => {
+    const updateColors = (obj: unknown): void => {
       if (Array.isArray(obj)) {
         obj.forEach(updateColors);
       } else if (obj && typeof obj === "object") {
+        const record = obj as Record<string, unknown>;
         // Check if this is a fill (ty: 'fl') or stroke (ty: 'st')
-        if ((obj.ty === "fl" || obj.ty === "st") && obj.c && obj.c.k) {
-          // Update the color value
-          obj.c.k = normalizedColor;
+        if ((record.ty === "fl" || record.ty === "st") && record.c && typeof record.c === "object") {
+          const colorObj = record.c as Record<string, unknown>;
+          if (colorObj.k) {
+            // Update the color value
+            colorObj.k = normalizedColor;
+          }
         }
         // Recursively check all properties
-        Object.values(obj).forEach(updateColors);
+        Object.values(record).forEach(updateColors);
       }
     };
 

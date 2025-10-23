@@ -6,6 +6,7 @@ import {
   getPhoneSBTByAddress,
   getBiometricsSBTByAddress,
   getCleanHandsSPAttestationByAddress,
+  type HubV3SBT,
 } from "@holonym-foundation/human-id-sdk";
 import { Platform } from "../../src/hooks/stampTypes";
 
@@ -488,7 +489,7 @@ describe("useHumanIDVerification", () => {
 
     it("should handle invalid SBT in validation", async () => {
       // This test covers line 50 - return false in validateSBT when SBT is invalid
-      mockGetKycSBT.mockResolvedValueOnce(null as any); // Invalid SBT
+      mockGetKycSBT.mockResolvedValueOnce(null as unknown as HubV3SBT); // Invalid SBT
 
       const { result } = renderHook(() =>
         useHumanIDVerification({
@@ -585,7 +586,7 @@ describe("useHumanIDVerification", () => {
 
     it("should handle SBT validation with non-object SBT", async () => {
       // This test covers line 50 - return false when SBT is not an object
-      mockGetKycSBT.mockResolvedValueOnce("invalid-sbt" as any);
+      mockGetKycSBT.mockResolvedValueOnce("invalid-sbt" as unknown as HubV3SBT);
 
       const { result } = renderHook(() =>
         useHumanIDVerification({
@@ -606,7 +607,7 @@ describe("useHumanIDVerification", () => {
     it("should handle SBT validation with object missing expiry", async () => {
       // This test covers line 50 - return false when SBT object doesn't have expiry
       const sbtWithoutExpiry = { revoked: false, publicValues: [BigInt(1)] };
-      mockGetKycSBT.mockResolvedValueOnce(sbtWithoutExpiry as any);
+      mockGetKycSBT.mockResolvedValueOnce(sbtWithoutExpiry as unknown as HubV3SBT);
 
       const { result } = renderHook(() =>
         useHumanIDVerification({

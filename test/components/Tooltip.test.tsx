@@ -315,12 +315,12 @@ describe("Tooltip", () => {
   });
 
   it("handles computePosition when refs are null during update", async () => {
-    const { rerender } = render(
+    render(
       <Tooltip content="Test content">
         <button>Hover me</button>
       </Tooltip>
     );
-    
+
     const trigger = screen.getByRole("button", { name: "Hover me" });
     
     // Show tooltip
@@ -349,12 +349,12 @@ describe("Tooltip", () => {
   });
 
   it("calls computePosition callback multiple times without error", async () => {
-    const { container } = render(
+    render(
       <Tooltip content="Test content" placement="top">
         <button>Hover me</button>
       </Tooltip>
     );
-    
+
     const trigger = screen.getByRole("button", { name: "Hover me" });
     
     // Show tooltip
@@ -426,18 +426,16 @@ describe("Tooltip", () => {
   it("covers early return branch when tooltip is not visible (line 33)", () => {
     // This test covers line 33: if (!isVisible || !triggerRef.current || !tooltipRef.current) return;
     // We need to test the case where isVisible is false, triggering the early return
-    let container: any;
-    
+
     // Render without showing tooltip - this ensures useEffect runs with isVisible=false
     expect(() => {
-      const result = render(
+      render(
         <Tooltip content="Test content">
           <button>Hover me</button>
         </Tooltip>
       );
-      container = result.container;
     }).not.toThrow();
-    
+
     const trigger = screen.getByRole("button", { name: "Hover me" });
     
     // Initially, tooltip should not be visible (isVisible = false)
