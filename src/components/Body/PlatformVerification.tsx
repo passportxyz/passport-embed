@@ -153,8 +153,8 @@ export const PlatformVerification = ({
           setPreVerificationError("");
           setWasQuerying(false);
 
-          // Handle Human ID platforms first
-          if (isHumanIDPlatform) {
+          // Handle Human ID platforms first (only if backend flags it AND it's a supported platform type)
+          if (platform.requiresSDKFlow && isHumanIDPlatform) {
             try {
               await verifyHumanID();
               // Now verify the credentials with the backend

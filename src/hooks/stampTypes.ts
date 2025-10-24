@@ -16,6 +16,7 @@ export type Platform = {
   requiresSignature?: boolean;
   requiresPopup?: boolean;
   popupUrl?: string;
+  requiresSDKFlow?: boolean; // Indicates if this platform requires SDK-based verification flow
   credentials: Credential[];
   displayWeight: string;
   icon: ReactNode; // Processed icon element (img, svg, or emoji)
