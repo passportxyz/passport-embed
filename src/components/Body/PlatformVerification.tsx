@@ -244,7 +244,7 @@ export const PlatformVerification = ({
           </div>
         )}
       </Button>
-      {platform.requiresSDKFlow && isHumanIDPlatform && <HumanTechFooter className={styles.platformFooter} />}
+      {isHumanIDPlatform && <HumanTechFooter className={styles.platformFooter} />}
     </>
   );
 };
