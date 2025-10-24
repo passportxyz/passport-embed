@@ -13,6 +13,7 @@ export type Platform = {
     requiresSignature?: boolean;
     requiresPopup?: boolean;
     popupUrl?: string;
+    requiresSDKFlow?: boolean;
     credentials: Credential[];
     displayWeight: string;
     icon: ReactNode;

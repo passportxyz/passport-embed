@@ -205,6 +205,7 @@ export const handlers = [
             description: "Verify with government-issued ID",
             documentationLink: "https://docs.passport.xyz/stamps/human-id",
             requiresSignature: false,
+            requiresSDKFlow: true,
             icon: "🆔",
             credentials: [
               {

@@ -13,6 +13,29 @@ Platforms that use Human ID verification:
 - **Biometrics** - Biometric verification
 - **CleanHands** - CleanHands verification
 
+### requiresSDKFlow Flag and Dual-Check Pattern
+
+The SDK flow activation uses a **dual-check pattern** for security:
+
+1. **Backend Control**: The backend sends `requiresSDKFlow: true` in stamp metadata to indicate a platform should use SDK verification
+2. **Frontend Validation**: The frontend validates the platformId against a hardcoded safe list (`HUMAN_ID_PLATFORMS` in `useHumanIDVerification.tsx`)
+
+**Flow Logic**:
+```
+if (platform.requiresSDKFlow && isHumanIDPlatform) {
+  // Use Human ID SDK flow
+} else {
+  // Use standard verification flow (OAuth, signatures, etc.)
+}
+```
+
+**Benefits**:
+- Backend can dynamically enable/disable SDK flows without frontend changes
+- Frontend prevents accidental SDK activation for unsupported platforms
+- Safety layer ensures only validated platform types trigger SDK calls
+
+**Implementation**: See `src/components/Body/PlatformVerification.tsx` line ~157
+
 ## RPC Configuration
 
 The Human ID SDK requires an Optimism RPC URL to check for SBTs on-chain.

@@ -99,6 +99,7 @@ describe("PlatformVerification", () => {
     const humanIDPlatform = {
       ...mockPlatform,
       platformId: "human-id",
+      requiresSDKFlow: true,
     };
 
     render(<PlatformVerification platform={humanIDPlatform} onClose={mockOnClose} />);
@@ -186,6 +187,7 @@ describe("PlatformVerification", () => {
     const humanIDPlatform = {
       ...mockPlatform,
       platformId: "human-id",
+      requiresSDKFlow: true,
     };
 
     render(<PlatformVerification platform={humanIDPlatform} onClose={mockOnClose} />);
@@ -221,6 +223,7 @@ describe("PlatformVerification", () => {
     const humanIDPlatform = {
       ...mockPlatform,
       platformId: "human-id",
+      requiresSDKFlow: true,
     };
 
     render(<PlatformVerification platform={humanIDPlatform} onClose={mockOnClose} />);
@@ -325,6 +328,7 @@ describe("PlatformVerification", () => {
     const humanIDPlatform = {
       ...mockPlatform,
       platformId: "human-id",
+      requiresSDKFlow: true,
     };
 
     render(<PlatformVerification platform={humanIDPlatform} onClose={mockOnClose} />);
