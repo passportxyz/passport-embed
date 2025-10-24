@@ -64,6 +64,12 @@ Fetches available stamp pages and their metadata.
 **Purpose**: Get list of available stamp verification options
 **Response**: Array of stamp page configurations
 
+**Platform Configuration Fields**:
+- `requiresSDKFlow` (optional boolean): Indicates if this platform requires SDK-based verification flow (e.g., Human ID SDK)
+  - When `true`: The widget will use specialized SDK verification (Human ID SDK for identity platforms)
+  - When `false` or omitted: The widget uses standard verification flows (OAuth popups, signatures, etc.)
+  - The SDK type is determined by the `platformId` (e.g., "HumanIdKyc", "Biometrics") which must be in the supported list
+
 **Error Responses**:
 
 - **500**: Server error - "Request failed with status code 500"
