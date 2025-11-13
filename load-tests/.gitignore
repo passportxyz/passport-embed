@@ -1,0 +1,6 @@
+# Address data (may contain real user addresses)
+addresses.json
+
+# K6 output files
+*.tar.gz
+summary.json
