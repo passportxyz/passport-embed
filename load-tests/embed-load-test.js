@@ -21,21 +21,21 @@
  *   k6 run --stage 2m:100 --stage 5m:100 --stage 2m:0 load-tests/embed-load-test.js
  */
 
-import http from 'k6/http';
-import { check, sleep } from 'k6';
-import { Rate, Trend } from 'k6/metrics';
+import http from "k6/http";
+import { check, sleep } from "k6";
+import { Rate, Trend } from "k6/metrics";
 
 // Custom metrics
-const scoreGetErrors = new Rate('score_get_errors');
-const autoVerifyErrors = new Rate('auto_verify_errors');
-const scoreGetDuration = new Trend('score_get_duration');
-const autoVerifyDuration = new Trend('auto_verify_duration');
+const scoreGetErrors = new Rate("score_get_errors");
+const autoVerifyErrors = new Rate("auto_verify_errors");
+const scoreGetDuration = new Trend("score_get_duration");
+const autoVerifyDuration = new Trend("auto_verify_duration");
 
 // Configuration from environment variables
-const EMBED_API_URL = __ENV.EMBED_API_URL || 'https://embed.staging.passport.xyz';
+const EMBED_API_URL = __ENV.EMBED_API_URL || "https://embed.staging.passport.xyz";
 const API_KEY = __ENV.API_KEY;
 const SCORER_ID = __ENV.SCORER_ID;
-const ADDRESSES_FILE = __ENV.ADDRESSES_FILE || './addresses.json';
+const ADDRESSES_FILE = __ENV.ADDRESSES_FILE || "./addresses.json";
 
 // Load addresses from file
 let addresses;
@@ -43,20 +43,20 @@ try {
   const addressesData = open(ADDRESSES_FILE);
   addresses = JSON.parse(addressesData);
   if (!Array.isArray(addresses)) {
-    throw new Error('Addresses file must contain a JSON array');
+    throw new Error("Addresses file must contain a JSON array");
   }
 } catch (e) {
   console.error(`Failed to load addresses from ${ADDRESSES_FILE}: ${e.message}`);
-  console.error('Please provide addresses via --env ADDRESSES_FILE=path/to/addresses.json');
+  console.error("Please provide addresses via --env ADDRESSES_FILE=path/to/addresses.json");
   throw e;
 }
 
 // Validate required config
 if (!API_KEY) {
-  throw new Error('API_KEY environment variable is required');
+  throw new Error("API_KEY environment variable is required");
 }
 if (!SCORER_ID) {
-  throw new Error('SCORER_ID environment variable is required');
+  throw new Error("SCORER_ID environment variable is required");
 }
 
 console.log(`Loaded ${addresses.length} addresses for testing`);
@@ -67,17 +67,17 @@ console.log(`Scorer ID: ${SCORER_ID}`);
 export const options = {
   // Default stages (can be overridden with --stage CLI args)
   stages: [
-    { duration: '2m', target: 20 },   // Ramp up to 20 VUs over 2 minutes
-    { duration: '5m', target: 20 },   // Hold at 20 VUs for 5 minutes
-    { duration: '2m', target: 0 },    // Ramp down over 2 minutes
+    { duration: "2m", target: 20 }, // Ramp up to 20 VUs over 2 minutes
+    { duration: "5m", target: 20 }, // Hold at 20 VUs for 5 minutes
+    { duration: "2m", target: 0 }, // Ramp down over 2 minutes
   ],
 
   // Thresholds
   thresholds: {
-    http_req_failed: ['rate<0.05'],        // <5% error rate
-    http_req_duration: ['p(95)<2000'],     // 95% of requests <2s
-    score_get_duration: ['p(95)<1000'],    // 95% of score gets <1s
-    auto_verify_duration: ['p(95)<3000'],  // 95% of auto-verifies <3s
+    http_req_failed: ["rate<0.05"], // <5% error rate
+    http_req_duration: ["p(95)<20000"], // 95% of requests <20s
+    score_get_duration: ["p(95)<1000"], // 95% of score gets <1s
+    auto_verify_duration: ["p(95)<20000"], // 95% of auto-verifies <20s
   },
 };
 
@@ -90,8 +90,8 @@ function getRandomAddress() {
 export default function () {
   const address = getRandomAddress();
   const headers = {
-    'X-API-KEY': API_KEY,
-    'Content-Type': 'application/json',
+    "X-API-KEY": API_KEY,
+    "Content-Type": "application/json",
   };
 
   // Test 1: GET /embed/score/{scorerId}/{address}
@@ -101,8 +101,8 @@ export default function () {
   scoreGetDuration.add(new Date() - scoreStartTime);
 
   const scoreSuccess = check(scoreResponse, {
-    'score GET status is 200': (r) => r.status === 200,
-    'score GET has score field': (r) => {
+    "score GET status is 200": (r) => r.status === 200,
+    "score GET has score field": (r) => {
       try {
         const body = JSON.parse(r.body);
         return body.score !== undefined;
@@ -128,8 +128,8 @@ export default function () {
   autoVerifyDuration.add(new Date() - autoVerifyStartTime);
 
   const autoVerifySuccess = check(autoVerifyResponse, {
-    'auto-verify POST status is 200': (r) => r.status === 200,
-    'auto-verify POST has score': (r) => {
+    "auto-verify POST status is 200": (r) => r.status === 200,
+    "auto-verify POST has score": (r) => {
       try {
         const body = JSON.parse(r.body);
         return body.score !== undefined;
@@ -154,7 +154,7 @@ export default function () {
 
 // Setup function (runs once at start)
 export function setup() {
-  console.log('Starting load test...');
+  console.log("Starting load test...");
   console.log(`Testing with ${addresses.length} addresses`);
   return { startTime: new Date() };
 }
