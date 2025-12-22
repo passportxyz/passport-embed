@@ -3,6 +3,10 @@ name: Publish package to npm
 on:
   workflow_dispatch:
 
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
 jobs:
   publish_preview:
     runs-on: ubuntu-latest
@@ -13,8 +17,6 @@ jobs:
           node-version: 22.14.0
           registry-url: https://registry.npmjs.org/
       - run: npm publish --dry-run=true
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
   publish_confirm:
     name: Review Before Publishing
@@ -36,5 +38,3 @@ jobs:
           node-version: 22.14.0
           registry-url: https://registry.npmjs.org/
       - run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
