@@ -4,9 +4,8 @@ import { Button } from "../Button";
 import { useEffect, useState } from "react";
 import { useHeaderControls } from "../../hooks/useHeaderControls";
 import { useWidgetPassportScore } from "../../hooks/usePassportScore";
-import { usePaginatedStampPages } from "../../hooks/useStampPages";
+import { useStampPages } from "../../hooks/useStampPages";
 import { Platform, VISIT_PASSPORT_HEADER } from "../../hooks/stampTypes";
-import { TextButton } from "../TextButton";
 import { RightArrow } from "../../assets/rightArrow";
 import { ScrollableDiv } from "../ScrollableDiv";
 import { PlatformVerification } from "./PlatformVerification";
@@ -89,7 +88,7 @@ export const AddStamps = ({
   const { setSubtitle } = useHeaderControls();
   const queryProps = useQueryContext();
   const { scorerId, apiKey, embedServiceUrl } = queryProps;
-  const { page, nextPage, prevPage, isFirstPage, isLastPage, isLoading, error, refetch } = usePaginatedStampPages({
+  const { stampPages, isLoading, error, refetch } = useStampPages({
     apiKey,
     scorerId,
     embedServiceUrl,
@@ -103,29 +102,27 @@ export const AddStamps = ({
   if (isLoading)
     return (
       <div className={styles.textBlock}>
-        <div>Loading Stamps Metadata...</div>
+        <div>Loading Stamps...</div>
       </div>
     );
   if (error)
     return (
       <>
         <div className={styles.textBlock}>
-          <div>{error instanceof Error ? error.message : "Failed to load stamp pages"}</div>
+          <div>{error instanceof Error ? error.message : "Failed to load stamps"}</div>
         </div>
         <Button className={utilStyles.wFull} onClick={() => refetch()}>
           Try Again
         </Button>
       </>
     );
-  if (!page)
+  if (!stampPages.length)
     return (
       <div className={styles.textBlock}>
         <div className={styles.heading}>No Stamps Available</div>
         <div>No stamp metadata available at this time.</div>
       </div>
     );
-
-  const { header, platforms } = page;
 
   if (openPlatform) {
     return (
@@ -137,35 +134,29 @@ export const AddStamps = ({
     );
   }
 
-  const isVisitPassportPage = header === VISIT_PASSPORT_HEADER;
+  // Filter out the "More Options" page for the main list
+  const mainPages = stampPages.filter((page) => page.header !== VISIT_PASSPORT_HEADER);
+  const moreOptionsPage = stampPages.find((page) => page.header === VISIT_PASSPORT_HEADER);
 
   return (
     <>
-      <div className={styles.textBlock}>
-        <div className={styles.heading}>{header}</div>
-        {isVisitPassportPage ? (
-          <div className={styles.innerText}>
-            Visit <Hyperlink href="https://app.passport.xyz">Human Passport</Hyperlink> for more Stamp options!
+      <ScrollableDiv className={styles.allStampsContainer}>
+        {mainPages.map((page) => (
+          <div key={page.header} className={styles.stampSection}>
+            <div className={styles.sectionHeader}>{page.header}</div>
+            <div className={styles.platformList}>
+              {page.platforms.map((platform) => (
+                <PlatformButton key={platform.platformId} platform={platform} setOpenPlatform={setOpenPlatform} />
+              ))}
+            </div>
           </div>
-        ) : (
-          <div>Choose from below and verify</div>
+        ))}
+        {moreOptionsPage && (
+          <div className={styles.moreOptions}>
+            Visit <Hyperlink href="https://app.passport.xyz">Human Passport</Hyperlink> for more options
+          </div>
         )}
-      </div>
-      {isVisitPassportPage || (
-        <ScrollableDiv className={styles.platformButtonGroup}>
-          {platforms.map((platform) => (
-            <PlatformButton key={platform.platformId} platform={platform} setOpenPlatform={setOpenPlatform} />
-          ))}
-        </ScrollableDiv>
-      )}
-      <div
-        className={`${styles.navigationButtons} ${
-          isFirstPage || isLastPage ? utilStyles.justifyCenter : utilStyles.justifyBetween
-        }`}
-      >
-        {isFirstPage || <TextButton onClick={prevPage}>Go back</TextButton>}
-        {isLastPage || <TextButton onClick={nextPage}>Try another way</TextButton>}
-      </div>
+      </ScrollableDiv>
     </>
   );
 };

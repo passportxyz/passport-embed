@@ -10,12 +10,17 @@
   border-bottom-right-radius: var(--widget-radius-c6dbf459);
 
   background-color: rgba(var(--color-background-c6dbf459), 1);
+  color: rgba(var(--color-primary-c6dbf459), 1);
+
+  font-family: var(--font-family-body-c6dbf459);
+  font-size: 14px;
+  line-height: 1.5;
 
   display: flex;
   flex-direction: column;
   align-items: center;
 
-  gap: 8px;
+  gap: 12px;
 
   transition: opacity calc(6 * var(--transition-speed-c6dbf459)) ease-in-out;
 }
@@ -34,7 +39,7 @@
   max-width: 320px;
   min-height: 240px;
   height: auto;
-  padding: var(--widget-padding-y-c6dbf459) var(--widget-padding-x-c6dbf459);
+  padding: 20px var(--widget-padding-x-c6dbf459);
 }
 
 .overlay {
@@ -57,11 +62,12 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .innerText {
   flex-grow: 1;
+  line-height: 1.5;
 }
 
 .extraBottomMarginForBodyWithoutButton {
@@ -69,8 +75,10 @@
 }
 
 .heading {
+  font-family: var(--font-family-heading-c6dbf459);
   font-size: 18px;
   font-weight: 700;
+  line-height: 1.3;
 }
 
 .platformButton {
@@ -166,4 +174,41 @@
 
 .dedupeText {
   font-family: var(--font-family-alt, monospace);
+}
+
+/* New single-page stamps layout */
+.allStampsContainer {
+  width: 100%;
+  max-height: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stampSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionHeader {
+  font-family: var(--font-family-heading-c6dbf459);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(var(--color-secondary-c6dbf459), 1);
+}
+
+.platformList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.moreOptions {
+  font-size: 13px;
+  text-align: center;
+  padding-top: 8px;
+  color: rgba(var(--color-secondary-c6dbf459), 1);
 }
