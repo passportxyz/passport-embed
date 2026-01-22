@@ -9,14 +9,18 @@
   border-bottom-left-radius: var(--widget-radius-c6dbf459);
   border-bottom-right-radius: var(--widget-radius-c6dbf459);
 
-  /* Use gradient if available, fallback to solid background */
-  background: rgba(var(--color-background-c6dbf459), 1);
+  background-color: rgba(var(--color-background-c6dbf459), 1);
+  color: rgba(var(--color-primary-c6dbf459), 1);
+
+  font-family: var(--font-family-body-c6dbf459);
+  font-size: 14px;
+  line-height: 1.5;
 
   display: flex;
   flex-direction: column;
   align-items: center;
 
-  gap: 8px;
+  gap: 12px;
 
   transition: opacity calc(6 * var(--transition-speed-c6dbf459)) ease-in-out;
 }
@@ -32,12 +36,10 @@
 
 .expanded {
   opacity: 1;
-  max-width: 300px;
-  min-height: 300px;
-  height: 300px; /* 300px body + 55px header = 355px total */
-  padding: 12px var(--widget-padding-x-c6dbf459) 16px;
-  position: relative;
-  overflow: hidden;
+  max-width: 320px;
+  min-height: 240px;
+  height: auto;
+  padding: 20px var(--widget-padding-x-c6dbf459);
 }
 
 /* Remove all padding when showing Add Stamps view so scrollable div can extend to edges */
@@ -94,6 +96,7 @@
 
 .innerText {
   flex-grow: 1;
+  line-height: 1.5;
 }
 
 .extraBottomMarginForBodyWithoutButton {
@@ -108,6 +111,7 @@
 }
 
 .heading {
+  font-family: var(--font-family-heading-c6dbf459);
   text-align: left;
   font-size: 16px;
   font-weight: 600;
@@ -400,18 +404,6 @@
   display: none;
 }
 
-/* All stamps view styles */
-.allStampsContainer {
-  width: 100%; /* Full width now that parent padding is removed */
-  height: 100%; /* Full height of its container */
-  overflow-y: auto;
-  box-sizing: border-box;
-  position: relative; /* For fade overlay positioning */
-
-  /* No vertical padding, horizontal padding using theme variable */
-  padding: 0 var(--widget-padding-x-c6dbf459);
-}
-
 .stampCategory {
   display: flex;
   flex-direction: column;
@@ -607,4 +599,41 @@
 
 .backButton {
   padding: 1px 0;
+}
+
+/* New single-page stamps layout */
+.allStampsContainer {
+  width: 100%;
+  max-height: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stampSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionHeader {
+  font-family: var(--font-family-heading-c6dbf459);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(var(--color-secondary-c6dbf459), 1);
+}
+
+.platformList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.moreOptions {
+  font-size: 13px;
+  text-align: center;
+  padding-top: 8px;
+  color: rgba(var(--color-secondary-c6dbf459), 1);
 }

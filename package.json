@@ -37,7 +37,7 @@
   ],
   "scripts": {
     "setup": "[ ! -f dev/.env ] && cp dev/.env.mock dev/.env || true; yarn install && cd dev && yarn install",
-    "clean": "rm -rf dist node_modules dev/node_modules dev/dist",
+    "clean": "rm -rf dist node_modules dev/node_modules dev/dist playground/node_modules playground/.next",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:e2e": "cd dev && npx playwright test",
@@ -54,6 +54,9 @@
     "dev:mock": "cd dev && VITE_ENABLE_MSW=true npx vite",
     "dev:real": "cd dev && VITE_ENABLE_MSW=false npx vite",
     "dev:setup": "yarn install && yarn build && cd dev && yarn install",
+    "playground": "cd playground && npm run dev",
+    "playground:build": "cd playground && npm run build",
+    "playground:setup": "yarn build && cd playground && npm install && npx msw init public/",
     "watch:css": "postcss 'src/**/*.css' -d dist/esm/ --base src --watch",
     "watch:esm": "tsc --module ESNext --outDir dist/esm --watch",
     "lint": "eslint .",
