@@ -137,7 +137,7 @@ export function PlaygroundLayout() {
           {/* Right side navigation - matches Nextra navbar */}
           <div className="flex items-center gap-4">
             <a
-              href="https://docs.passport.xyz/building-with-passport/embed"
+              href="https://docs.passport.xyz"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block"
