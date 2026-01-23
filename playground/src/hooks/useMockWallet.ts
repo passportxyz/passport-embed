@@ -46,8 +46,8 @@ export function useMockWallet() {
   }, [isConnected]);
 
   // Callbacks formatted for PassportScoreWidget
-  const connectWalletCallback = useCallback(async () => {
-    return connect();
+  const connectWalletCallback = useCallback(async (): Promise<void> => {
+    await connect();
   }, [connect]);
 
   const generateSignatureCallback = useCallback(
