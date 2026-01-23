@@ -1,12 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { ConfigPanel } from "@/components/ConfigPanel";
 import { PreviewPanel } from "@/components/PreviewPanel";
 import { CodePanel } from "@/components/CodePanel";
 import { usePlaygroundConfig } from "@/hooks/usePlaygroundConfig";
 
 export type WalletMode = "mock" | "real";
+
+// Learn dropdown menu items
+const learnLinks = [
+  {
+    label: "Tutorial",
+    href: "https://docs.passport.xyz/building-with-passport/embed/tutorials/protecting-sensitive-programs-with-passport-embed",
+    description: "Step-by-step integration guide",
+  },
+  {
+    label: "Customization",
+    href: "https://docs.passport.xyz/building-with-passport/embed/customization",
+    description: "Theming and styling options",
+  },
+  {
+    label: "Pulling User Data",
+    href: "https://docs.passport.xyz/building-with-passport/embed/pulling-user-data",
+    description: "Access scores and stamps in your app",
+  },
+];
 
 // Human Passport Logo SVG (matches passport-docs exactly)
 const Logo = () => (
@@ -67,6 +87,31 @@ const GitHubIcon = () => (
 export function PlaygroundLayout() {
   const { config, setConfig, resetConfig, copyShareableUrl, isInitialized } = usePlaygroundConfig();
   const [walletMode, setWalletMode] = useState<WalletMode>("mock");
+  const [showLearnMenu, setShowLearnMenu] = useState(false);
+  const [learnMenuPosition, setLearnMenuPosition] = useState({ top: 0, left: 0 });
+  const learnButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (showLearnMenu && learnButtonRef.current) {
+      const rect = learnButtonRef.current.getBoundingClientRect();
+      setLearnMenuPosition({
+        top: rect.bottom + 8,
+        left: rect.left,
+      });
+    }
+  }, [showLearnMenu]);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    if (!showLearnMenu) return;
+    const handleClick = (e: MouseEvent) => {
+      if (learnButtonRef.current && !learnButtonRef.current.contains(e.target as Node)) {
+        setShowLearnMenu(false);
+      }
+    };
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  }, [showLearnMenu]);
 
   if (!isInitialized) {
     return (
@@ -99,6 +144,51 @@ export function PlaygroundLayout() {
             >
               Docs
             </a>
+            {/* Learn dropdown */}
+            <div className="relative hidden sm:block">
+              <button
+                ref={learnButtonRef}
+                type="button"
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => setShowLearnMenu(!showLearnMenu)}
+              >
+                Embed Docs
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className={`transition-transform ${showLearnMenu ? "rotate-180" : ""}`}
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+              {showLearnMenu && typeof document !== "undefined" && createPortal(
+                <div
+                  className="fixed z-[9999] w-64 py-2 rounded-lg bg-background border border-border shadow-lg"
+                  style={{ top: learnMenuPosition.top, left: learnMenuPosition.left }}
+                >
+                  {learnLinks.map((link) => (
+                    <a
+                      key={link.href}
+                      href={link.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block px-4 py-2 hover:bg-muted transition-colors"
+                      onClick={() => setShowLearnMenu(false)}
+                    >
+                      <div className="text-sm font-medium text-foreground">{link.label}</div>
+                      <div className="text-xs text-muted-foreground">{link.description}</div>
+                    </a>
+                  ))}
+                </div>,
+                document.body
+              )}
+            </div>
             <a
               href="https://developer.passport.xyz/"
               target="_blank"

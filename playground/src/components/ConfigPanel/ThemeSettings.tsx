@@ -61,9 +61,19 @@ export function ThemeSettings({ config, onChange }: ThemeSettingsProps) {
 
   return (
     <div>
-      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-        Theme
-      </h3>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          Theme
+        </h3>
+        <a
+          href="https://docs.passport.xyz/building-with-passport/embed/customization"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs text-primary hover:underline"
+        >
+          Customization docs →
+        </a>
+      </div>
       <div className="space-y-4">
         <Toggle
           label="Preset"
