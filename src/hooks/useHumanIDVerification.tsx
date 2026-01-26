@@ -1,18 +1,14 @@
 import { useCallback, useEffect, useState, useMemo } from "react";
+import {
+  initHumanID,
+  getKycSBTByAddress,
+  getPhoneSBTByAddress,
+  getBiometricsSBTByAddress,
+  getCleanHandsSPAttestationByAddress,
+  type CredentialType,
+  type HubV3SBT,
+} from "@holonym-foundation/human-id-sdk";
 import { Platform } from "./stampTypes";
-
-// Types from the SDK (for type safety without importing)
-type CredentialType = "kyc" | "phone" | "biometrics" | "clean-hands";
-interface HubV3SBT {
-  expiry: bigint;
-  revoked: boolean;
-}
-
-// Lazy-load the Human ID SDK to avoid BigInt issues on initial page load
-const getHumanIdSdk = async () => {
-  const sdk = await import("@holonym-foundation/human-id-sdk");
-  return sdk;
-};
 
 interface UseHumanIDVerificationParams {
   platform: Platform;
@@ -45,7 +41,7 @@ const getPlatformCredentialType = (platformId: string): CredentialType => {
   }
 };
 
-const validateSBT = (sbt: HubV3SBT | null | undefined): boolean => {
+const validateSBT = (sbt: HubV3SBT): boolean => {
   if (sbt && typeof sbt === "object" && "expiry" in sbt) {
     const currentTime = BigInt(Math.floor(Date.now() / 1000));
     return sbt.expiry > currentTime && !sbt.revoked;
@@ -72,27 +68,26 @@ export const useHumanIDVerification = ({
     const addressAsHex = address as `0x${string}`;
 
     try {
-      const sdk = await getHumanIdSdk();
       let result: boolean = false;
 
       switch (platform.platformId) {
         case "HumanIdKyc": {
-          const sbt = await sdk.getKycSBTByAddress(addressAsHex);
-          result = validateSBT(sbt as HubV3SBT);
+          const sbt = await getKycSBTByAddress(addressAsHex);
+          result = validateSBT(sbt);
           break;
         }
         case "HumanIdPhone": {
-          const sbt = await sdk.getPhoneSBTByAddress(addressAsHex);
-          result = validateSBT(sbt as HubV3SBT);
+          const sbt = await getPhoneSBTByAddress(addressAsHex);
+          result = validateSBT(sbt);
           break;
         }
         case "Biometrics": {
-          const sbt = await sdk.getBiometricsSBTByAddress(addressAsHex);
-          result = validateSBT(sbt as HubV3SBT);
+          const sbt = await getBiometricsSBTByAddress(addressAsHex);
+          result = validateSBT(sbt);
           break;
         }
         case "CleanHands": {
-          const attestation = await sdk.getCleanHandsSPAttestationByAddress(addressAsHex);
+          const attestation = await getCleanHandsSPAttestationByAddress(addressAsHex);
           result = !!attestation;
           break;
         }
@@ -156,9 +151,8 @@ export const useHumanIDVerification = ({
         return true;
       }
 
-      // Lazy-load and initialize Human ID provider
-      const sdk = await getHumanIdSdk();
-      const provider = sdk.initHumanID();
+      // Initialize Human ID provider (idempotent)
+      const provider = initHumanID();
       const credentialType = getPlatformCredentialType(platform.platformId);
 
       // Request the SBT
