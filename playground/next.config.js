@@ -18,6 +18,21 @@ const nextConfig = {
       'node_modules',
     ];
 
+    // Handle font files from local source - inline as base64 data URLs using url-loader
+    const fontPath = path.resolve(__dirname, '../src/assets/fonts');
+
+    config.module.rules.unshift({
+      test: /\.(woff|woff2|eot|ttf|otf)$/,
+      include: fontPath,
+      use: {
+        loader: 'url-loader',
+        options: {
+          limit: false, // Always inline as base64
+          mimetype: 'font/woff2',
+        },
+      },
+    });
+
     return config;
   },
 };

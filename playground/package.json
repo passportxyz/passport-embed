@@ -24,10 +24,12 @@
     "@types/node": "^20.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "file-loader": "^6.2.0",
     "msw": "^2.7.0",
     "playwright": "^1.57.0",
     "tailwindcss": "^4.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "url-loader": "^4.1.1"
   },
   "msw": {
     "workerDirectory": [
