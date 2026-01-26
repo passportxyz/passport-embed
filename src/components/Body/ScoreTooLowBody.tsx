@@ -3,11 +3,8 @@ import utilStyles from "../../utilStyles.module.css";
 import { Button } from "../Button";
 import { useState } from "react";
 import { useWidgetPassportScore } from "../../hooks/usePassportScore";
-import { useQuery } from "@tanstack/react-query";
-import { SanitizedHTMLComponent } from "../SanitizedHTMLComponent";
-import { fetchStampPages } from "../../utils/stampDataApi";
-import { usePassportQueryClient } from "../../hooks/usePassportQueryClient";
-import { Platform, RawStampPageData, RawPlatformData } from "../../hooks/stampTypes";
+import { useStampPages } from "../../hooks/useStampPages";
+import { Platform } from "../../hooks/stampTypes";
 import { RightArrow } from "../../assets/rightArrow";
 import { ScrollableDivWithFade } from "../ScrollableDivWithFade";
 import { PlatformVerification } from "./PlatformVerification";
@@ -17,7 +14,6 @@ import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
 import { WinkingHuman } from "../../assets/winkingHuman";
 import { HouseIcon } from "../../assets/houseIcon";
 import { BackButton } from "./PlatformHeader";
-import { displayNumber } from "../../utils";
 
 export const Hyperlink = ({
   href,
@@ -101,43 +97,12 @@ export const AddStamps = ({
   onBack: () => void;
 }) => {
   const { scorerId, apiKey, embedServiceUrl } = useQueryContext();
-  const queryClient = usePassportQueryClient();
   const [openPlatform, setOpenPlatform] = useState<Platform | null>(null);
-
-  const {
-    data: stampPages,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery(
-    {
-      queryKey: ["stampPages", apiKey, scorerId, embedServiceUrl],
-      queryFn: async () => {
-        const data = await fetchStampPages({ apiKey, scorerId, embedServiceUrl });
-        return data.map((page: RawStampPageData) => ({
-          ...page,
-          platforms: page.platforms.map((platform: RawPlatformData) => ({
-            ...platform,
-            displayWeight: displayNumber(parseFloat(platform.displayWeight)),
-            description: <SanitizedHTMLComponent html={platform.description || ""} />,
-            icon: platform.icon ? (
-              // If it's a URL, wrap it in an img tag for sanitization
-              platform.icon.startsWith("http://") || platform.icon.startsWith("https://") ? (
-                <SanitizedHTMLComponent html={`<img src="${platform.icon}" alt="${platform.name} icon" />`} />
-              ) : (
-                <SanitizedHTMLComponent html={platform.icon} />
-              )
-            ) : null,
-          })),
-        }));
-      },
-      staleTime: 1000 * 60 * 60, // 1 hour
-      gcTime: 1000 * 60 * 60 * 2, // 2 hours cache
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-    },
-    queryClient
-  );
+  const { stampPages, isLoading, error, refetch } = useStampPages({
+    apiKey,
+    scorerId,
+    embedServiceUrl,
+  });
 
   if (isLoading)
     return (
