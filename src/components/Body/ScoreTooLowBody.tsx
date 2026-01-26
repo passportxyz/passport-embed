@@ -4,7 +4,7 @@ import { Button } from "../Button";
 import { useState } from "react";
 import { useWidgetPassportScore } from "../../hooks/usePassportScore";
 import { useStampPages } from "../../hooks/useStampPages";
-import { Platform, VISIT_PASSPORT_HEADER } from "../../hooks/stampTypes";
+import { Platform } from "../../hooks/stampTypes";
 import { RightArrow } from "../../assets/rightArrow";
 import { ScrollableDivWithFade } from "../ScrollableDivWithFade";
 import { PlatformVerification } from "./PlatformVerification";
@@ -12,6 +12,8 @@ import { useQueryContext } from "../../hooks/useQueryContext";
 import { usePlatformStatus } from "../../hooks/usePlatformStatus";
 import { usePlatformDeduplication } from "../../hooks/usePlatformDeduplication";
 import { WinkingHuman } from "../../assets/winkingHuman";
+import { HouseIcon } from "../../assets/houseIcon";
+import { BackButton } from "./PlatformHeader";
 
 export const Hyperlink = ({
   href,
@@ -34,7 +36,7 @@ export const ScoreTooLowBody = ({
 }) => {
   const [addingStamps, setAddingStamps] = useState(false);
   return addingStamps ? (
-    <AddStamps generateSignatureCallback={generateSignatureCallback} />
+    <AddStamps generateSignatureCallback={generateSignatureCallback} onBack={() => setAddingStamps(false)} />
   ) : (
     <InitialTooLow onContinue={() => setAddingStamps(true)} />
   );
@@ -89,36 +91,36 @@ const PlatformButton = ({
 
 export const AddStamps = ({
   generateSignatureCallback,
+  onBack,
 }: {
   generateSignatureCallback: ((message: string) => Promise<string | undefined>) | undefined;
+  onBack: () => void;
 }) => {
-  const queryProps = useQueryContext();
-  const { scorerId, apiKey, embedServiceUrl } = queryProps;
+  const { scorerId, apiKey, embedServiceUrl } = useQueryContext();
+  const [openPlatform, setOpenPlatform] = useState<Platform | null>(null);
   const { stampPages, isLoading, error, refetch } = useStampPages({
     apiKey,
     scorerId,
     embedServiceUrl,
   });
-  const [openPlatform, setOpenPlatform] = useState<Platform | null>(null);
 
   if (isLoading)
     return (
       <div className={styles.textBlock}>
-        <div>Loading Stamps...</div>
+        <div>Loading Stamps Metadata...</div>
       </div>
     );
   if (error)
     return (
       <>
         <div className={styles.textBlock}>
-          <div>{error instanceof Error ? error.message : "Failed to load stamps"}</div>
+          <div>{error instanceof Error ? error.message : "Failed to load stamp pages"}</div>
         </div>
         <Button className={utilStyles.wFull} onClick={() => refetch()}>
           Try Again
         </Button>
       </>
     );
-
   if (!stampPages || stampPages.length === 0)
     return (
       <div className={styles.textBlock}>
@@ -127,40 +129,58 @@ export const AddStamps = ({
       </div>
     );
 
-  if (openPlatform) {
-    return (
-      <PlatformVerification
-        platform={openPlatform}
-        onClose={() => setOpenPlatform(null)}
-        generateSignatureCallback={generateSignatureCallback}
-      />
-    );
-  }
-
-  // Filter out the "More Options" page for the main list
-  const mainPages = stampPages.filter((page) => page.header !== VISIT_PASSPORT_HEADER);
-  const moreOptionsPage = stampPages.find((page) => page.header === VISIT_PASSPORT_HEADER);
-
   return (
-    <ScrollableDivWithFade className={styles.allStampsContainer}>
-      {mainPages.map((page) => (
-        <div key={page.header} className={styles.stampSection}>
-          <div className={styles.sectionHeader}>{page.header}</div>
-          <div className={styles.platformList}>
-            {page.platforms.map((platform) => (
-              <PlatformButton key={platform.platformId} platform={platform} setOpenPlatform={setOpenPlatform} />
-            ))}
-          </div>
-        </div>
-      ))}
-      {moreOptionsPage && (
-        <div className={styles.moreOptions}>
-          Visit <Hyperlink href="https://app.passport.xyz">Human Passport</Hyperlink> for more options
-        </div>
+    <>
+      {openPlatform && (
+        <PlatformVerification
+          platform={openPlatform}
+          onClose={() => setOpenPlatform(null)}
+          generateSignatureCallback={generateSignatureCallback}
+        />
       )}
-    </ScrollableDivWithFade>
+
+      <div className={`${styles.addStampsWrapper} ${openPlatform ? styles.hiddenAddStamps : styles.visibleAddStamps}`}>
+        <div className={styles.verifyHeader}>
+          <BackButton onBack={onBack} />
+          <span className={styles.verifyTitle}>Verify Activities</span>
+        </div>
+        <ScrollableDivWithFade className={styles.allStampsContainer}>
+          {stampPages.map((page, pageIndex) => (
+            <div key={pageIndex} className={styles.stampCategory}>
+              <div className={styles.categoryHeader}>{page.header}</div>
+              <div className={styles.stampsList}>
+                {page.platforms.map((platform: Platform) => (
+                  <PlatformButton key={platform.platformId} platform={platform} setOpenPlatform={setOpenPlatform} />
+                ))}
+              </div>
+            </div>
+          ))}
+          <div className={styles.exploreMoreSection}>
+            <Hyperlink href="https://app.passport.xyz" className={styles.exploreMoreLink}>
+              <span className={styles.exploreMoreIcon}>
+                <HouseIcon />
+              </span>
+              <span>Explore Additional Stamps</span>
+              <ArrowUpRightIcon />
+            </Hyperlink>
+          </div>
+        </ScrollableDivWithFade>
+      </div>
+    </>
   );
 };
+
+const ArrowUpRightIcon = () => (
+  <svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M7.5 7H17.5M17.5 7V17M17.5 7L7.5 17"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 const InitialTooLow = ({ onContinue }: { onContinue: () => void }) => {
   const { data } = useWidgetPassportScore();

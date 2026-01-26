@@ -3,7 +3,8 @@ import { SanitizedHTMLComponent } from "../components/SanitizedHTMLComponent";
 import { fetchStampPages } from "../utils/stampDataApi";
 import { PassportQueryProps } from "./usePassportScore";
 import { usePassportQueryClient } from "./usePassportQueryClient";
-import { INCLUDE_VISIT_PASSPORT_PAGE, VISIT_PASSPORT_HEADER, StampPage, RawStampPageData } from "./stampTypes";
+import { INCLUDE_VISIT_PASSPORT_PAGE, VISIT_PASSPORT_HEADER, StampPage, RawStampPageData, RawPlatformData } from "./stampTypes";
+import { displayNumber } from "../utils";
 
 // Hook that returns all stamp pages at once (new single-page design)
 export const useStampPages = ({ apiKey, scorerId, embedServiceUrl }: PassportQueryProps) => {
@@ -26,10 +27,18 @@ export const useStampPages = ({ apiKey, scorerId, embedServiceUrl }: PassportQue
 
         const formattedData: StampPage[] = data.map((page: RawStampPageData) => ({
           ...page,
-          platforms: page.platforms.map((platform) => ({
+          platforms: page.platforms.map((platform: RawPlatformData) => ({
             ...platform,
+            displayWeight: displayNumber(parseFloat(platform.displayWeight)),
             description: <SanitizedHTMLComponent html={platform.description || ""} />,
-            displayWeight: platform.displayWeight,
+            icon: platform.icon ? (
+              // If it's a URL, wrap it in an img tag for sanitization
+              platform.icon.startsWith("http://") || platform.icon.startsWith("https://") ? (
+                <SanitizedHTMLComponent html={`<img src="${platform.icon}" alt="${platform.name} icon" />`} />
+              ) : (
+                <SanitizedHTMLComponent html={platform.icon} />
+              )
+            ) : null,
           })),
         }));
 
