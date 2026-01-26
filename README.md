@@ -45,3 +45,7 @@ yarn setup
 # Start the development server
 yarn dev:mock
 ```
+
+## Playground
+
+See [playground](https://embed-playground.passport.xyz).
