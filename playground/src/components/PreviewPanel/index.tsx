@@ -1,15 +1,13 @@
 "use client";
 
 import { WidgetContainer } from "./WidgetContainer";
-import { PlaygroundConfig } from "@/lib/default-config";
+import { PlaygroundConfig, isMswEnabled } from "@/lib/default-config";
 import { WalletMode } from "@/components/PlaygroundLayout";
 
 interface PreviewPanelProps {
   config: PlaygroundConfig;
   walletMode: WalletMode;
 }
-
-const isMswEnabled = process.env.NEXT_PUBLIC_ENABLE_MSW === "true";
 
 export function PreviewPanel({ config, walletMode }: PreviewPanelProps) {
   return (

@@ -4,9 +4,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 
 // MSW setup for client-side mocking
+// Playground always uses MSW unless explicitly disabled
 async function initMocks() {
   if (typeof window === "undefined") return;
-  if (process.env.NEXT_PUBLIC_ENABLE_MSW !== "true") return;
+  if (process.env.NEXT_PUBLIC_ENABLE_MSW === "false") return;
 
   const { worker } = await import("@/mocks/browser");
   return worker.start({
@@ -41,8 +42,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
     initMocks().then(() => setMswReady(true));
   }, []);
 
-  // Show loading state while MSW initializes (only when MSW is enabled)
-  if (process.env.NEXT_PUBLIC_ENABLE_MSW === "true" && !mswReady) {
+  // Show loading state while MSW initializes (unless MSW is explicitly disabled)
+  if (process.env.NEXT_PUBLIC_ENABLE_MSW !== "false" && !mswReady) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">

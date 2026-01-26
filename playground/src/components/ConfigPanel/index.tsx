@@ -6,7 +6,7 @@ import { ApiSettings } from "./ApiSettings";
 import { LayoutSettings } from "./LayoutSettings";
 import { ThemeSettings } from "./ThemeSettings";
 import { ScenarioSelector } from "./ScenarioSelector";
-import { PlaygroundConfig } from "@/lib/default-config";
+import { PlaygroundConfig, isMswEnabled } from "@/lib/default-config";
 import { WalletMode } from "@/components/PlaygroundLayout";
 
 interface ConfigPanelProps {
@@ -16,8 +16,6 @@ interface ConfigPanelProps {
   walletMode: WalletMode;
   onWalletModeChange: (mode: WalletMode) => void;
 }
-
-const isMswEnabled = process.env.NEXT_PUBLIC_ENABLE_MSW === "true";
 
 export function ConfigPanel({ config, onChange, onReset, walletMode, onWalletModeChange }: ConfigPanelProps) {
   const [showModeInfo, setShowModeInfo] = useState(false);

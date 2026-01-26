@@ -62,12 +62,13 @@ export const lightTheme: PassportWidgetTheme = {
   },
 };
 
-// Use test values when MSW is enabled, empty otherwise
-const isMswEnabled = process.env.NEXT_PUBLIC_ENABLE_MSW === "true";
+// Playground always uses MSW for the mock demo experience
+// Real wallet mode is an advanced option for testing with actual credentials
+export const isMswEnabled = process.env.NEXT_PUBLIC_ENABLE_MSW !== "false";
 
 export const defaultConfig: PlaygroundConfig = {
-  apiKey: isMswEnabled ? "test-api-key" : "",
-  scorerId: isMswEnabled ? "123" : "",
+  apiKey: "test-api-key",
+  scorerId: "123",
   overrideEmbedServiceUrl: "",
   collapseMode: "off",
   className: "",
