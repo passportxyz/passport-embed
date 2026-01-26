@@ -33,6 +33,14 @@ export function usePlaygroundConfig() {
 
   // Update config with partial values
   const setConfig = useCallback((updates: Partial<PlaygroundConfig>) => {
+    // Update URL for scenario changes BEFORE state update so MSW picks it up
+    // This must be outside the state setter to avoid "setState during render" errors
+    if (updates.scenario && typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("scenario", updates.scenario);
+      window.history.replaceState({}, "", url.toString());
+    }
+
     setConfigState((prev) => {
       const newConfig = { ...prev, ...updates };
 
@@ -44,13 +52,6 @@ export function usePlaygroundConfig() {
           newConfig.theme = lightTheme;
         }
         // For custom, keep the current theme
-      }
-
-      // Update URL synchronously when scenario changes so MSW picks it up
-      if (updates.scenario && typeof window !== "undefined") {
-        const url = new URL(window.location.href);
-        url.searchParams.set("scenario", updates.scenario);
-        window.history.replaceState({}, "", url.toString());
       }
 
       return newConfig;
