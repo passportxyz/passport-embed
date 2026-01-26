@@ -85,7 +85,7 @@ const GitHubIcon = () => (
 );
 
 export function PlaygroundLayout() {
-  const { config, setConfig, resetConfig, copyShareableUrl, isInitialized } = usePlaygroundConfig();
+  const { config, setConfig, resetConfig, isInitialized } = usePlaygroundConfig();
   const [walletMode, setWalletMode] = useState<WalletMode>("mock");
   const [showLearnMenu, setShowLearnMenu] = useState(false);
   const [learnMenuPosition, setLearnMenuPosition] = useState({ top: 0, left: 0 });
