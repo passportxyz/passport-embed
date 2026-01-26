@@ -1,6 +1,11 @@
 // Mock for @holonym-foundation/human-id-sdk
 // Used in playground to avoid dependency conflicts
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const setOptimismRpcUrl = (url: string) => {
+  // No-op in playground
+};
+
 export const initHumanID = () => ({
   requestSBT: async () => {
     console.log('[Mock] Human ID SDK not available in playground');
