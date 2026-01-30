@@ -9,6 +9,12 @@ const firaCode = Fira_Code({ subsets: ["latin"], variable: "--font-fira-code" })
 export const metadata: Metadata = {
   title: "Passport Embed Playground",
   description: "Interactive playground for configuring PassportScoreWidget",
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.png', type: 'image/png' }
+    ]
+  }
 };
 
 export default function RootLayout({
