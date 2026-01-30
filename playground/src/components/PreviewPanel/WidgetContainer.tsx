@@ -72,7 +72,7 @@ export function WidgetContainer({ config, walletMode }: WidgetContainerProps) {
         className="flex-1 flex items-center justify-center p-6 transition-colors"
         style={{ backgroundColor: bgColor }}
       >
-        <div className="w-full max-w-sm">
+        <div className="max-w-sm w-[320px]">
           <PassportScoreWidget
             key={`widget-${widgetKey}`}
             apiKey={config.apiKey}
