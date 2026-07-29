@@ -42,6 +42,8 @@ export const LightTheme: PassportWidgetTheme = {
     secondary: "200, 200, 200",
     background: "255, 255, 255",
     accent: "113, 248, 194",
-    error: "55, 55, 55",
+    // Real error red, legible on the light (white) surface. Previously 55,55,55
+    // (grey) which disagreed with the DarkTheme error and read as non-error.
+    error: "220, 38, 38",
   },
 };
