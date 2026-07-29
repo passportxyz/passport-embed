@@ -9,7 +9,11 @@
   --color-primary-c6dbf459: 255, 255, 255;
   --color-secondary-c6dbf459: 109, 109, 109;
   --color-background-c6dbf459: 0, 0, 0;
-  --color-error-c6dbf459: 203, 203, 203;
+  /* Default accent (matches DarkTheme). Seeded so role aliases + blur/accent
+   * usages resolve even when no theme prop is supplied. */
+  --color-accent-c6dbf459: 0, 212, 170;
+  /* Sane default error color (red-ish), not grey. Both themes override this. */
+  --color-error-c6dbf459: 220, 38, 38;
   --color-white-c6dbf459: 255, 255, 255;
   --color-black-c6dbf459: 0, 0, 0;
   --widget-padding-x-c6dbf459: 20px;
@@ -27,6 +31,71 @@
     "Suisse Intl", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     sans-serif;
   --position-overlay-z-index-c6dbf459: 10;
+
+  /* ---------------------------------------------------------------------
+   * Design token scales (§1). Primitives seeded here so the whole widget
+   * shares one source of truth. These are static (non-theme) tokens; the
+   * per-role color aliases below map onto the theme-driven color vars.
+   * ------------------------------------------------------------------- */
+
+  /* Spacing scale: 0 / 4 / 8 / 12 / 16 / 24 / 32 / 48 */
+  --space-0-c6dbf459: 0;
+  --space-1-c6dbf459: 4px;
+  --space-2-c6dbf459: 8px;
+  --space-3-c6dbf459: 12px;
+  --space-4-c6dbf459: 16px;
+  --space-5-c6dbf459: 24px;
+  --space-6-c6dbf459: 32px;
+  --space-7-c6dbf459: 48px;
+
+  /* Type scale */
+  --font-size-xs-c6dbf459: 12px;
+  --font-size-sm-c6dbf459: 13px;
+  --font-size-md-c6dbf459: 14px;
+  --font-size-lg-c6dbf459: 16px;
+  --font-size-xl-c6dbf459: 20px;
+
+  --line-tight-c6dbf459: 1;
+  --line-normal-c6dbf459: 1.5;
+  --line-relaxed-c6dbf459: 1.7;
+
+  --weight-regular-c6dbf459: 400;
+  --weight-medium-c6dbf459: 500;
+  --weight-semibold-c6dbf459: 600;
+  --weight-bold-c6dbf459: 700;
+
+  /* Radius scale */
+  --radius-sm-c6dbf459: 4px;
+  --radius-md-c6dbf459: 6px;
+  --radius-lg-c6dbf459: 8px;
+  --radius-pill-c6dbf459: 999px;
+
+  /* Elevation */
+  --shadow-sm-c6dbf459: 0 1px 2px rgba(0, 0, 0, 0.12);
+  --shadow-md-c6dbf459:
+    0 20px 25px -5px rgba(0, 0, 0, 0.25),
+    0 10px 10px -5px rgba(0, 0, 0, 0.15);
+
+  /* Motion */
+  --motion-fast-c6dbf459: 50ms;
+  --motion-base-c6dbf459: 200ms;
+  --ease-standard-c6dbf459: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ---------------------------------------------------------------------
+   * Per-role color aliases. Future work overrides ONE semantic name and it
+   * flows everywhere. Each maps onto an existing theme-driven color var, so
+   * setTheme() keeps controlling the real values and nothing breaks.
+   * (Declared on .widget so they always shadow any host-page var of the
+   * same name — collision-safe without needing the -c6dbf459 postfix.)
+   * ------------------------------------------------------------------- */
+  --surface: var(--color-background-c6dbf459);
+  --on-surface: var(--color-primary-c6dbf459);
+  --muted: var(--color-secondary-c6dbf459);
+  --accent: var(--color-accent-c6dbf459);
+  --on-accent: var(--color-black-c6dbf459);
+  --danger: var(--color-error-c6dbf459);
+  --on-danger: var(--color-white-c6dbf459);
+  --border: var(--color-secondary-c6dbf459);
 
   /* Width will be 300 unless screen
    * is too narrow, in which case it
