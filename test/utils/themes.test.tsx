@@ -9,13 +9,13 @@ describe("Theme Utils", () => {
     it("includes all required color properties", () => {
       expect(DarkTheme.colors).toBeDefined();
       expect(DarkTheme.colors?.primary).toBe("255, 255, 255");
-      expect(DarkTheme.colors?.secondary).toBe("109, 109, 109");
-      expect(DarkTheme.colors?.background).toBe("0, 0, 0");
-      expect(DarkTheme.colors?.error).toBe("235, 48, 45");
+      expect(DarkTheme.colors?.secondary).toBe("115, 115, 115");
+      expect(DarkTheme.colors?.background).toBe("10, 10, 10");
+      expect(DarkTheme.colors?.error).toBe("252, 103, 100");
     });
 
     it("includes accent color for CTAs", () => {
-      expect(DarkTheme.colors?.accent).toBe("0, 212, 170"); // #00D4AA
+      expect(DarkTheme.colors?.accent).toBe("16, 185, 129"); // #10B981 Human Passport emerald
     });
 
     it("includes padding configuration", () => {
@@ -35,14 +35,14 @@ describe("Theme Utils", () => {
   describe("LightTheme", () => {
     it("includes all required color properties", () => {
       expect(LightTheme.colors).toBeDefined();
-      expect(LightTheme.colors?.primary).toBe("55, 55, 55");
-      expect(LightTheme.colors?.secondary).toBe("200, 200, 200");
+      expect(LightTheme.colors?.primary).toBe("10, 10, 10");
+      expect(LightTheme.colors?.secondary).toBe("115, 115, 115");
       expect(LightTheme.colors?.background).toBe("255, 255, 255");
-      expect(LightTheme.colors?.error).toBe("55, 55, 55");
+      expect(LightTheme.colors?.error).toBe("220, 38, 38");
     });
 
     it("includes accent color for CTAs", () => {
-      expect(LightTheme.colors?.accent).toBe("113, 248, 194"); // #71F8C2 - light theme accent
+      expect(LightTheme.colors?.accent).toBe("16, 185, 129"); // #10B981 Human Passport emerald
     });
 
     it("uses same padding as dark theme", () => {
@@ -106,10 +106,10 @@ describe("Widget setTheme functionality", () => {
 
     // Check all colors are applied
     expect(style.getPropertyValue("--color-primary-c6dbf459")).toBe("255, 255, 255");
-    expect(style.getPropertyValue("--color-secondary-c6dbf459")).toBe("109, 109, 109");
-    expect(style.getPropertyValue("--color-background-c6dbf459")).toBe("0, 0, 0");
-    expect(style.getPropertyValue("--color-accent-c6dbf459")).toBe("0, 212, 170");
-    expect(style.getPropertyValue("--color-error-c6dbf459")).toBe("235, 48, 45");
+    expect(style.getPropertyValue("--color-secondary-c6dbf459")).toBe("115, 115, 115");
+    expect(style.getPropertyValue("--color-background-c6dbf459")).toBe("10, 10, 10");
+    expect(style.getPropertyValue("--color-accent-c6dbf459")).toBe("16, 185, 129");
+    expect(style.getPropertyValue("--color-error-c6dbf459")).toBe("252, 103, 100");
   });
 
   it("handles missing accent color gracefully", () => {
@@ -177,7 +177,7 @@ describe("Widget setTheme functionality", () => {
     let style = window.getComputedStyle(widgetElement);
 
     // Initial theme
-    expect(style.getPropertyValue("--color-accent-c6dbf459")).toBe("0, 212, 170");
+    expect(style.getPropertyValue("--color-accent-c6dbf459")).toBe("16, 185, 129");
     expect(style.getPropertyValue("--color-primary-c6dbf459")).toBe("255, 255, 255");
 
     // Real-world usage: spread existing theme and override specific values
@@ -202,8 +202,8 @@ describe("Widget setTheme functionality", () => {
     // Primary should be updated to dimmer white
     expect(style.getPropertyValue("--color-primary-c6dbf459")).toBe("230, 230, 230");
     // Other theme properties should remain from DarkTheme
-    expect(style.getPropertyValue("--color-background-c6dbf459")).toBe("0, 0, 0");
-    expect(style.getPropertyValue("--color-secondary-c6dbf459")).toBe("109, 109, 109");
+    expect(style.getPropertyValue("--color-background-c6dbf459")).toBe("10, 10, 10");
+    expect(style.getPropertyValue("--color-secondary-c6dbf459")).toBe("115, 115, 115");
   });
 
   it("handles theme with all properties defined", () => {
