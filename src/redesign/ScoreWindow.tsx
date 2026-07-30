@@ -66,6 +66,14 @@ export type ScoreWindowProps = {
    * (mark + score + one action). Pass the SAME value you pass to PassportShell.
    */
   size?: ShellSize;
+
+  /**
+   * Customization-API knob: render the action button or not. Defaults to `true`.
+   * When `false`, the window shows a status-only readout with no action button
+   * (score + preview / message only). Most useful on the `pill` size to ship a
+   * read-only status pill, but honored on every size and state.
+   */
+  showAction?: boolean;
 };
 
 const RING_RADIUS = 54;
@@ -170,6 +178,7 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
   subtext,
   accountPreview,
   size = "full",
+  showAction = true,
 }) => {
   const reduced = useReducedMotion();
   const toGo = Math.max(0, Math.ceil(threshold - score));
@@ -177,20 +186,114 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
   const counted = useCountUp(score, COUNT_MS, reduced || state === "loading" || state === "error");
   const shownScore = Math.round(counted);
   const compact = size !== "full";
+  const verified = state === "verified";
+  const roundedScore = Math.round(score);
   const winClass = `${styles.window} ${size === "mini" ? styles.miniWin : ""} ${size === "pill" ? styles.pillWin : ""}`;
+
+  const addCta = addVerificationsCta ?? {};
+  const idCta = linkIdentityCta ?? {};
+
+  // The score (ring + number) is itself the hover / tap target: the tooltip
+  // tells the user the state and that they can tap to see how it is computed.
+  // (Only meaningful for the below / verified states.)
+  const ringTip = verified ? (
+    <>
+      Verified and above the threshold. <em>Tap to see how it&rsquo;s computed.</em>
+    </>
+  ) : (
+    <>
+      {toGo} more to reach the threshold. <em>Tap to see how it&rsquo;s computed.</em>
+    </>
+  );
+  const ringLabel = verified
+    ? "Verified and above the threshold. Tap to see how your score is computed."
+    : `${toGo} more to reach the threshold. Tap to see how your score is computed.`;
+
+  const ringButton = (
+    <Tooltip content={ringTip} placement="top" className={glass.tip}>
+      <button type="button" className={styles.ringButton} onClick={onDrilldown} aria-label={ringLabel}>
+        <ScoreRing fill={verified ? 1 : fill} passing={verified} celebrate={verified && !compact} reduced={reduced}>
+          <span className={styles.scoreWrap}>
+            <span className={styles.count}>{shownScore}</span>
+            {verified ? null : <small className={styles.outOf}>/{threshold}</small>}
+          </span>
+        </ScoreRing>
+      </button>
+    </Tooltip>
+  );
+
+  // ---- pill: one true single short row in EVERY state. loading = small loader
+  // + short label; below = small ring + "N to go" + a compact action; verified =
+  // ring + account preview + Continue; error = compact message + retry. With
+  // showAction={false} the action drops and the pill is a status-only readout
+  // (score / message + preview). No "Verified" word, no footer here (the shell
+  // owns the compact footer); the only tooltip is the score-hover on the ring. ----
+  if (size === "pill") {
+    if (state === "loading") {
+      return (
+        <div className={winClass}>
+          <ScoreLoader size="pill" />
+          <span className={styles.pillText}>{headline ?? "Checking your score"}</span>
+        </div>
+      );
+    }
+
+    if (state === "error") {
+      const human = humanizeError(errorKind ?? error);
+      // Keep the pill to one short row: the compact title, not the full sentence.
+      const message = errorMessage ?? subtext ?? human.title;
+      return (
+        <div className={winClass}>
+          <span className={styles.pillErrorBadge} aria-hidden="true">
+            <RetryIcon size={16} />
+          </span>
+          <span className={styles.pillText} role="alert">
+            {message}
+          </span>
+          {showAction && human.retryable && onRetry ? (
+            <button type="button" className={`${styles.cta} ${styles.ctaInline}`} onClick={onRetry}>
+              <span className={styles.ctaIcon}>
+                <RetryIcon size={14} strokeWidth={2} />
+              </span>
+              <span className={styles.ctaLabel}>Retry</span>
+            </button>
+          ) : null}
+        </div>
+      );
+    }
+
+    // below / verified: ring + label + one action. Below shows "N to go"; verified
+    // shows the account preview.
+    const pillLabel = verified ? accountPreview : `${toGo} to go`;
+    return (
+      <div className={winClass}>
+        <p className={styles.srOnly} aria-live="polite">
+          Score {roundedScore} of {threshold}. {verified ? "Above the threshold." : `${toGo} to go.`}
+        </p>
+        {ringButton}
+        {pillLabel ? <span className={styles.pillText}>{pillLabel}</span> : <span className={styles.pillText} />}
+        {!showAction ? null : verified ? (
+          <button type="button" className={`${styles.cta} ${styles.ctaInline}`} onClick={onContinue}>
+            <span className={styles.ctaLabel}>{continueLabel ?? "Continue"}</span>
+          </button>
+        ) : addCta.hidden ? null : (
+          <button type="button" className={`${styles.cta} ${styles.ctaInline}`} onClick={addCta.onClick}>
+            <span className={styles.ctaIcon}>
+              <PlusIcon size={14} strokeWidth={2} />
+            </span>
+            <span className={styles.ctaLabel}>{addCta.label ?? "Verify"}</span>
+          </button>
+        )}
+      </div>
+    );
+  }
 
   if (state === "loading") {
     return (
       <div className={winClass}>
         <ScoreLoader size={size} />
-        {size === "pill" ? (
-          <p className={styles.headline}>{headline ?? "Checking your score"}</p>
-        ) : (
-          <>
-            <p className={styles.headline}>{headline ?? "Checking your score"}</p>
-            <p className={styles.sub}>{subtext ?? "This only takes a moment."}</p>
-          </>
-        )}
+        <p className={styles.headline}>{headline ?? "Checking your score"}</p>
+        <p className={styles.sub}>{subtext ?? "This only takes a moment."}</p>
       </div>
     );
   }
@@ -208,73 +311,11 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
         <p className={styles.sub} role="alert">
           {message}
         </p>
-        {human.retryable && onRetry ? (
+        {showAction && human.retryable && onRetry ? (
           <ActionButton variant="primary" onClick={onRetry} icon={<RetryIcon size={15} strokeWidth={2} />}>
             Try again
           </ActionButton>
         ) : null}
-      </div>
-    );
-  }
-
-  const verified = state === "verified";
-  const roundedScore = Math.round(score);
-
-  // The score (ring + number) is itself the hover / tap target: the tooltip
-  // tells the user the state and that they can tap to see how it is computed.
-  const ringTip = verified ? (
-    <>
-      Verified and above the threshold. <em>Tap to see how it&rsquo;s computed.</em>
-    </>
-  ) : (
-    <>
-      {toGo} more to reach the threshold. <em>Tap to see how it&rsquo;s computed.</em>
-    </>
-  );
-  const ringLabel = verified
-    ? "Verified and above the threshold. Tap to see how your score is computed."
-    : `${toGo} more to reach the threshold. Tap to see how your score is computed.`;
-
-  const addCta = addVerificationsCta ?? {};
-  const idCta = linkIdentityCta ?? {};
-
-  const ringButton = (
-    <Tooltip content={ringTip} placement="top" className={glass.tip}>
-      <button type="button" className={styles.ringButton} onClick={onDrilldown} aria-label={ringLabel}>
-        <ScoreRing fill={verified ? 1 : fill} passing={verified} celebrate={verified && !compact} reduced={reduced}>
-          <span className={styles.scoreWrap}>
-            <span className={styles.count}>{shownScore}</span>
-            {verified ? null : <small className={styles.outOf}>/{threshold}</small>}
-          </span>
-        </ScoreRing>
-      </button>
-    </Tooltip>
-  );
-
-  // ---- pill: one true single row. The score ring stands in for the app-icon
-  // at the left, then the account name / short address preview, then one narrow
-  // action on the same row. No "Verified" word, no separate label; the only
-  // tooltip is the score-hover on the ring. ----
-  if (size === "pill") {
-    return (
-      <div className={winClass}>
-        <p className={styles.srOnly} aria-live="polite">
-          Score {roundedScore} of {threshold}. {verified ? "Above the threshold." : `${toGo} to go.`}
-        </p>
-        {ringButton}
-        {accountPreview ? <span className={styles.pillText}>{accountPreview}</span> : <span className={styles.pillText} />}
-        {verified ? (
-          <button type="button" className={`${styles.cta} ${styles.ctaInline}`} onClick={onContinue}>
-            <span className={styles.ctaLabel}>{continueLabel ?? "Continue"}</span>
-          </button>
-        ) : addCta.hidden ? null : (
-          <button type="button" className={`${styles.cta} ${styles.ctaInline}`} onClick={addCta.onClick}>
-            <span className={styles.ctaIcon}>
-              <PlusIcon size={14} strokeWidth={2} />
-            </span>
-            <span className={styles.ctaLabel}>{addCta.label ?? "Verify"}</span>
-          </button>
-        )}
       </div>
     );
   }
@@ -292,12 +333,22 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
           // mini: no standalone verified line. The verified state folds into the
           // CTA itself (check + "You're verified"), which continues on tap. Ring
           // + this one button + footer, nothing else, to save vertical space.
-          <button type="button" className={styles.cta} onClick={onContinue}>
-            <span className={styles.ctaIcon}>
-              <CheckIcon size={15} strokeWidth={2} />
-            </span>
-            <span className={styles.ctaLabel}>{headline ?? "You're verified"}</span>
-          </button>
+          // With showAction={false} it becomes a static, non-interactive line.
+          showAction ? (
+            <button type="button" className={styles.cta} onClick={onContinue}>
+              <span className={styles.ctaIcon}>
+                <CheckIcon size={15} strokeWidth={2} />
+              </span>
+              <span className={styles.ctaLabel}>{headline ?? "You're verified"}</span>
+            </button>
+          ) : (
+            <div className={`${styles.verifiedLine} ${reduced ? styles.verifiedLineStatic : ""}`}>
+              <span className={styles.inlineSeal} aria-hidden="true">
+                <CheckIcon size={14} strokeWidth={2.6} />
+              </span>
+              <span className={styles.verifiedText}>{headline ?? "You're verified"}</span>
+            </div>
+          )
         ) : (
           <>
             <div className={`${styles.verifiedLine} ${reduced ? styles.verifiedLineStatic : ""}`}>
@@ -325,12 +376,14 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
               <span className={styles.verifiedText}>{headline ?? "You're verified"}</span>
             </div>
 
-            <button type="button" className={styles.cta} onClick={onContinue}>
-              <span className={styles.ctaIcon}>
-                <CheckIcon size={15} strokeWidth={2} />
-              </span>
-              <span className={styles.ctaLabel}>{continueLabel ?? "Continue"}</span>
-            </button>
+            {showAction ? (
+              <button type="button" className={styles.cta} onClick={onContinue}>
+                <span className={styles.ctaIcon}>
+                  <CheckIcon size={15} strokeWidth={2} />
+                </span>
+                <span className={styles.ctaLabel}>{continueLabel ?? "Continue"}</span>
+              </button>
+            ) : null}
           </>
         )
       ) : (
@@ -347,27 +400,29 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
             </div>
           )}
 
-          <div className={styles.actions}>
-            {addCta.hidden ? null : (
-              <ActionButton
-                variant="primary"
-                onClick={addCta.onClick}
-                icon={<PlusIcon size={15} strokeWidth={2} />}
-              >
-                {addCta.label ?? "Add verifications"}
-              </ActionButton>
-            )}
-            {/* mini keeps only the primary action so it stays half-size. */}
-            {compact || idCta.hidden ? null : (
-              <ActionButton
-                variant="secondary"
-                onClick={idCta.onClick}
-                icon={<LinkIcon size={15} strokeWidth={1.9} />}
-              >
-                {idCta.label ?? "Link an identity"}
-              </ActionButton>
-            )}
-          </div>
+          {showAction ? (
+            <div className={styles.actions}>
+              {addCta.hidden ? null : (
+                <ActionButton
+                  variant="primary"
+                  onClick={addCta.onClick}
+                  icon={<PlusIcon size={15} strokeWidth={2} />}
+                >
+                  {addCta.label ?? "Add verifications"}
+                </ActionButton>
+              )}
+              {/* mini keeps only the primary action so it stays half-size. */}
+              {compact || idCta.hidden ? null : (
+                <ActionButton
+                  variant="secondary"
+                  onClick={idCta.onClick}
+                  icon={<LinkIcon size={15} strokeWidth={1.9} />}
+                >
+                  {idCta.label ?? "Link an identity"}
+                </ActionButton>
+              )}
+            </div>
+          ) : null}
         </>
       )}
     </div>

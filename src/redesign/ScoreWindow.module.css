@@ -432,6 +432,19 @@
   margin: 0;
 }
 
+/* Compact error mark for the pill error row: same danger tint as the full badge,
+ * sized to sit inside the single pill row where the ring would otherwise be. */
+.pillErrorBadge {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgb(var(--danger));
+  background: rgba(var(--danger), 0.12);
+}
+
 /* Inline (auto-width) action used by the pill row: same look, compact box. */
 .ctaInline {
   width: auto;
