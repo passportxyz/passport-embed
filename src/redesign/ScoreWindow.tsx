@@ -2,9 +2,11 @@ import React from "react";
 import styles from "./ScoreWindow.module.css";
 import glass from "./glassTip.module.css";
 import { Tooltip } from "../components/Tooltip";
-import { CheckIcon, PlusIcon, RetryIcon, ShieldIcon, WalletIcon } from "./icons";
+import { CheckIcon, LinkIcon, PlusIcon, RetryIcon } from "./icons";
 import { useCountUp, useReducedMotion } from "./hooks";
 import { humanizeError, ErrorKind } from "./humanizeError";
+import { Cryptex, CryptexSize } from "./vendor/cryptex/Cryptex";
+import type { ShellSize } from "./PassportShell";
 
 export type ScoreWindowState = "loading" | "below" | "verified" | "error";
 
@@ -27,9 +29,10 @@ export type ScoreWindowProps = {
 
   /** Below-threshold action area, CTA 1: add stamps / verifications. */
   addVerificationsCta?: ShellCta;
-  /** Below-threshold action area, CTA 2: link a wallet to import reputation.
-   *  Present in the onboarding / below-threshold flow, dev-invokable. */
-  linkWalletCta?: ShellCta;
+  /** Below-threshold action area, CTA 2: link an identity (a wallet / account)
+   *  to import reputation. Present in the onboarding / below-threshold flow,
+   *  dev-invokable. */
+  linkIdentityCta?: ShellCta;
 
   /** Verified hand-off CTA (Continue back to the host app). */
   onContinue?: () => void;
@@ -49,11 +52,21 @@ export type ScoreWindowProps = {
   headline?: string;
   /** Override the default per-state subtext. */
   subtext?: string;
+
+  /**
+   * Size variant, mirrors the shell's. `full` (default) is the crafted card;
+   * `mini` is a condensed ~half-size card; `pill` is a compact single-row pill
+   * (mark + score + one action). Pass the SAME value you pass to PassportShell.
+   */
+  size?: ShellSize;
 };
 
 const RING_RADIUS = 54;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 const COUNT_MS = 1000;
+
+/** Cryptex size + ring pixel size per shell size variant. */
+const CRYPTEX_SIZE: Record<ShellSize, CryptexSize> = { full: "lg", mini: "md", pill: "sm" };
 
 /** True circular progress ring. Emerald at or above the threshold, amber below. */
 const ScoreRing: React.FC<{
@@ -96,50 +109,20 @@ const ScoreRing: React.FC<{
   );
 };
 
-// A ring of hex glyphs around a resolving core: a lightweight loader in the
-// spirit of the shared Cryptex (a cipher settling around the human.tech mark).
-// TODO: swap to the shared cryptex loader (@holonym-foundation/ui Cryptex) once
-// that package is a cleanly importable dependency of passport-embed.
-const CRYPTEX_GLYPHS = ["0", "B", "4", "7", "1", "E", "A", "9"];
-
-const CryptexLoader: React.FC<{ reduced: boolean }> = ({ reduced }) => (
+/**
+ * The score-loading state now renders the REAL shared Cryptex loader
+ * (`@holonym-foundation/ui`, vendored under ./vendor/cryptex until the package
+ * is installable). A cipher of hex + brand marks orbiting the Human Passport
+ * mark, resolving as the score settles. Not a bespoke spinner.
+ */
+const CryptexLoader: React.FC<{ size: ShellSize }> = ({ size }) => (
   <div className={styles.ringWrap}>
-    <svg className={styles.cryptexSvg} viewBox="0 0 150 150" aria-hidden="true">
-      <circle className={styles.ringTrack} cx="75" cy="75" r={RING_RADIUS} />
-      <circle
-        className={`${styles.loaderArc} ${reduced ? "" : styles.loaderArcSpin}`}
-        cx="75"
-        cy="75"
-        r={RING_RADIUS}
-        transform="rotate(-90 75 75)"
-        strokeDasharray={`${RING_CIRCUMFERENCE * 0.28} ${RING_CIRCUMFERENCE}`}
-      />
-      {CRYPTEX_GLYPHS.map((ch, i) => {
-        const a = (i / CRYPTEX_GLYPHS.length) * 2 * Math.PI - Math.PI / 2;
-        const x = 75 + Math.cos(a) * RING_RADIUS;
-        const y = 75 + Math.sin(a) * RING_RADIUS;
-        return (
-          <text
-            key={`${ch}-${i}`}
-            className={styles.cryptexGlyph}
-            x={x.toFixed(1)}
-            y={y.toFixed(1)}
-            textAnchor="middle"
-            dominantBaseline="central"
-            style={reduced ? undefined : { animationDelay: `${(i * 0.13).toFixed(2)}s` }}
-          >
-            {ch}
-          </text>
-        );
-      })}
-    </svg>
-    <div className={styles.ringNum}>
-      <ShieldIcon className={styles.loaderMark} size={26} />
-    </div>
+    <Cryptex variant="passport" field size={CRYPTEX_SIZE[size]} label="Checking your score" />
   </div>
 );
 
-/** One action button. Emerald primary or tonal secondary. */
+/** One action button. Emerald primary or tonal secondary. All action buttons
+ *  share ONE box metric (full width, same height + padding); only color differs. */
 const ActionButton: React.FC<{
   variant: "primary" | "secondary";
   onClick?: () => void;
@@ -152,7 +135,7 @@ const ActionButton: React.FC<{
     onClick={onClick}
   >
     <span className={styles.ctaIcon}>{icon}</span>
-    {children}
+    <span className={styles.ctaLabel}>{children}</span>
   </button>
 );
 
@@ -162,7 +145,7 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
   threshold = 20,
   onDrilldown,
   addVerificationsCta,
-  linkWalletCta,
+  linkIdentityCta,
   onContinue,
   continueLabel,
   onRetry,
@@ -171,19 +154,28 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
   errorMessage,
   headline,
   subtext,
+  size = "full",
 }) => {
   const reduced = useReducedMotion();
   const toGo = Math.max(0, Math.ceil(threshold - score));
   const fill = threshold > 0 ? score / threshold : 0;
   const counted = useCountUp(score, COUNT_MS, reduced || state === "loading" || state === "error");
   const shownScore = Math.round(counted);
+  const compact = size !== "full";
+  const winClass = `${styles.window} ${size === "mini" ? styles.miniWin : ""} ${size === "pill" ? styles.pillWin : ""}`;
 
   if (state === "loading") {
     return (
-      <div className={styles.window}>
-        <CryptexLoader reduced={reduced} />
-        <p className={styles.headline}>{headline ?? "Checking your score"}</p>
-        <p className={styles.sub}>{subtext ?? "This only takes a moment."}</p>
+      <div className={winClass}>
+        <CryptexLoader size={size} />
+        {size === "pill" ? (
+          <p className={styles.headline}>{headline ?? "Checking your score"}</p>
+        ) : (
+          <>
+            <p className={styles.headline}>{headline ?? "Checking your score"}</p>
+            <p className={styles.sub}>{subtext ?? "This only takes a moment."}</p>
+          </>
+        )}
       </div>
     );
   }
@@ -193,7 +185,7 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
     const title = headline ?? human.title;
     const message = errorMessage ?? subtext ?? human.message;
     return (
-      <div className={styles.window}>
+      <div className={winClass}>
         <div className={styles.errorBadge} aria-hidden="true">
           <RetryIcon size={22} />
         </div>
@@ -229,24 +221,56 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
     : `${toGo} more to reach the threshold. Tap to see how your score is computed.`;
 
   const addCta = addVerificationsCta ?? {};
-  const walletCta = linkWalletCta ?? {};
+  const idCta = linkIdentityCta ?? {};
+
+  const ringButton = (
+    <Tooltip content={ringTip} placement="top" className={glass.tip}>
+      <button type="button" className={styles.ringButton} onClick={onDrilldown} aria-label={ringLabel}>
+        <ScoreRing fill={verified ? 1 : fill} passing={verified} celebrate={verified && !compact} reduced={reduced}>
+          <span className={styles.scoreWrap}>
+            <span className={styles.count}>{shownScore}</span>
+            {verified ? null : <small className={styles.outOf}>/{threshold}</small>}
+          </span>
+        </ScoreRing>
+      </button>
+    </Tooltip>
+  );
+
+  // ---- pill: one compact horizontal row (mark/score + label + one action) ----
+  if (size === "pill") {
+    return (
+      <div className={winClass}>
+        <p className={styles.srOnly} aria-live="polite">
+          Score {roundedScore} of {threshold}. {verified ? "Above the threshold." : `${toGo} to go.`}
+        </p>
+        {ringButton}
+        <span className={styles.pillText}>{headline ?? (verified ? "Verified" : `${toGo} to go`)}</span>
+        {verified ? (
+          <button type="button" className={`${styles.cta} ${styles.ctaInline}`} onClick={onContinue}>
+            <span className={styles.ctaIcon}>
+              <CheckIcon size={14} strokeWidth={2} />
+            </span>
+            <span className={styles.ctaLabel}>{continueLabel ?? "Continue"}</span>
+          </button>
+        ) : addCta.hidden ? null : (
+          <button type="button" className={`${styles.cta} ${styles.ctaInline}`} onClick={addCta.onClick}>
+            <span className={styles.ctaIcon}>
+              <PlusIcon size={14} strokeWidth={2} />
+            </span>
+            <span className={styles.ctaLabel}>{addCta.label ?? "Verify"}</span>
+          </button>
+        )}
+      </div>
+    );
+  }
 
   return (
-    <div className={styles.window}>
+    <div className={winClass}>
       <p className={styles.srOnly} aria-live="polite">
         Score {roundedScore} of {threshold}. {verified ? "Above the threshold." : `${toGo} to go.`}
       </p>
 
-      <Tooltip content={ringTip} placement="top" className={glass.tip}>
-        <button type="button" className={styles.ringButton} onClick={onDrilldown} aria-label={ringLabel}>
-          <ScoreRing fill={verified ? 1 : fill} passing={verified} celebrate={verified} reduced={reduced}>
-            <span className={styles.scoreWrap}>
-              <span className={styles.count}>{shownScore}</span>
-              {verified ? null : <small className={styles.outOf}>/{threshold}</small>}
-            </span>
-          </ScoreRing>
-        </button>
-      </Tooltip>
+      {ringButton}
 
       {verified ? (
         <>
@@ -275,28 +299,26 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
             <span className={styles.verifiedText}>{headline ?? "You're verified"}</span>
           </div>
 
-          <button
-            type="button"
-            className={styles.cta}
-            onClick={onContinue}
-          >
+          <button type="button" className={styles.cta} onClick={onContinue}>
             <span className={styles.ctaIcon}>
               <CheckIcon size={15} strokeWidth={2} />
             </span>
-            {continueLabel ?? "Continue"}
+            <span className={styles.ctaLabel}>{continueLabel ?? "Continue"}</span>
           </button>
         </>
       ) : (
         <>
           <p className={styles.headline}>{headline ?? "Almost verified"}</p>
-          <p className={styles.sub}>{subtext ?? "You need a little more to pass."}</p>
+          {compact ? null : <p className={styles.sub}>{subtext ?? "You need a little more to pass."}</p>}
 
-          <div className={styles.toGo}>
-            <span className={styles.toGoBar}>
-              <i style={{ width: `${Math.min(100, fill * 100)}%` }} />
-            </span>
-            <span className={styles.toGoLabel}>{toGo} to go</span>
-          </div>
+          {compact ? null : (
+            <div className={styles.toGo}>
+              <span className={styles.toGoBar}>
+                <i style={{ width: `${Math.min(100, fill * 100)}%` }} />
+              </span>
+              <span className={styles.toGoLabel}>{toGo} to go</span>
+            </div>
+          )}
 
           <div className={styles.actions}>
             {addCta.hidden ? null : (
@@ -308,13 +330,14 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
                 {addCta.label ?? "Add verifications"}
               </ActionButton>
             )}
-            {walletCta.hidden ? null : (
+            {/* mini keeps only the primary action so it stays half-size. */}
+            {compact || idCta.hidden ? null : (
               <ActionButton
                 variant="secondary"
-                onClick={walletCta.onClick}
-                icon={<WalletIcon size={15} strokeWidth={1.9} />}
+                onClick={idCta.onClick}
+                icon={<LinkIcon size={15} strokeWidth={1.9} />}
               >
-                {walletCta.label ?? "Link wallet to import reputation"}
+                {idCta.label ?? "Link an identity"}
               </ActionButton>
             )}
           </div>

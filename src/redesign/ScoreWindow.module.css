@@ -18,6 +18,12 @@
   align-items: center;
   position: relative;
   text-align: center;
+  /* Fill the fixed-height content region so the action area can bottom-anchor
+   * (§ structure): the primary CTA lands at the same coordinates in every
+   * state. The score / message area flexes; the buttons do not move. */
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
 }
 
 .srOnly {
@@ -201,57 +207,8 @@
   }
 }
 
-/* ---- cryptex-spirit loader: hex glyphs settling around a resolving core ---- */
-.cryptexSvg {
-  width: 150px;
-  height: 150px;
-  display: block;
-}
-.loaderArc {
-  fill: none;
-  stroke: rgb(var(--accent));
-  stroke-width: 9;
-  stroke-linecap: round;
-}
-.loaderArcSpin {
-  animation: loaderSpin 1.1s linear infinite;
-  transform-origin: 75px 75px;
-}
-@keyframes loaderSpin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-.cryptexGlyph {
-  fill: rgba(var(--accent), 0.85);
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  font-size: 10px;
-  font-weight: var(--weight-bold-c6dbf459);
-  opacity: 0.25;
-  animation: cryptexTwinkle 1.6s var(--ease-standard-c6dbf459) infinite;
-}
-@keyframes cryptexTwinkle {
-  0%,
-  100% {
-    opacity: 0.22;
-  }
-  50% {
-    opacity: 0.9;
-  }
-}
-.loaderMark {
-  color: var(--rd-loader-mark);
-  animation: loaderPulse 1.6s ease-in-out infinite;
-}
-@keyframes loaderPulse {
-  0%,
-  100% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
-  }
-}
+/* The score-loading state renders the real shared Cryptex loader (see
+ * ScoreWindow.tsx / vendor/cryptex). No bespoke loader CSS lives here. */
 
 /* ---- text ---- */
 .headline {
@@ -321,21 +278,28 @@
 }
 
 /* ---- CTAs ---- */
-/* Below-threshold action area holds the two configurable CTAs, stacked. */
+/* Below-threshold action area holds the two configurable CTAs, stacked.
+ * margin-top:auto pins the whole action area to the bottom of the window so the
+ * primary CTA sits at a fixed y across states. */
 .actions {
   display: flex;
   flex-direction: column;
   gap: var(--space-2-c6dbf459);
   width: 100%;
-  margin-top: var(--space-4-c6dbf459);
+  margin-top: auto;
 }
 
+/* ONE shared button metric. Every action button - primary, secondary, the
+ * verified Continue, the error retry - is full width with identical height and
+ * padding. Only the color differs (emerald primary vs tonal secondary). A
+ * standalone .cta (verified / error) bottom-anchors via margin-top:auto. */
 .cta {
   appearance: none;
   border: 0;
   width: 100%;
   height: 46px;
-  margin-top: var(--space-4-c6dbf459);
+  margin-top: auto;
+  padding: 0 var(--space-4-c6dbf459);
   border-radius: var(--radius-lg-c6dbf459);
   cursor: pointer;
   display: inline-flex;
@@ -356,6 +320,12 @@
 /* Buttons inside the stacked action area own their spacing via the flex gap. */
 .actions .cta {
   margin-top: 0;
+}
+/* The label never wraps, so both CTAs keep the identical single-row box. */
+.ctaLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .cta:hover {
   filter: brightness(1.08);
@@ -384,6 +354,79 @@
   display: inline-flex;
 }
 
+/* ---- size variants (§ structure): mini = condensed ~half card, pill = one
+ * compact horizontal row. full is the default layout above. ---- */
+
+/* mini: smaller ring + digit, tighter spacing, primary action only. */
+.miniWin {
+  --rd-score-digit: 26px;
+}
+.miniWin .ringWrap {
+  margin: 0 0 var(--space-1-c6dbf459);
+}
+.miniWin .ringSvg {
+  width: 100px;
+  height: 100px;
+}
+.miniWin .headline {
+  font-size: var(--font-size-md-c6dbf459);
+  margin-top: var(--space-1-c6dbf459);
+}
+.miniWin .verifiedText {
+  font-size: var(--font-size-md-c6dbf459);
+}
+.miniWin .verifiedLine {
+  margin-top: var(--space-2-c6dbf459);
+}
+
+/* pill: a single horizontal row - compact score + label + one action. */
+.pillWin {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+  gap: var(--space-2-c6dbf459);
+  --rd-score-digit: 15px;
+}
+.pillWin .ringWrap {
+  margin: 0;
+  flex: none;
+}
+.pillWin .ringSvg {
+  width: 44px;
+  height: 44px;
+}
+.pillWin .ringTrack,
+.pillWin .ringProgress {
+  stroke-width: 11;
+}
+.pillWin .outOf {
+  display: none;
+}
+.pillText {
+  flex: 1;
+  min-width: 0;
+  font-weight: var(--weight-semibold-c6dbf459);
+  font-size: var(--font-size-sm-c6dbf459);
+  color: rgb(var(--on-surface));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pillWin .headline {
+  margin: 0;
+}
+
+/* Inline (auto-width) action used by the pill row: same look, compact box. */
+.ctaInline {
+  width: auto;
+  flex: none;
+  height: 34px;
+  margin-top: 0;
+  padding: 0 var(--space-3-c6dbf459);
+  font-size: var(--font-size-sm-c6dbf459);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .ringProgress,
   .toGoBar i,
@@ -391,13 +434,7 @@
     transition: none;
   }
   .ringGlow,
-  .loaderArcSpin,
-  .loaderMark,
-  .cryptexGlyph,
   .verifiedLine {
     animation: none;
-  }
-  .cryptexGlyph {
-    opacity: 0.6;
   }
 }

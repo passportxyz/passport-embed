@@ -30,7 +30,7 @@ export const Loading: Story = {
     docs: {
       description: {
         story:
-          "A cryptex-spirit loader: hex glyphs settling around the human.tech mark while the arc traces itself. Never a bare spinner.",
+          "The real shared Cryptex loader (@holonym-foundation/ui, vendored under redesign/vendor/cryptex until the package is installable): a cipher of hex and brand marks orbiting the Human Passport mark, resolving as the score settles. Never a bare spinner.",
       },
     },
   },
@@ -45,14 +45,14 @@ export const BelowThreshold: Story = {
         score={17}
         threshold={20}
         addVerificationsCta={{ onClick: () => undefined }}
-        linkWalletCta={{ onClick: () => undefined }}
+        linkIdentityCta={{ onClick: () => undefined }}
       />
     ),
   parameters: {
     docs: {
       description: {
         story:
-          "Below the threshold the ring is amber, not emerald. Hover the score for its state and the tap-to-compute hint. Two configurable CTAs: 'Add verifications' and 'Link wallet to import reputation'.",
+          "Below the threshold the ring is amber, not emerald. Hover the score for its state and the tap-to-compute hint. Two configurable CTAs share one box metric (both full width, identical height and padding): the emerald 'Add verifications' primary and the tonal 'Link an identity' secondary, the latter with a chain-link icon. Both sit in the bottom-pinned action area so the primary CTA lands at the same y as the verified Continue.",
       },
     },
   },
