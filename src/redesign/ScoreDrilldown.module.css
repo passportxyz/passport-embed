@@ -1,0 +1,129 @@
+/*
+ * ScoreDrilldown — the single ring resolves into disconnected arcs whose LENGTH
+ * encodes each stamp's contribution (uniform stroke-width), points ON each arc,
+ * names close to their arc, palette derived from the accent hue only. No legend,
+ * no "sums to total" caption (SOP §4). Everything scales inside one viewBox so
+ * nothing clips.
+ */
+
+.drilldown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1-c6dbf459);
+  width: 100%;
+}
+
+.back {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 4px;
+  margin-bottom: var(--space-1-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+  cursor: pointer;
+  color: rgba(var(--on-surface), 0.72);
+  font-family: var(--font-family-body-c6dbf459);
+  font-size: var(--font-size-xs-c6dbf459);
+}
+.back:hover {
+  color: rgb(var(--on-surface));
+  background: rgba(var(--on-surface), 0.06);
+}
+.back:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 1px;
+}
+
+.title {
+  margin: 0;
+  color: rgb(var(--on-surface));
+  font-weight: var(--weight-semibold-c6dbf459);
+  font-size: var(--font-size-lg-c6dbf459);
+  line-height: var(--line-normal-c6dbf459);
+  text-align: center;
+  text-wrap: balance;
+}
+
+.arcSvg {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-top: var(--space-2-c6dbf459);
+  overflow: visible;
+}
+
+.track {
+  fill: none;
+  stroke: rgba(var(--on-surface), 0.1);
+  stroke-width: 16;
+}
+
+.arc {
+  transition: stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* the point rides ON its band — white with a dark halo so it reads over any
+ * mid-tone tint, in both themes (paint-order draws the halo behind the fill) */
+.arcPt {
+  font-family: var(--font-family-body-c6dbf459);
+  font-weight: var(--weight-bold-c6dbf459);
+  font-size: 13px;
+  fill: #fff;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.55);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  font-variant-numeric: tabular-nums;
+}
+
+/* the name sits just outside its band — theme text color for guaranteed
+ * contrast (association is by proximity, not by a color legend) */
+.arcLabel {
+  font-family: var(--font-family-body-c6dbf459);
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  fill: rgb(var(--on-surface));
+}
+
+.total {
+  fill: rgb(var(--on-surface));
+  font-family: var(--font-family-body-c6dbf459);
+  font-weight: var(--weight-bold-c6dbf459);
+  font-size: 34px;
+  font-variant-numeric: tabular-nums;
+}
+
+.resolveIn {
+  animation: resolveIn 0.6s var(--ease-standard-c6dbf459) both;
+  transform-origin: 180px 120px;
+}
+@keyframes resolveIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arc,
+  .resolveIn {
+    transition: none;
+    animation: none;
+  }
+}
