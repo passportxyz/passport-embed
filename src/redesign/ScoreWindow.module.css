@@ -207,8 +207,23 @@
   }
 }
 
-/* The score-loading state renders the real shared Cryptex loader (see
- * ScoreWindow.tsx / vendor/cryptex). No bespoke loader CSS lives here. */
+/* Interim loading spinner (indeterminate emerald arc). To be replaced by the
+ * shared Cryptex loader from @holonym-foundation/ui once it is an installable
+ * dependency — its source is NOT vendored into this public repo. */
+.spin {
+  animation: rdSpin 1s linear infinite;
+  transform-origin: center;
+}
+@keyframes rdSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+}
 
 /* ---- text ---- */
 .headline {

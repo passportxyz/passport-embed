@@ -5,7 +5,6 @@ import { Tooltip } from "../components/Tooltip";
 import { CheckIcon, LinkIcon, PlusIcon, RetryIcon } from "./icons";
 import { useCountUp, useReducedMotion } from "./hooks";
 import { humanizeError, ErrorKind } from "./humanizeError";
-import { Cryptex, CryptexSize } from "./vendor/cryptex/Cryptex";
 import type { ShellSize } from "./PassportShell";
 
 export type ScoreWindowState = "loading" | "below" | "verified" | "error";
@@ -65,8 +64,8 @@ const RING_RADIUS = 54;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 const COUNT_MS = 1000;
 
-/** Cryptex size + ring pixel size per shell size variant. */
-const CRYPTEX_SIZE: Record<ShellSize, CryptexSize> = { full: "lg", mini: "md", pill: "sm" };
+/** Loader diameter (px) per shell size variant. */
+const LOADER_PX: Record<ShellSize, number> = { full: 116, mini: 76, pill: 40 };
 
 /** True circular progress ring. Emerald at or above the threshold, amber below. */
 const ScoreRing: React.FC<{
@@ -110,16 +109,23 @@ const ScoreRing: React.FC<{
 };
 
 /**
- * The score-loading state now renders the REAL shared Cryptex loader
- * (`@holonym-foundation/ui`, vendored under ./vendor/cryptex until the package
- * is installable). A cipher of hex + brand marks orbiting the Human Passport
- * mark, resolving as the score settles. Not a bespoke spinner.
+ * Interim loader for the score-loading state: a simple indeterminate emerald arc.
+ * TODO: swap to the shared Cryptex loader from `@holonym-foundation/ui` once that
+ * package is installable by this build. Do NOT vendor its source into this public
+ * repo — consume it as a dependency (see design-sop §7 reuse-shared-components).
  */
-const CryptexLoader: React.FC<{ size: ShellSize }> = ({ size }) => (
-  <div className={styles.ringWrap}>
-    <Cryptex variant="passport" field size={CRYPTEX_SIZE[size]} label="Checking your score" />
-  </div>
-);
+const ScoreLoader: React.FC<{ size: ShellSize }> = ({ size }) => {
+  const reduced = useReducedMotion();
+  const px = LOADER_PX[size];
+  return (
+    <div className={styles.ringWrap} role="status" aria-label="Checking your score">
+      <svg width={px} height={px} viewBox="0 0 48 48" aria-hidden className={reduced ? undefined : styles.spin}>
+        <circle cx="24" cy="24" r="20" fill="none" stroke="rgba(var(--muted), 0.25)" strokeWidth="4" />
+        <path d="M24 4 a20 20 0 0 1 20 20" fill="none" stroke="rgb(var(--accent))" strokeWidth="4" strokeLinecap="round" />
+      </svg>
+    </div>
+  );
+};
 
 /** One action button. Emerald primary or tonal secondary. All action buttons
  *  share ONE box metric (full width, same height + padding); only color differs. */
@@ -167,7 +173,7 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
   if (state === "loading") {
     return (
       <div className={winClass}>
-        <CryptexLoader size={size} />
+        <ScoreLoader size={size} />
         {size === "pill" ? (
           <p className={styles.headline}>{headline ?? "Checking your score"}</p>
         ) : (

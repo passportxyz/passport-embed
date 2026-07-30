@@ -30,7 +30,7 @@ export const Loading: Story = {
     docs: {
       description: {
         story:
-          "The real shared Cryptex loader (@holonym-foundation/ui, vendored under redesign/vendor/cryptex until the package is installable): a cipher of hex and brand marks orbiting the Human Passport mark, resolving as the score settles. Never a bare spinner.",
+          "Interim loading state: a simple indeterminate emerald arc. This will be replaced by the shared Cryptex loader from @holonym-foundation/ui once that package is installable as a dependency (its source is not copied into this public repo).",
       },
     },
   },
