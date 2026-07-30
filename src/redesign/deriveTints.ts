@@ -1,14 +1,14 @@
 /**
  * Palette derivation for the score drill-down (SOP §4).
  *
- * The drill-down arcs draw ONLY from the embed's accent — one hue family,
+ * The drill-down arcs draw ONLY from the embed's accent - one hue family,
  * stepped tints/shades. No rainbow, no invented colors, no legend. These
  * helpers take the accent color and produce N legible mid-tone tints, ordered
  * so the largest contribution gets the base hue and deeper ranks step within
  * the same family.
  *
  * Lightness is deliberately clamped to a mid band so the arcs (and the white
- * points that ride on them) stay legible in BOTH light and dark themes — the
+ * points that ride on them) stay legible in BOTH light and dark themes - the
  * accent's own lightness varies by theme, but the derived arc lightness does
  * not.
  */
@@ -75,13 +75,13 @@ const DEFAULT_ACCENT: RGB = [16, 185, 129]; // Human Passport emerald (#10B981)
  * Derive `count` arc colors from `accent`, ranked (index 0 = largest slice).
  * ONE hue family (SOP §4, "no rainbow"): the accent's hue and saturation are
  * held fixed and only LIGHTNESS steps per rank, so every arc reads as the same
- * emerald — no hue-rotation drift toward teal/green. Lightness stays in a mid
+ * emerald - no hue-rotation drift toward teal/green. Lightness stays in a mid
  * band so the white points that ride on each arc stay legible in both themes.
  */
 export const deriveTints = (accent: RGB | null, count: number): string[] => {
   const base = accent ?? DEFAULT_ACCENT;
   const [h, s] = rgbToHsl(base);
-  const hue = h; // fixed — never rotated
+  const hue = h; // fixed - never rotated
   const sat = Math.min(Math.max(s, 55), 80);
   const out: string[] = [];
   for (let i = 0; i < count; i++) {
