@@ -5,7 +5,7 @@ import { DarkTheme, LightTheme } from "../utils/themes";
 /**
  * Story-only harness. Renders the redesign components inside the REAL widget
  * root (`Widget`) so the §1 token scope (--surface, --accent, --space-*, …) and
- * the 300px sizing resolve exactly as they do in a host app — then places that
+ * the 300px sizing resolve exactly as they do in a host app - then places that
  * widget on a light / dark HOST background to prove the "guest on any surface"
  * rule (SOP §2 / §7). No network: Widget provides its own providers.
  */
@@ -54,6 +54,12 @@ export const ThemePair: React.FC<{ children: React.ReactNode }> = ({ children })
 export const SAMPLE_ACCOUNT = {
   display: "Shady.eth",
   kind: "ENS",
+  email: "shady@holonym.id",
+  address: "0x1332…4a9f",
+  linkedWallets: [
+    { display: "0x1332…4a9f", kind: "Wallet" },
+    { display: "vault.eth", kind: "ENS" },
+  ],
   accounts: [
     { display: "Shady.eth", kind: "ENS" },
     { display: "0x1332…4a9f", kind: "Wallet" },
@@ -61,9 +67,9 @@ export const SAMPLE_ACCOUNT = {
 };
 
 export const SAMPLE_STAMPS = [
-  { label: "Government ID", points: 6 },
-  { label: "Biometric", points: 5 },
-  { label: "Clean Hands", points: 5 },
-  { label: "Social", points: 5 },
-  { label: "On-chain", points: 3 },
+  { id: "gov-id", label: "Government ID", points: 6 },
+  { id: "biometric", label: "Biometric", points: 5 },
+  { id: "clean-hands", label: "Clean Hands", points: 5 },
+  { id: "social", label: "Social", points: 5 },
+  { id: "onchain", label: "On-chain", points: 3 },
 ];

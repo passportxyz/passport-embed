@@ -5,9 +5,9 @@ import { PassportShell } from "./PassportShell";
 import { ThemePair, SAMPLE_ACCOUNT } from "./storyFrame";
 
 /**
- * ScoreWindow — the home / spine, in every state, composed inside the shell so
- * the overlay rules (nothing outside the shell, ring not clipped, exponent
- * tooltip never clipped) are visible. Both themes, no network.
+ * ScoreWindow - the home / spine, in every state, composed inside the shell so
+ * the overlay rules (nothing outside the shell, ring not clipped, tooltips never
+ * clipped) are visible. Both themes, no network.
  */
 const meta: Meta<typeof ScoreWindow> = {
   title: "Redesign/Score Window",
@@ -27,18 +27,32 @@ export const Loading: Story = {
   name: "Score / Loading",
   render: () => inShell(<ScoreWindow state="loading" />),
   parameters: {
-    docs: { description: { story: "Crafted on-brand loader (a token-driven ring tracing itself around the human.tech mark) — never a bare spinner." } },
+    docs: {
+      description: {
+        story:
+          "A cryptex-spirit loader: hex glyphs settling around the human.tech mark while the arc traces itself. Never a bare spinner.",
+      },
+    },
   },
 };
 
 export const BelowThreshold: Story = {
   name: "Score / Below threshold",
-  render: () => inShell(<ScoreWindow state="below" score={17} threshold={20} />),
+  render: () =>
+    inShell(
+      <ScoreWindow
+        state="below"
+        score={17}
+        threshold={20}
+        addVerificationsCta={{ onClick: () => undefined }}
+        linkWalletCta={{ onClick: () => undefined }}
+      />
+    ),
   parameters: {
     docs: {
       description: {
         story:
-          "Ring encourages toward the threshold; the ?-exponent superscript rides the digit (hover: '3 to go to reach the threshold · tap to see how it's computed'). A 'to go' progress framing + 'Add verifications' CTA.",
+          "Below the threshold the ring is amber, not emerald. Hover the score for its state and the tap-to-compute hint. Two configurable CTAs: 'Add verifications' and 'Link wallet to import reputation'.",
       },
     },
   },
@@ -46,12 +60,12 @@ export const BelowThreshold: Story = {
 
 export const Verified: Story = {
   name: "Score / Verified (reward)",
-  render: () => inShell(<ScoreWindow state="verified" score={24} threshold={20} />),
+  render: () => inShell(<ScoreWindow state="verified" score={24} threshold={20} onContinue={() => undefined} />),
   parameters: {
     docs: {
       description: {
         story:
-          "Crossing the threshold is a reward: ring completes, a glow pulses, a shimmer sweeps and a verified seal pops. The ✓-exponent (hover: 'verified · above the threshold · tap to see how it's computed') and a 'Continue' hand-off CTA.",
+          "Crossing the threshold is a reward: the ring completes in emerald and a glow pulses. There is no badge inside the ring. The green check sits inline with 'You're verified' and animates in with the text. Hover the check for 'Score 24. Above the threshold.' A single 'Continue' hand-off CTA.",
       },
     },
   },
@@ -59,15 +73,12 @@ export const Verified: Story = {
 
 export const ErrorState: Story = {
   name: "Score / Error",
-  render: () =>
-    inShell(
-      <ScoreWindow
-        state="error"
-        errorMessage="We couldn't reach your score right now. Please try again."
-        onRetry={() => undefined}
-      />
-    ),
+  render: () => inShell(<ScoreWindow state="error" errorKind="network" onRetry={() => undefined} />),
   parameters: {
-    docs: { description: { story: "Humanized error (never a raw error.message) + a retry CTA (props-driven)." } },
+    docs: {
+      description: {
+        story: "Humanized error copy mapped from the failure kind (network here), never a raw error.message, plus a retry CTA.",
+      },
+    },
   },
 };
