@@ -10,7 +10,7 @@ describe("Theme Utils", () => {
       expect(DarkTheme.colors).toBeDefined();
       expect(DarkTheme.colors?.primary).toBe("255, 255, 255");
       expect(DarkTheme.colors?.secondary).toBe("115, 115, 115");
-      expect(DarkTheme.colors?.background).toBe("10, 10, 10");
+      expect(DarkTheme.colors?.background).toBe("16, 24, 21");
       expect(DarkTheme.colors?.error).toBe("252, 103, 100");
     });
 
@@ -107,7 +107,7 @@ describe("Widget setTheme functionality", () => {
     // Check all colors are applied
     expect(style.getPropertyValue("--color-primary-c6dbf459")).toBe("255, 255, 255");
     expect(style.getPropertyValue("--color-secondary-c6dbf459")).toBe("115, 115, 115");
-    expect(style.getPropertyValue("--color-background-c6dbf459")).toBe("10, 10, 10");
+    expect(style.getPropertyValue("--color-background-c6dbf459")).toBe("16, 24, 21");
     expect(style.getPropertyValue("--color-accent-c6dbf459")).toBe("16, 185, 129");
     expect(style.getPropertyValue("--color-error-c6dbf459")).toBe("252, 103, 100");
   });
@@ -202,7 +202,7 @@ describe("Widget setTheme functionality", () => {
     // Primary should be updated to dimmer white
     expect(style.getPropertyValue("--color-primary-c6dbf459")).toBe("230, 230, 230");
     // Other theme properties should remain from DarkTheme
-    expect(style.getPropertyValue("--color-background-c6dbf459")).toBe("10, 10, 10");
+    expect(style.getPropertyValue("--color-background-c6dbf459")).toBe("16, 24, 21");
     expect(style.getPropertyValue("--color-secondary-c6dbf459")).toBe("115, 115, 115");
   });
 

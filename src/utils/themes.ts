@@ -2,10 +2,13 @@ import { PassportWidgetTheme } from "../widgets/Widget";
 
 export const DarkTheme: PassportWidgetTheme = {
   colors: {
-    // Human Passport brand: emerald accent (#10B981), near-black surface.
+    // Human Passport brand: emerald accent (#10B981) on a brand dark surface.
+    // Surface is an emerald-tinted charcoal (#101815), NOT pure black: brand
+    // Neutral-95 (#0A0A0A) warmed toward brand Emerald-95 (#064E3B). It reads as
+    // a deep on-brand surface and lets the emerald paper-shader wash show.
     primary: "255, 255, 255",
     secondary: "115, 115, 115",
-    background: "10, 10, 10",
+    background: "16, 24, 21",
     accent: "16, 185, 129",
     error: "252, 103, 100",
     white: "255, 255, 255",
