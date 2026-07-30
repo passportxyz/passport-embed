@@ -1,0 +1,171 @@
+/*
+ * ScoreDrilldown - the single ring resolves into disconnected arcs whose LENGTH
+ * encodes each stamp's contribution (uniform stroke-width), points ON each arc,
+ * names close to their arc, palette derived from the accent hue only. No legend,
+ * no "sums to total" caption (SOP §4). Everything scales inside one viewBox so
+ * nothing clips.
+ */
+
+.drilldown {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1-c6dbf459);
+  width: 100%;
+}
+
+.back {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  align-self: flex-start;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 4px;
+  margin-bottom: var(--space-1-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+  cursor: pointer;
+  color: rgba(var(--on-surface), 0.72);
+  font-family: var(--font-family-body-c6dbf459);
+  font-size: var(--font-size-xs-c6dbf459);
+}
+/* Invisible ≥40px hit target (a11y §8): ~18px tall + 2×11px = 40px. Visual size unchanged. */
+.back::before {
+  content: "";
+  position: absolute;
+  inset: -11px;
+}
+.back:hover {
+  color: rgb(var(--on-surface));
+  background: rgba(var(--on-surface), 0.06);
+}
+.back:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 1px;
+}
+
+.arcSvg {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin-top: var(--space-1-c6dbf459);
+  overflow: visible;
+}
+
+/* Each segment is tappable: fires onSelectStamp (stamp-detail is a later slice).
+ * No hard outline; the whole group lifts slightly on hover / focus. */
+.segment {
+  cursor: pointer;
+  transition: opacity var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+  outline: none;
+}
+.segment:hover {
+  opacity: 0.82;
+}
+.segment:focus-visible .arc {
+  stroke-width: 19;
+}
+.segment:focus-visible .arcPt {
+  font-size: 15px;
+}
+
+.track {
+  fill: none;
+  stroke: rgba(var(--on-surface), 0.1);
+  stroke-width: 16;
+}
+
+.arc {
+  transition: stroke-dashoffset var(--motion-slow-c6dbf459) var(--ease-standard-c6dbf459);
+}
+
+/* the point rides ON its band - white with a dark halo so it reads over any
+ * mid-tone tint, in both themes (paint-order draws the halo behind the fill) */
+.arcPt {
+  font-family: var(--font-family-body-c6dbf459);
+  font-weight: var(--weight-bold-c6dbf459);
+  font-size: 13px;
+  fill: #fff;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.55);
+  stroke-width: 3px;
+  stroke-linejoin: round;
+  font-variant-numeric: tabular-nums;
+}
+
+/* the name sits just outside its band - theme text color for guaranteed
+ * contrast (association is by proximity, not by a color legend) */
+.arcLabel {
+  font-family: var(--font-family-body-c6dbf459);
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  fill: rgb(var(--on-surface));
+}
+
+.total {
+  fill: rgb(var(--on-surface));
+  font-family: var(--font-family-body-c6dbf459);
+  font-weight: var(--weight-bold-c6dbf459);
+  font-size: 38px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* "See all stamps" CTA: tonal (no hard line), full width, inside the shell. */
+.seeAll {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  height: 42px;
+  margin-top: var(--space-3-c6dbf459);
+  border-radius: var(--radius-lg-c6dbf459);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(var(--on-surface), 0.07);
+  color: rgb(var(--on-surface));
+  font-family: var(--font-family-body-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  font-size: var(--font-size-md-c6dbf459);
+  transition: background var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.seeAll:hover {
+  background: rgba(var(--on-surface), 0.12);
+}
+.seeAll:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+
+.resolveIn {
+  animation: resolveIn 0.6s var(--ease-standard-c6dbf459) both;
+  transform-origin: 180px 120px;
+}
+@keyframes resolveIn {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arc,
+  .resolveIn {
+    transition: none;
+    animation: none;
+  }
+}

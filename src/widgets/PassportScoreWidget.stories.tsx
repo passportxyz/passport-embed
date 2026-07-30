@@ -87,7 +87,7 @@ const openPlatform = async (root: HTMLElement, platformName: string) => {
 // surface platform variants the default handler doesn't expose (extra Human ID
 // credential types, a signature-only stamp). This overrides only the story's
 // MSW handler set, not the shared mocks.
-const stampsMetadataHandler = (pages: unknown) =>
+const stampsMetadataHandler = (pages: object) =>
   http.get(`${MOCK_SERVICE_URL}/embed/stamps/metadata`, async () => {
     await delay(200);
     return HttpResponse.json(pages);

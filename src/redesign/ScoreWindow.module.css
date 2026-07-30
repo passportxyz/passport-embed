@@ -1,0 +1,468 @@
+/*
+ * ScoreWindow - the home / spine. True SVG ring (emerald at/above threshold,
+ * amber below), score is the tap target, cryptex-spirit loader, inline verified
+ * reward. Tokens only (§1); legible in both themes (§2/§8);
+ * all motion degrades under reduced-motion (§4).
+ *
+ * Local display sizes: the big score digit is intentionally larger than the
+ * type scale's ceiling (xl = 20). Declared here as scoped tokens rather than
+ * bare px so they remain single-sourced and re-themable within the redesign.
+ */
+
+.window {
+  --rd-score-digit: 40px;
+  --rd-loader-mark: rgba(var(--accent), 0.9);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  text-align: center;
+  /* Fill the fixed-height content region so the action area can bottom-anchor
+   * (§ structure): the primary CTA lands at the same coordinates in every
+   * state. The score / message area flexes; the buttons do not move. */
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- ring ---- */
+.ringWrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: var(--space-2-c6dbf459) 0 var(--space-1-c6dbf459);
+}
+
+.ringSvg {
+  width: 150px;
+  height: 150px;
+  display: block;
+}
+
+.ringTrack {
+  fill: none;
+  stroke: rgba(var(--on-surface), 0.13);
+  stroke-width: 9;
+}
+
+.ringProgress {
+  fill: none;
+  stroke-width: 9;
+  stroke-linecap: round;
+  transition:
+    stroke-dashoffset var(--motion-slow-c6dbf459) var(--ease-standard-c6dbf459),
+    stroke var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459);
+}
+/* Emerald only at or above the threshold. */
+.ringPass {
+  stroke: rgb(var(--accent));
+}
+/* Warm amber below the threshold: "almost there, not yet passing". */
+.ringWarn {
+  stroke: rgb(var(--warn));
+}
+
+/* The whole score (ring + number) is the hover / tap target. Bare button:
+ * no background, no border (no hard lines), just a pointer + focus ring. */
+.ringButton {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  display: block;
+  cursor: pointer;
+  color: inherit;
+  border-radius: var(--radius-pill-c6dbf459);
+}
+.ringButton:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 4px;
+}
+
+.ringNum {
+  position: absolute;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  color: rgb(var(--on-surface));
+  font-variant-numeric: tabular-nums;
+}
+
+.scoreWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.count {
+  font-size: var(--rd-score-digit);
+  font-weight: var(--weight-bold-c6dbf459);
+  letter-spacing: -0.035em;
+  line-height: var(--line-tight-c6dbf459);
+  font-variant-numeric: tabular-nums;
+}
+
+.outOf {
+  font-size: var(--font-size-md-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  color: rgba(var(--on-surface), 0.7);
+  margin-left: 3px;
+}
+
+/* ---- verified: inline "check + You're verified", animated in together ---- */
+.verifiedLine {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2-c6dbf459);
+  margin: var(--space-3-c6dbf459) 0 0;
+  animation: verifiedIn 0.5s var(--ease-standard-c6dbf459) 0.35s both;
+}
+.verifiedLineStatic {
+  animation: none;
+}
+@keyframes verifiedIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The green seal / check, now inline with the headline and tappable. */
+.inlineSeal {
+  appearance: none;
+  border: 0;
+  position: relative;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: rgb(var(--on-accent));
+  background: radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.9), rgb(var(--accent)) 80%);
+  box-shadow: var(--shadow-sm-c6dbf459);
+  transition: filter var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+/* Invisible >=40px hit target (a11y §8): 24px + 2×8px = 40px. */
+.inlineSeal::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+}
+.inlineSeal:hover {
+  filter: brightness(1.06);
+}
+.inlineSeal:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+
+.verifiedText {
+  font-weight: var(--weight-semibold-c6dbf459);
+  font-size: var(--font-size-lg-c6dbf459);
+  color: rgb(var(--on-surface));
+}
+
+.ringGlow {
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  border-radius: var(--radius-pill-c6dbf459);
+  pointer-events: none;
+  opacity: 0;
+}
+.celebrate .ringGlow {
+  animation: glowPulse 1.6s ease-out 0.1s both;
+}
+@keyframes glowPulse {
+  0% {
+    opacity: 0;
+    box-shadow: 0 0 0 0 rgba(var(--accent), 0.5);
+  }
+  30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    box-shadow: 0 0 0 24px rgba(var(--accent), 0);
+  }
+}
+
+/* Interim loading spinner (indeterminate emerald arc). To be replaced by the
+ * shared Cryptex loader from @holonym-foundation/ui once it is an installable
+ * dependency. Its source is NOT vendored into this public repo. */
+.spin {
+  animation: rdSpin 1s linear infinite;
+  transform-origin: center;
+}
+@keyframes rdSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+}
+
+/* ---- text ---- */
+.headline {
+  color: rgb(var(--on-surface));
+  font-weight: var(--weight-semibold-c6dbf459);
+  font-size: var(--font-size-lg-c6dbf459);
+  line-height: var(--line-normal-c6dbf459);
+  margin: var(--space-2-c6dbf459) 0 0;
+  text-wrap: balance;
+}
+
+.sub {
+  color: rgba(var(--on-surface), 0.72);
+  font-size: var(--font-size-sm-c6dbf459);
+  line-height: var(--line-normal-c6dbf459);
+  margin: var(--space-1-c6dbf459) 0 0;
+}
+.sub b {
+  color: rgb(var(--on-surface));
+  font-weight: var(--weight-semibold-c6dbf459);
+}
+
+/* ---- to-go progress framing (below threshold) ---- */
+.toGo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-c6dbf459);
+  width: 100%;
+  margin: var(--space-3-c6dbf459) 0 0;
+  padding: var(--space-2-c6dbf459) var(--space-3-c6dbf459);
+  border-radius: var(--radius-lg-c6dbf459);
+  background: rgba(var(--on-surface), 0.05);
+  box-sizing: border-box;
+}
+.toGoBar {
+  flex: 1;
+  height: 5px;
+  border-radius: var(--radius-pill-c6dbf459);
+  background: rgba(var(--on-surface), 0.13);
+  overflow: hidden;
+}
+.toGoBar i {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill-c6dbf459);
+  /* Below the threshold, so the progress fill is amber to match the ring. */
+  background: rgb(var(--warn));
+  transition: width var(--motion-slow-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.toGoLabel {
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  color: rgba(var(--on-surface), 0.72);
+  white-space: nowrap;
+}
+
+/* ---- error ---- */
+.errorBadge {
+  width: 56px;
+  height: 56px;
+  margin: var(--space-4-c6dbf459) 0 var(--space-3-c6dbf459);
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgb(var(--danger));
+  background: rgba(var(--danger), 0.12);
+}
+
+/* ---- CTAs ---- */
+/* Below-threshold action area holds the two configurable CTAs, stacked.
+ * margin-top:auto pins the whole action area to the bottom of the window so the
+ * primary CTA sits at a fixed y across states. */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2-c6dbf459);
+  width: 100%;
+  margin-top: auto;
+}
+
+/* ONE shared button metric. Every action button - primary, secondary, the
+ * verified Continue, the error retry - is full width with identical height and
+ * padding. Only the color differs (emerald primary vs tonal secondary). A
+ * standalone .cta (verified / error) bottom-anchors via margin-top:auto. */
+.cta {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  height: 46px;
+  margin-top: auto;
+  padding: 0 var(--space-4-c6dbf459);
+  border-radius: var(--radius-lg-c6dbf459);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgb(var(--accent));
+  color: rgb(var(--on-accent));
+  font-family: var(--font-family-body-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  font-size: var(--font-size-md-c6dbf459);
+  box-shadow: var(--shadow-sm-c6dbf459);
+  transition:
+    filter var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459),
+    background var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459),
+    transform var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+/* Buttons inside the stacked action area own their spacing via the flex gap. */
+.actions .cta {
+  margin-top: 0;
+}
+/* The label never wraps, so both CTAs keep the identical single-row box. */
+.ctaLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cta:hover {
+  filter: brightness(1.08);
+}
+.cta:active {
+  transform: translateY(1px);
+}
+.cta:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+
+/* Secondary CTA (link wallet): tonal, no hard line. Reads as a quieter step
+ * than the emerald primary, legible in both themes via on-surface tint. */
+.ctaSecondary {
+  background: rgba(var(--on-surface), 0.07);
+  color: rgb(var(--on-surface));
+  box-shadow: none;
+}
+.ctaSecondary:hover {
+  filter: none;
+  background: rgba(var(--on-surface), 0.12);
+}
+
+.ctaIcon {
+  display: inline-flex;
+}
+
+/* ---- size variants (§ structure): mini = condensed ~half card, pill = one
+ * compact horizontal row. full is the default layout above. ---- */
+
+/* mini: smaller ring + digit, tighter spacing, primary action only. */
+.miniWin {
+  --rd-score-digit: 26px;
+}
+.miniWin .ringWrap {
+  margin: 0 0 var(--space-1-c6dbf459);
+}
+.miniWin .ringSvg {
+  width: 100px;
+  height: 100px;
+}
+.miniWin .headline {
+  font-size: var(--font-size-md-c6dbf459);
+  margin-top: var(--space-1-c6dbf459);
+}
+.miniWin .verifiedText {
+  font-size: var(--font-size-md-c6dbf459);
+}
+.miniWin .verifiedLine {
+  margin-top: var(--space-2-c6dbf459);
+}
+
+/* pill: a single horizontal row - compact score + label + one action. */
+.pillWin {
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+  gap: var(--space-2-c6dbf459);
+  --rd-score-digit: 15px;
+}
+.pillWin .ringWrap {
+  margin: 0;
+  flex: none;
+}
+.pillWin .ringSvg {
+  width: 44px;
+  height: 44px;
+}
+.pillWin .ringTrack,
+.pillWin .ringProgress {
+  stroke-width: 11;
+}
+.pillWin .outOf {
+  display: none;
+}
+.pillText {
+  flex: 1;
+  min-width: 0;
+  font-weight: var(--weight-semibold-c6dbf459);
+  font-size: var(--font-size-sm-c6dbf459);
+  color: rgb(var(--on-surface));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pillWin .headline {
+  margin: 0;
+}
+
+/* Compact error mark for the pill error row: same danger tint as the full badge,
+ * sized to sit inside the single pill row where the ring would otherwise be. */
+.pillErrorBadge {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgb(var(--danger));
+  background: rgba(var(--danger), 0.12);
+}
+
+/* Inline (auto-width) action used by the pill row: same look, compact box. */
+.ctaInline {
+  width: auto;
+  flex: none;
+  height: 34px;
+  margin-top: 0;
+  padding: 0 var(--space-3-c6dbf459);
+  font-size: var(--font-size-sm-c6dbf459);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ringProgress,
+  .toGoBar i,
+  .cta {
+    transition: none;
+  }
+  .ringGlow,
+  .verifiedLine {
+    animation: none;
+  }
+}

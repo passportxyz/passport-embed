@@ -79,7 +79,10 @@
   /* Motion */
   --motion-fast-c6dbf459: 50ms;
   --motion-base-c6dbf459: 200ms;
-  --ease-standard-c6dbf459: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-slow-c6dbf459: 900ms;
+  /* House ease-out (§1/§4). Components inline this same curve; the token is the
+   * single source of truth so the two never drift. */
+  --ease-standard-c6dbf459: cubic-bezier(0.22, 1, 0.36, 1);
 
   /* ---------------------------------------------------------------------
    * Per-role color aliases. Future work overrides ONE semantic name and it
@@ -96,6 +99,31 @@
   --danger: var(--color-error-c6dbf459);
   --on-danger: var(--color-white-c6dbf459);
   --border: var(--color-secondary-c6dbf459);
+
+  /* Semantic below-threshold color (§ score states). A warm amber that reads as
+   * "almost there, not yet passing" and stays legible as a thick ring stroke /
+   * progress fill on BOTH the light (white) and dark (near-black) surfaces.
+   * One token, shared by both themes, so the ring + progress switch amber below
+   * the threshold and emerald at or above it from a single source of truth. */
+  --warn: 245, 158, 11; /* #F59E0B amber-500 */
+  --on-warn: 10, 10, 10;
+
+  /* Paper-shader wash color for the shell field (integrator-configurable via the
+   * PassportShell `washRgb` prop, which sets --rd-wash). Defaults to the accent
+   * so the living-material wash is on-brand emerald out of the box. */
+  --rd-wash: var(--accent);
+
+  /* Shell edge separation. A near-black widget on a DARK host would otherwise
+   * blend into it, so the shell carries its own soft light edge: a hairline
+   * light-alpha inner rim (a glass lip) plus a soft ambient outer glow. Both use
+   * a fixed white alpha so they read as separation on a dark host and simply
+   * fade to nothing on a light host (white glow over white is invisible) — never
+   * a hard outline (§no-hard-lines). Kept subtle and premium. Tokenized here so
+   * the values are single-sourced and re-tunable. */
+  --rd-edge-rim: inset 0 0 0 1px rgba(255, 255, 255, 0.09);
+  --rd-edge-glow:
+    0 0 0 0.5px rgba(255, 255, 255, 0.05),
+    0 6px 26px -2px rgba(255, 255, 255, 0.08);
 
   /* Width will be 300 unless screen
    * is too narrow, in which case it
