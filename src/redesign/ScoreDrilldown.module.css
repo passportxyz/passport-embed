@@ -26,6 +26,7 @@
   border: 0;
   background: transparent;
   align-self: flex-start;
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -36,6 +37,12 @@
   color: rgba(var(--on-surface), 0.72);
   font-family: var(--font-family-body-c6dbf459);
   font-size: var(--font-size-xs-c6dbf459);
+}
+/* Invisible ≥40px hit target (a11y §8): ~18px tall + 2×11px = 40px. Visual size unchanged. */
+.back::before {
+  content: "";
+  position: absolute;
+  inset: -11px;
 }
 .back:hover {
   color: rgb(var(--on-surface));
@@ -71,7 +78,7 @@
 }
 
 .arc {
-  transition: stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: stroke-dashoffset var(--motion-slow-c6dbf459) var(--ease-standard-c6dbf459);
 }
 
 /* the point rides ON its band — white with a dark halo so it reads over any

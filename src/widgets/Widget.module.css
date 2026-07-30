@@ -79,7 +79,10 @@
   /* Motion */
   --motion-fast-c6dbf459: 50ms;
   --motion-base-c6dbf459: 200ms;
-  --ease-standard-c6dbf459: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-slow-c6dbf459: 900ms;
+  /* House ease-out (§1/§4). Components inline this same curve; the token is the
+   * single source of truth so the two never drift. */
+  --ease-standard-c6dbf459: cubic-bezier(0.22, 1, 0.36, 1);
 
   /* ---------------------------------------------------------------------
    * Per-role color aliases. Future work overrides ONE semantic name and it

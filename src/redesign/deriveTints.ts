@@ -69,20 +69,25 @@ export const hslToRgb = (h: number, s: number, l: number): RGB => {
   return [Math.round((r + m) * 255), Math.round((g + m) * 255), Math.round((b + m) * 255)];
 };
 
-const DEFAULT_ACCENT: RGB = [0, 212, 170];
+const DEFAULT_ACCENT: RGB = [16, 185, 129]; // Human Passport emerald (#10B981)
 
 /**
  * Derive `count` arc colors from `accent`, ranked (index 0 = largest slice).
- * One hue family: small analogous hue steps, controlled mid lightness.
+ * ONE hue family (SOP §4, "no rainbow"): the accent's hue and saturation are
+ * held fixed and only LIGHTNESS steps per rank, so every arc reads as the same
+ * emerald — no hue-rotation drift toward teal/green. Lightness stays in a mid
+ * band so the white points that ride on each arc stay legible in both themes.
  */
 export const deriveTints = (accent: RGB | null, count: number): string[] => {
   const base = accent ?? DEFAULT_ACCENT;
   const [h, s] = rgbToHsl(base);
+  const hue = h; // fixed — never rotated
   const sat = Math.min(Math.max(s, 55), 80);
   const out: string[] = [];
   for (let i = 0; i < count; i++) {
-    const hue = h - i * 12; // step within one family
-    const light = Math.min(48 + i * 4, 70); // mid band, legible in both themes
+    // Largest slice (i=0) is the deepest tone; deeper ranks step lighter within
+    // the same emerald family. Clamped to a mid band (≤72) for point legibility.
+    const light = Math.min(44 + i * 6, 72);
     const [r, g, b] = hslToRgb(hue, sat, light);
     out.push(`rgb(${r}, ${g}, ${b})`);
   }
