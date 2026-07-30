@@ -23,6 +23,9 @@ export type { ScoreDrilldownProps, StampContribution } from "./ScoreDrilldown";
 export { ScoreHome } from "./ScoreHome";
 export type { ScoreHomeProps } from "./ScoreHome";
 
+export { StampsWindow } from "./StampsWindow";
+export type { StampsWindowProps, Stamp, StampOnchain } from "./StampsWindow";
+
 export { SecuredByFooter } from "./SecuredByFooter";
 
 export { humanizeError, classifyError } from "./humanizeError";
