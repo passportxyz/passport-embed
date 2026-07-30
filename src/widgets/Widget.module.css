@@ -100,6 +100,19 @@
   --on-danger: var(--color-white-c6dbf459);
   --border: var(--color-secondary-c6dbf459);
 
+  /* Semantic below-threshold color (§ score states). A warm amber that reads as
+   * "almost there, not yet passing" and stays legible as a thick ring stroke /
+   * progress fill on BOTH the light (white) and dark (near-black) surfaces.
+   * One token, shared by both themes, so the ring + progress switch amber below
+   * the threshold and emerald at or above it from a single source of truth. */
+  --warn: 245, 158, 11; /* #F59E0B amber-500 */
+  --on-warn: 10, 10, 10;
+
+  /* Paper-shader wash color for the shell field (integrator-configurable via the
+   * PassportShell `washRgb` prop, which sets --rd-wash). Defaults to the accent
+   * so the living-material wash is on-brand emerald out of the box. */
+  --rd-wash: var(--accent);
+
   /* Width will be 300 unless screen
    * is too narrow, in which case it
    * will get narrower (match screen
