@@ -5,7 +5,14 @@
  * existing shipped widget. The shipped `PassportScoreWidget` is untouched.
  */
 export { PassportShell } from "./PassportShell";
-export type { PassportShellProps, ShellAccount, ShellAccountOption, LinkedWallet, ShellSize } from "./PassportShell";
+export type {
+  PassportShellProps,
+  ShellAccount,
+  ShellAccountOption,
+  LinkedWallet,
+  LinkedWalletStatus,
+  ShellSize,
+} from "./PassportShell";
 
 export { ScoreWindow } from "./ScoreWindow";
 export type { ScoreWindowProps, ScoreWindowState, ShellCta } from "./ScoreWindow";

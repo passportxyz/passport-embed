@@ -2,7 +2,18 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import styles from "./PassportShell.module.css";
 import glass from "./glassTip.module.css";
 import { Tooltip } from "../components/Tooltip";
-import { CaretDownIcon, CubeIcon, InfoIcon, LogoutIcon, PlusIcon, SwitchIcon, WaaPIcon, WalletIcon } from "./icons";
+import {
+  CaretDownIcon,
+  ClockIcon,
+  CubeIcon,
+  InfoIcon,
+  LogoutIcon,
+  PlusIcon,
+  SwitchIcon,
+  UnlinkIcon,
+  WaaPIcon,
+  WalletIcon,
+} from "./icons";
 import { SecuredByFooter } from "./SecuredByFooter";
 
 export type ShellAccountOption = {
@@ -12,11 +23,21 @@ export type ShellAccountOption = {
   kind?: string;
 };
 
+/** Linking status of a wallet on the passport. */
+export type LinkedWalletStatus = "active" | "cooldown" | "pending";
+
 export type LinkedWallet = {
   /** Display name, e.g. "0x1332…4a9f" or "vault.eth". */
   display: string;
   /** Short kind label, e.g. "Wallet" / "ENS" / "Safe". */
   kind?: string;
+  /** Linking state. Defaults to "active" when omitted. */
+  status?: LinkedWalletStatus;
+  /**
+   * Short human reason shown for a non-active wallet, e.g. "Cooldown until Aug 3"
+   * or "Linking in progress". Kept plain; no crypto jargon.
+   */
+  cooldownUntil?: string;
 };
 
 export type ShellAccount = {
@@ -39,7 +60,11 @@ export type ShellSize = "full" | "pill" | "mini";
 export type PassportShellProps = {
   /** Integrator's product icon (top-left slot). Defaults to a placeholder cube. */
   appIcon?: React.ReactNode;
-  /** Copy for the app-icon hover tooltip. */
+  /**
+   * Optional integrator-supplied hover tooltip for the app-icon. Defaults to
+   * NONE: the app-icon is the integrator's brand, so we ship no explanatory
+   * copy of our own. When omitted, the icon renders with no tooltip.
+   */
   appIconTooltip?: React.ReactNode;
   /** The passport identity + account menu. Omit to hide the selector. */
   account?: ShellAccount;
@@ -49,6 +74,8 @@ export type PassportShellProps = {
   onSelectAccount?: (index: number) => void;
   /** Link an additional wallet to the passport (middle zone CTA). */
   onLinkWallet?: () => void;
+  /** Unlink a linked wallet. Receives its index within `account.linkedWallets`. */
+  onUnlinkWallet?: (index: number) => void;
   /** Sign out of the account (bottom zone). */
   onSignOut?: () => void;
   /** ⓘ help tooltip content. */
@@ -61,8 +88,8 @@ export type PassportShellProps = {
    */
   washRgb?: string;
   /**
-   * Size variant. `full` (default) is the state we are building; `pill` and
-   * `mini` are scaffolded compact variants so the API exists.
+   * Size variant. `full` (default) is the crafted card; `mini` is a condensed
+   * ~half-size card; `pill` is a compact single-row pill.
    */
   size?: ShellSize;
   /** The window content (Score window, drill-down, …). */
@@ -70,20 +97,73 @@ export type PassportShellProps = {
   className?: string;
 };
 
-const DEFAULT_APP_ICON_TIP =
-  "The integrator's own product icon renders in this slot. It is their brand, not ours.";
 const DEFAULT_INFO_TIP =
   "Your humanity score, proven with zero knowledge. Private by default. Nothing personal is revealed.";
+
+/** How many linked wallets show per page before the menu paginates (never scrolls). */
+const WALLETS_PER_PAGE = 3;
+
+const STATUS_LABEL: Record<LinkedWalletStatus, string> = {
+  active: "",
+  cooldown: "Cooldown",
+  pending: "Pending",
+};
+
+const LinkedWalletRow: React.FC<{
+  wallet: LinkedWallet;
+  index: number;
+  onUnlink?: (index: number) => void;
+}> = ({ wallet, index, onUnlink }) => {
+  const status = wallet.status ?? "active";
+  const muted = status !== "active";
+  // Pending links are still settling, so unlink is not offered yet.
+  const canUnlink = Boolean(onUnlink) && status !== "pending";
+
+  return (
+    <div className={`${styles.walletRow} ${muted ? styles.walletRowMuted : ""}`}>
+      <span className={styles.walletIcon} aria-hidden="true">
+        <WalletIcon size={15} strokeWidth={1.8} />
+      </span>
+      <span className={styles.walletMeta}>
+        <span className={styles.walletName}>{wallet.display}</span>
+        {muted && wallet.cooldownUntil ? (
+          <span className={styles.walletReason}>{wallet.cooldownUntil}</span>
+        ) : null}
+      </span>
+      {muted ? (
+        <span className={styles.walletStatus} aria-label={STATUS_LABEL[status]}>
+          <ClockIcon size={11} strokeWidth={1.9} />
+          {STATUS_LABEL[status]}
+        </span>
+      ) : wallet.kind ? (
+        <span className={styles.walletKind}>{wallet.kind}</span>
+      ) : null}
+      {canUnlink ? (
+        <button
+          type="button"
+          className={styles.unlinkBtn}
+          onClick={() => onUnlink?.(index)}
+          aria-label={`Unlink ${wallet.display}`}
+          title={`Unlink ${wallet.display}`}
+        >
+          <UnlinkIcon size={14} strokeWidth={1.8} />
+        </button>
+      ) : null}
+    </div>
+  );
+};
 
 const AccountMenu: React.FC<{
   account: ShellAccount;
   activeIndex: number;
   onSelect?: (index: number) => void;
   onLinkWallet?: () => void;
+  onUnlinkWallet?: (index: number) => void;
   onSignOut?: () => void;
   defaultOpen?: boolean;
-}> = ({ account, activeIndex, onSelect, onLinkWallet, onSignOut, defaultOpen }) => {
+}> = ({ account, activeIndex, onSelect, onLinkWallet, onUnlinkWallet, onSignOut, defaultOpen }) => {
   const [open, setOpen] = useState(Boolean(defaultOpen));
+  const [walletPage, setWalletPage] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   const switchOptions: ShellAccountOption[] = useMemo(
@@ -94,6 +174,11 @@ const AccountMenu: React.FC<{
     [account]
   );
   const linkedWallets = account.linkedWallets ?? [];
+  const pageCount = Math.max(1, Math.ceil(linkedWallets.length / WALLETS_PER_PAGE));
+  // Clamp in case the active page falls off the end (e.g. after an unlink).
+  const page = Math.min(walletPage, pageCount - 1);
+  const pageStart = page * WALLETS_PER_PAGE;
+  const pageWallets = linkedWallets.slice(pageStart, pageStart + WALLETS_PER_PAGE);
 
   useEffect(() => {
     if (!open) return;
@@ -146,19 +231,54 @@ const AccountMenu: React.FC<{
           </span>
         </div>
 
-        {/* (b) middle: linked wallets + link-additional-wallet CTA */}
+        {/* (b) middle: linked wallets (paginated, never scrolled) + link CTA */}
         <div className={styles.zoneMid}>
           <div className={styles.zoneHead}>Linked wallets</div>
           {linkedWallets.length ? (
-            linkedWallets.map((w, i) => (
-              <div key={`${w.display}-${i}`} className={styles.walletRow}>
-                <span className={styles.walletIcon} aria-hidden="true">
-                  <WalletIcon size={15} strokeWidth={1.8} />
-                </span>
-                <span className={styles.walletName}>{w.display}</span>
-                {w.kind ? <span className={styles.walletKind}>{w.kind}</span> : null}
-              </div>
-            ))
+            <>
+              {pageWallets.map((w, i) => (
+                <LinkedWalletRow
+                  key={`${w.display}-${pageStart + i}`}
+                  wallet={w}
+                  index={pageStart + i}
+                  onUnlink={onUnlinkWallet}
+                />
+              ))}
+              {pageCount > 1 ? (
+                <div className={styles.walletPager} role="group" aria-label="Linked wallet pages">
+                  <button
+                    type="button"
+                    className={styles.pagerArrow}
+                    onClick={() => setWalletPage(Math.max(0, page - 1))}
+                    disabled={page === 0}
+                    aria-label="Previous wallets"
+                  >
+                    <CaretDownIcon className={styles.pagerPrev} size={13} />
+                  </button>
+                  <span className={styles.pagerDots}>
+                    {Array.from({ length: pageCount }).map((_, i) => (
+                      <button
+                        type="button"
+                        key={i}
+                        className={`${styles.pagerDot} ${i === page ? styles.pagerDotOn : ""}`}
+                        onClick={() => setWalletPage(i)}
+                        aria-label={`Wallet page ${i + 1}`}
+                        aria-current={i === page ? "true" : undefined}
+                      />
+                    ))}
+                  </span>
+                  <button
+                    type="button"
+                    className={styles.pagerArrow}
+                    onClick={() => setWalletPage(Math.min(pageCount - 1, page + 1))}
+                    disabled={page === pageCount - 1}
+                    aria-label="More wallets"
+                  >
+                    <CaretDownIcon className={styles.pagerNext} size={13} />
+                  </button>
+                </div>
+              ) : null}
+            </>
           ) : (
             <div className={styles.zoneEmpty}>No wallets linked yet.</div>
           )}
@@ -209,11 +329,12 @@ const AccountMenu: React.FC<{
  */
 export const PassportShell: React.FC<PassportShellProps> = ({
   appIcon,
-  appIconTooltip = DEFAULT_APP_ICON_TIP,
+  appIconTooltip,
   account,
   activeAccountIndex = 0,
   onSelectAccount,
   onLinkWallet,
+  onUnlinkWallet,
   onSignOut,
   infoTooltip = DEFAULT_INFO_TIP,
   defaultAccountMenuOpen,
@@ -224,6 +345,12 @@ export const PassportShell: React.FC<PassportShellProps> = ({
 }) => {
   const handleSelect = useCallback((i: number) => onSelectAccount?.(i), [onSelectAccount]);
 
+  const appIconEl = (
+    <span className={styles.appIcon} tabIndex={appIconTooltip ? 0 : undefined} role="img" aria-label="App icon">
+      {appIcon ?? <CubeIcon className={styles.gl} size={18} />}
+    </span>
+  );
+
   return (
     <div
       className={`${styles.shell} ${styles[size]} ${className}`}
@@ -232,11 +359,15 @@ export const PassportShell: React.FC<PassportShellProps> = ({
       <div className={styles.fx} aria-hidden="true" />
 
       <div className={styles.chrome}>
-        <Tooltip content={appIconTooltip} placement="bottom-start" className={glass.tip}>
-          <span className={styles.appIcon} tabIndex={0} role="img" aria-label="App icon">
-            {appIcon ?? <CubeIcon className={styles.gl} size={18} />}
-          </span>
-        </Tooltip>
+        {/* No default tooltip: the app-icon is the integrator's brand. Only wrap
+            it when the integrator supplies their own appIconTooltip copy. */}
+        {appIconTooltip ? (
+          <Tooltip content={appIconTooltip} placement="bottom-start" className={glass.tip}>
+            {appIconEl}
+          </Tooltip>
+        ) : (
+          appIconEl
+        )}
 
         {account ? (
           <AccountMenu
@@ -244,6 +375,7 @@ export const PassportShell: React.FC<PassportShellProps> = ({
             activeIndex={activeAccountIndex}
             onSelect={handleSelect}
             onLinkWallet={onLinkWallet}
+            onUnlinkWallet={onUnlinkWallet}
             onSignOut={onSignOut}
             defaultOpen={defaultAccountMenuOpen}
           />

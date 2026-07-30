@@ -66,6 +66,47 @@ export const SAMPLE_ACCOUNT = {
   ],
 };
 
+const BASE = { display: "Shady.eth", kind: "ENS", email: "shady@holonym.id", address: "0x1332…4a9f" };
+
+/** One linked wallet. */
+export const ACCOUNT_ONE_WALLET = {
+  ...BASE,
+  linkedWallets: [{ display: "0x1332…4a9f", kind: "Wallet" }],
+};
+
+/** Exactly three linked wallets (fills a page, no pager yet). */
+export const ACCOUNT_THREE_WALLETS = {
+  ...BASE,
+  linkedWallets: [
+    { display: "0x1332…4a9f", kind: "Wallet" },
+    { display: "vault.eth", kind: "ENS" },
+    { display: "0x88b1…02aa", kind: "Wallet" },
+  ],
+};
+
+/** Six linked wallets: paginates into two pages of three (dots + arrows). */
+export const ACCOUNT_SIX_WALLETS = {
+  ...BASE,
+  linkedWallets: [
+    { display: "0x1332…4a9f", kind: "Wallet" },
+    { display: "vault.eth", kind: "ENS" },
+    { display: "0x88b1…02aa", kind: "Wallet" },
+    { display: "treasury.eth", kind: "ENS" },
+    { display: "0x4c9d…7f10", kind: "Safe" },
+    { display: "0xab20…6d33", kind: "Wallet" },
+  ],
+};
+
+/** A mix including a wallet in cooldown and one still pending. */
+export const ACCOUNT_COOLDOWN = {
+  ...BASE,
+  linkedWallets: [
+    { display: "0x1332…4a9f", kind: "Wallet", status: "active" as const },
+    { display: "vault.eth", status: "cooldown" as const, cooldownUntil: "Cooldown until Aug 3" },
+    { display: "0x88b1…02aa", status: "pending" as const, cooldownUntil: "Linking in progress" },
+  ],
+};
+
 export const SAMPLE_STAMPS = [
   { id: "gov-id", label: "Government ID", points: 6 },
   { id: "biometric", label: "Biometric", points: 5 },
