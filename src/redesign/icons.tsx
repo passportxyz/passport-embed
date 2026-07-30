@@ -117,6 +117,32 @@ export const PlusIcon: React.FC<IconProps> = (p) => (
   </Svg>
 );
 
+/** Chain link (link an identity). Two interlocking links, not a wallet. */
+export const LinkIcon: React.FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M9.5 14.5 14.5 9.5" />
+    <path d="M8 12.5 6.7 13.8a3 3 0 0 1-4.2-4.2L5 7" />
+    <path d="M16 11.5 17.3 10.2a3 3 0 0 0-4.2-4.2L11 8" />
+  </Svg>
+);
+
+/** Unlink (break the chain) - remove a linked wallet. */
+export const UnlinkIcon: React.FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M8 12.5 6.7 13.8a3 3 0 0 1-4.2-4.2L5 7" />
+    <path d="M16 11.5 17.3 10.2a3 3 0 0 0-4.2-4.2L11 8" />
+    <path d="M3 3l18 18" />
+  </Svg>
+);
+
+/** Small clock (cooldown / pending wallet status). */
+export const ClockIcon: React.FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7.5V12l3 2" />
+  </Svg>
+);
+
 /** Sign out. */
 export const LogoutIcon: React.FC<IconProps> = (p) => (
   <Svg {...p}>
