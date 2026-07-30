@@ -96,7 +96,11 @@
 }
 
 /* ---- chrome row: app-icon · account · ⓘ ---- */
+/* position:relative so the account dropdown anchors to the chrome row, which
+ * spans the shell's content box - letting the menu pin left:0 / right:0 and
+ * stay inside the shell at ANY widget width. */
 .chrome {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-2-c6dbf459);
@@ -142,8 +146,9 @@
 }
 
 /* ---- account selector ---- */
+/* NOT positioned: the menu anchors to .chrome (the content-box-wide row) so it
+ * spans the shell width instead of the narrow trigger. */
 .acctWrap {
-  position: relative;
   min-width: 0;
   margin-right: auto;
 }
@@ -215,14 +220,18 @@
   transform: rotate(180deg);
 }
 
-/* dropdown: LEFT-aligned to trigger, TOP z-index, near-opaque backdrop, never
- * clipped. Fades (opacity), collapses instantly under reduced-motion below. */
+/* dropdown: TOP z-index, near-opaque backdrop, never clipped and NEVER outside
+ * the shell (§ overlay layering). It spans the shell's content box: pulled left
+ * past the account trigger to the shell content's left edge (the app-icon start
+ * = appIcon width 34px + the chrome gap) and sized to the content width, so its
+ * right edge lands on the content edge instead of overflowing the rounded bound.
+ * Fades (opacity), collapses instantly under reduced-motion below. */
 .menu {
   position: absolute;
+  box-sizing: border-box;
   top: calc(100% + var(--space-1-c6dbf459));
   left: 0;
-  width: 252px;
-  max-width: calc(100vw - var(--space-5-c6dbf459));
+  right: 0;
   z-index: 400;
   padding: var(--space-1-c6dbf459);
   border-radius: var(--radius-lg-c6dbf459);
