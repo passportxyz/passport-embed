@@ -5,7 +5,6 @@ import { Tooltip } from "../components/Tooltip";
 import {
   CaretDownIcon,
   ClockIcon,
-  CubeIcon,
   InfoIcon,
   LogoutIcon,
   PlusIcon,
@@ -58,12 +57,18 @@ export type ShellAccount = {
 export type ShellSize = "full" | "pill" | "mini";
 
 export type PassportShellProps = {
-  /** Integrator's product icon (top-left slot). Defaults to a placeholder cube. */
+  /**
+   * Integrator's product icon (top-left slot). OPTIONAL and OFF by default:
+   * when omitted, the slot renders nothing (no placeholder box) and the header
+   * leads with the account selector. Pass a node to lead the header with the
+   * integrator's own brand mark.
+   */
   appIcon?: React.ReactNode;
   /**
    * Optional integrator-supplied hover tooltip for the app-icon. Defaults to
    * NONE: the app-icon is the integrator's brand, so we ship no explanatory
-   * copy of our own. When omitted, the icon renders with no tooltip.
+   * copy of our own. When omitted, the icon renders with no tooltip. Only has
+   * an effect when `appIcon` is also supplied.
    */
   appIconTooltip?: React.ReactNode;
   /** The passport identity + account menu. Omit to hide the selector. */
@@ -345,11 +350,29 @@ export const PassportShell: React.FC<PassportShellProps> = ({
 }) => {
   const handleSelect = useCallback((i: number) => onSelectAccount?.(i), [onSelectAccount]);
 
-  const appIconEl = (
+  // App-icon slot is OFF by default: only render it when the integrator supplies
+  // their own mark. When absent, the header simply leads with the account.
+  const appIconEl = appIcon ? (
     <span className={styles.appIcon} tabIndex={appIconTooltip ? 0 : undefined} role="img" aria-label="App icon">
-      {appIcon ?? <CubeIcon className={styles.gl} size={18} />}
+      {appIcon}
     </span>
-  );
+  ) : null;
+
+  // The pill is a true single row: the score ring stands in for the app-icon,
+  // the account preview and the one action live in the window itself. It carries
+  // no chrome (no app-icon, no account menu, no ⓘ) and no footer, so the whole
+  // widget is one pill-height row. (See PassportShell.stories / item 1.)
+  if (size === "pill") {
+    return (
+      <div
+        className={`${styles.shell} ${styles.pill} ${className}`}
+        style={washRgb ? ({ "--rd-wash": washRgb } as React.CSSProperties) : undefined}
+      >
+        <div className={styles.fx} aria-hidden="true" />
+        <div className={styles.content}>{children}</div>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -359,15 +382,18 @@ export const PassportShell: React.FC<PassportShellProps> = ({
       <div className={styles.fx} aria-hidden="true" />
 
       <div className={styles.chrome}>
-        {/* No default tooltip: the app-icon is the integrator's brand. Only wrap
-            it when the integrator supplies their own appIconTooltip copy. */}
-        {appIconTooltip ? (
-          <Tooltip content={appIconTooltip} placement="bottom-start" className={glass.tip}>
-            {appIconEl}
-          </Tooltip>
-        ) : (
-          appIconEl
-        )}
+        {/* The app-icon slot only appears when the integrator passes appIcon.
+            No default tooltip either: the icon is the integrator's brand, so we
+            wrap it only when they supply their own appIconTooltip copy. */}
+        {appIconEl ? (
+          appIconTooltip ? (
+            <Tooltip content={appIconTooltip} placement="bottom-start" className={glass.tip}>
+              {appIconEl}
+            </Tooltip>
+          ) : (
+            appIconEl
+          )
+        ) : null}
 
         {account ? (
           <AccountMenu

@@ -15,9 +15,14 @@
   padding: var(--space-4-c6dbf459);
   border-radius: var(--widget-radius-c6dbf459);
   background: rgb(var(--surface));
-  /* No hard line: the shell reads as a lifted surface via shadow + the wash, not
-   * a 1px outline. */
-  box-shadow: var(--shadow-md-c6dbf459);
+  /* No hard line: the shell reads as its own lifted surface via layered shadow +
+   * the wash, not a 1px outline. The edge tokens add a hairline light inner rim
+   * and a soft ambient outer glow so a near-black widget separates from a DARK
+   * host (§no-hard-lines); --shadow-md carries the depth on a light host. */
+  box-shadow:
+    var(--rd-edge-rim),
+    var(--rd-edge-glow),
+    var(--shadow-md-c6dbf459);
   color: rgb(var(--on-surface));
   font-family: var(--font-family-body-c6dbf459);
   /* content + overlays escape; only the decorative .fx is clipped */
@@ -74,20 +79,17 @@
 .mini .content {
   height: 192px;
 }
-.pill .content {
-  height: 60px;
-}
 .pill,
 .mini {
   padding: var(--space-3-c6dbf459);
 }
-/* The pill is a horizontal strip: pull the footer up tight so the whole widget
- * stays short, and let the single content row carry the essentials. */
+/* The pill carries NO chrome and NO footer: the whole widget is one short row.
+ * The content region is exactly the ring-height row, vertically centered, with
+ * no top margin (there is no chrome above it to clear). */
 .pill .content {
-  margin-top: var(--space-2-c6dbf459);
-}
-.pill > *:last-child {
-  margin-top: var(--space-2-c6dbf459);
+  height: 44px;
+  margin-top: 0;
+  justify-content: center;
 }
 
 .shell > *:not(.fx) {

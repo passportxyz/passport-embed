@@ -26,8 +26,27 @@ const meta: Meta<typeof PassportShell> = {
 export default meta;
 type Story = StoryObj<typeof PassportShell>;
 
+/** A stand-in for an integrator's own brand mark, passed via the appIcon prop. */
+const SampleAppIcon = (
+  <span
+    style={{
+      display: "grid",
+      placeItems: "center",
+      width: 20,
+      height: 20,
+      borderRadius: 5,
+      background: "linear-gradient(135deg, #7c3aed, #4f46e5)",
+      color: "#fff",
+      fontWeight: 700,
+      fontSize: 12,
+    }}
+  >
+    A
+  </span>
+);
+
 export const Default: Story = {
-  name: "Shell / Default (menu closed)",
+  name: "Shell / Default (no app-icon)",
   render: () => (
     <ThemePair>
       <PassportShell account={SAMPLE_ACCOUNT}>
@@ -39,18 +58,19 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          "App-icon slot (placeholder cube), the 'Shady.eth's Passport ▾' account selector, the ⓘ help affordance, and the shared footer, every element inside the rounded shell. The app-icon ships with NO tooltip by default (it is the integrator's brand). Hover the ⓘ for a glass tooltip (edge-aware, never clipped).",
+          "The default: NO app-icon. The slot renders nothing (no placeholder box) and the header leads with the 'Shady.eth's Passport ▾' account selector, then the ⓘ help affordance, all inside the rounded shell. Hover the ⓘ for a glass tooltip (edge-aware, never clipped). Note the soft light edge separating the widget from the host background, clearest on the dark host.",
       },
     },
   },
 };
 
 export const AppIconTooltip: Story = {
-  name: "Shell / App-icon slot (integrator brand)",
+  name: "Shell / With integrator app-icon",
   render: () => (
     <ThemePair>
       <PassportShell
         account={SAMPLE_ACCOUNT}
+        appIcon={SampleAppIcon}
         appIconTooltip="Verify with Acme to keep your account in good standing."
       >
         <ScoreWindow state="below" score={17} threshold={20} addVerificationsCta={{}} linkIdentityCta={{}} />
@@ -61,10 +81,10 @@ export const AppIconTooltip: Story = {
     docs: {
       description: {
         // The explanatory sentence lives HERE (dev documentation), never in the
-        // shipped component. It used to be the app-icon's default tooltip and
-        // would have rendered in every real integration.
+        // shipped component. It is the app-icon's tooltip only because the
+        // integrator supplied it via appIconTooltip.
         story:
-          "The integrator's own product icon renders in this slot. It is their brand, not ours. The shipped component therefore ships no explanatory tooltip of its own. It renders one only when the integrator supplies appIconTooltip, shown here with sample integrator copy.",
+          "When the integrator passes appIcon, their own product icon leads the header (here a sample 'Acme' mark). It is their brand, not ours, so the component ships no explanatory tooltip of its own. It renders one only when the integrator also supplies appIconTooltip, shown here with sample integrator copy.",
       },
     },
   },
@@ -206,8 +226,15 @@ export const PillVariant: Story = {
   name: "Shell / Size variant: pill",
   render: () => (
     <ThemePair>
-      <PassportShell size="pill" account={SAMPLE_ACCOUNT}>
-        <ScoreWindow size="pill" state="verified" score={24} threshold={20} onContinue={() => undefined} />
+      <PassportShell size="pill">
+        <ScoreWindow
+          size="pill"
+          state="verified"
+          score={24}
+          threshold={20}
+          accountPreview={SAMPLE_ACCOUNT.display}
+          onContinue={() => undefined}
+        />
       </PassportShell>
     </ThemePair>
   ),
@@ -215,7 +242,7 @@ export const PillVariant: Story = {
     docs: {
       description: {
         story:
-          "The compact 'pill' size: one short horizontal row - a small score ring, a status label, and a single action - inside a short shell. Distinct from mini and full.",
+          "The compact 'pill' size: one true single row. The score ring stands in for the app-icon at the left (showing the score, e.g. 24), then the account name / short address preview, then a narrow Continue action, all on the same pill-height row. No app-icon, no ⓘ, no 'Verified' word, and no footer. The only tooltip is the score-hover on the ring. Clearly distinct from mini and full.",
       },
     },
   },
@@ -234,7 +261,7 @@ export const MiniVariant: Story = {
     docs: {
       description: {
         story:
-          "The 'mini' size: a condensed roughly half-height card with a smaller ring, tighter spacing, and a single action. Distinct from the single-row pill and the full card.",
+          "The 'mini' size: a condensed roughly half-height card with a smaller ring, tighter spacing, and a single action. In the verified state the 'You're verified' line folds INTO the CTA (check + 'You're verified', which continues on tap) to save vertical space: ring + that one button + footer, no standalone verified line. Distinct from the single-row pill and the full card.",
       },
     },
   },
@@ -257,8 +284,15 @@ export const SizeComparison: Story = {
       {(["full", "mini", "pill"] as const).map((s) => (
         <div key={s} style={{ width: 300 }}>
           <Widget theme={LightTheme}>
-            <PassportShell size={s} account={SAMPLE_ACCOUNT}>
-              <ScoreWindow size={s} state="verified" score={24} threshold={20} onContinue={() => undefined} />
+            <PassportShell size={s} account={s === "pill" ? undefined : SAMPLE_ACCOUNT}>
+              <ScoreWindow
+                size={s}
+                state="verified"
+                score={24}
+                threshold={20}
+                accountPreview={s === "pill" ? SAMPLE_ACCOUNT.display : undefined}
+                onContinue={() => undefined}
+              />
             </PassportShell>
           </Widget>
         </div>
