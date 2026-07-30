@@ -14,6 +14,14 @@
   color: rgba(var(--on-surface), 0.7);
 }
 
+/* Compact form for the single-row pill: smaller mark + text, tight top margin so
+ * the whole widget still reads as one short pill (§ pill footer). */
+.compact {
+  gap: 4px;
+  margin-top: var(--space-2-c6dbf459);
+  font-size: calc(var(--font-size-xs-c6dbf459) * 0.9);
+}
+
 .mark {
   display: block;
   opacity: 0.75;

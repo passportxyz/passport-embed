@@ -117,6 +117,14 @@ export const PlusIcon: React.FC<IconProps> = (p) => (
   </Svg>
 );
 
+/** Copy (two stacked sheets) - copy an address / wallet to the clipboard. */
+export const CopyIcon: React.FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <rect x="9" y="9" width="12" height="12" rx="2.2" />
+    <path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1" />
+  </Svg>
+);
+
 /** Chain link (link an identity). Two interlocking links, not a wallet. */
 export const LinkIcon: React.FC<IconProps> = (p) => (
   <Svg {...p}>

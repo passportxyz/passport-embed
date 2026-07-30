@@ -57,8 +57,10 @@ export const SAMPLE_ACCOUNT = {
   email: "shady@holonym.id",
   address: "0x1332…4a9f",
   linkedWallets: [
-    { display: "0x1332…4a9f", kind: "Wallet" },
-    { display: "vault.eth", kind: "ENS" },
+    // `address` carries the FULL value for the hover-to-copy control, while
+    // `display` stays truncated. Copying yields the complete address.
+    { display: "0x1332…4a9f", kind: "Wallet", address: "0x1332f4c1b9a70d5e2c8a4f6e11c9b3d0aa7e4a9f" },
+    { display: "vault.eth", kind: "ENS", address: "0x77aa20c3e9b1d4f60825ab19c7d3e5f0126b8c11" },
   ],
   accounts: [
     { display: "Shady.eth", kind: "ENS" },

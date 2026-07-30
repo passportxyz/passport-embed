@@ -203,6 +203,44 @@ export const NoAccount: Story = {
   },
 };
 
+export const HiddenAccountSelector: Story = {
+  name: "Shell / Account selector hidden (accountSelector=false)",
+  render: () => (
+    <ThemePair>
+      <PassportShell account={SAMPLE_ACCOUNT} appIcon={SampleAppIcon} accountSelector={false}>
+        <ScoreWindow state="below" score={17} threshold={20} addVerificationsCta={{}} linkIdentityCta={{}} />
+      </PassportShell>
+    </ThemePair>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "The accountSelector={false} customization knob hides the account selector from the header even though an account is supplied. The header leads with the integrator's app-icon (or nothing when no app-icon is given), then the ⓘ. Use this when the integrator drives identity in their own chrome.",
+      },
+    },
+  },
+};
+
+export const CopyOnHover: Story = {
+  name: "Shell / Copy address on hover",
+  render: () => (
+    <ThemePair>
+      <PassportShell account={SAMPLE_ACCOUNT} defaultAccountMenuOpen onUnlinkWallet={() => undefined}>
+        <ScoreWindow state="verified" score={24} threshold={20} onContinue={() => undefined} />
+      </PassportShell>
+    </ThemePair>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Hover (or tab to) the passport account address and any linked wallet row to reveal a small copy control. Clicking copies the FULL address to the clipboard (the rows show a truncated form) and briefly shows a check + 'Copied', reverting after ~1.5s. Keyboard-reachable.",
+      },
+    },
+  },
+};
+
 export const CustomWash: Story = {
   name: "Shell / Integrator wash color",
   render: () => (
@@ -243,6 +281,116 @@ export const PillVariant: Story = {
       description: {
         story:
           "The compact 'pill' size: one true single row. The score ring stands in for the app-icon at the left (showing the score, e.g. 24), then the account name / short address preview, then a narrow Continue action, all on the same pill-height row. No app-icon, no ⓘ, no 'Verified' word, and no footer. The only tooltip is the score-hover on the ring. Clearly distinct from mini and full.",
+      },
+    },
+  },
+};
+
+export const PillLoading: Story = {
+  name: "Shell / Pill: loading",
+  render: () => (
+    <ThemePair>
+      <PassportShell size="pill">
+        <ScoreWindow size="pill" state="loading" />
+      </PassportShell>
+    </ThemePair>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: "The pill loading state: a small loader stands in for the ring plus a short label, all on the one pill row, with the compact 'Secured by human.tech' lockup beneath.",
+      },
+    },
+  },
+};
+
+export const PillBelow: Story = {
+  name: "Shell / Pill: below threshold",
+  render: () => (
+    <ThemePair>
+      <PassportShell size="pill">
+        <ScoreWindow
+          size="pill"
+          state="below"
+          score={17}
+          threshold={20}
+          addVerificationsCta={{ onClick: () => undefined }}
+        />
+      </PassportShell>
+    </ThemePair>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: "The pill below-threshold state: the small amber ring, a 'N to go' label, and one compact 'Verify' action, kept to a single short row.",
+      },
+    },
+  },
+};
+
+export const PillVerified: Story = {
+  name: "Shell / Pill: verified",
+  render: () => (
+    <ThemePair>
+      <PassportShell size="pill">
+        <ScoreWindow
+          size="pill"
+          state="verified"
+          score={24}
+          threshold={20}
+          accountPreview={SAMPLE_ACCOUNT.display}
+          onContinue={() => undefined}
+        />
+      </PassportShell>
+    </ThemePair>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: "The pill verified state: the completed emerald ring, the account preview, and a compact Continue hand-off, all on one row.",
+      },
+    },
+  },
+};
+
+export const PillError: Story = {
+  name: "Shell / Pill: error",
+  render: () => (
+    <ThemePair>
+      <PassportShell size="pill">
+        <ScoreWindow size="pill" state="error" errorKind="network" onRetry={() => undefined} />
+      </PassportShell>
+    </ThemePair>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: "The pill error state: a compact danger mark, the short humanized title (never a raw error message), and a compact Retry, all on one row.",
+      },
+    },
+  },
+};
+
+export const PillStatusOnly: Story = {
+  name: "Shell / Pill: verified, no action (showAction=false)",
+  render: () => (
+    <ThemePair>
+      <PassportShell size="pill">
+        <ScoreWindow
+          size="pill"
+          state="verified"
+          score={24}
+          threshold={20}
+          accountPreview={SAMPLE_ACCOUNT.display}
+          showAction={false}
+        />
+      </PassportShell>
+    </ThemePair>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: "The button on/off option: showAction={false} renders a status-only pill with no action button, just the score ring and the account preview. The integrator drives any hand-off in their own UI.",
       },
     },
   },

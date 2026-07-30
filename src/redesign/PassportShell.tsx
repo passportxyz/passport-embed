@@ -4,7 +4,9 @@ import glass from "./glassTip.module.css";
 import { Tooltip } from "../components/Tooltip";
 import {
   CaretDownIcon,
+  CheckIcon,
   ClockIcon,
+  CopyIcon,
   InfoIcon,
   LogoutIcon,
   PlusIcon,
@@ -28,6 +30,12 @@ export type LinkedWalletStatus = "active" | "cooldown" | "pending";
 export type LinkedWallet = {
   /** Display name, e.g. "0x1332…4a9f" or "vault.eth". */
   display: string;
+  /**
+   * Full address to copy from the hover-to-copy control. When omitted, the copy
+   * affordance falls back to copying `display`. Lets the row show a short /
+   * truncated name while the clipboard still gets the complete address.
+   */
+  address?: string;
   /** Short kind label, e.g. "Wallet" / "ENS" / "Safe". */
   kind?: string;
   /** Linking state. Defaults to "active" when omitted. */
@@ -73,6 +81,14 @@ export type PassportShellProps = {
   appIconTooltip?: React.ReactNode;
   /** The passport identity + account menu. Omit to hide the selector. */
   account?: ShellAccount;
+  /**
+   * Customization-API knob: show or hide the account selector in the header.
+   * Defaults to `true`. When `false`, the header omits the account selector
+   * entirely (leading with the app-icon if one is supplied, else nothing), even
+   * when `account` is provided. Useful for integrators who drive identity in
+   * their own chrome.
+   */
+  accountSelector?: boolean;
   /** Index of the active account within `account.accounts`. */
   activeAccountIndex?: number;
   /** Called with the selected account index (switch accounts). */
@@ -114,6 +130,58 @@ const STATUS_LABEL: Record<LinkedWalletStatus, string> = {
   pending: "Pending",
 };
 
+/**
+ * Hover-to-copy affordance for a wallet / address row. A small copy icon that
+ * stays hidden until the row is hovered or the button itself is focused (so it
+ * is keyboard-reachable). Clicking copies the full value to the clipboard and
+ * briefly swaps to a check + "Copied", reverting after ~1.5s. Presentational and
+ * self-contained; uses navigator.clipboard.writeText.
+ */
+const COPIED_MS = 1500;
+
+const CopyButton: React.FC<{ value: string; label: string }> = ({ value, label }) => {
+  const [copied, setCopied] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout>>();
+
+  useEffect(() => () => {
+    if (timer.current) clearTimeout(timer.current);
+  }, []);
+
+  const copy = useCallback(() => {
+    const done = () => {
+      setCopied(true);
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(() => setCopied(false), COPIED_MS);
+    };
+    try {
+      const clip = typeof navigator !== "undefined" ? navigator.clipboard : undefined;
+      if (clip?.writeText) {
+        clip.writeText(value).then(done, done);
+      } else {
+        done();
+      }
+    } catch {
+      // Clipboard may be blocked (insecure context, permissions); still confirm.
+      done();
+    }
+  }, [value]);
+
+  return (
+    <button
+      type="button"
+      className={`${styles.copyBtn} ${copied ? styles.copyBtnDone : ""}`}
+      onClick={copy}
+      aria-label={copied ? "Copied" : label}
+      title={copied ? "Copied" : label}
+    >
+      <span className={styles.copyGlyph} aria-hidden="true">
+        {copied ? <CheckIcon size={13} strokeWidth={2.2} /> : <CopyIcon size={13} strokeWidth={1.7} />}
+      </span>
+      {copied ? <span className={styles.copyText}>Copied</span> : null}
+    </button>
+  );
+};
+
 const LinkedWalletRow: React.FC<{
   wallet: LinkedWallet;
   index: number;
@@ -143,6 +211,7 @@ const LinkedWalletRow: React.FC<{
       ) : wallet.kind ? (
         <span className={styles.walletKind}>{wallet.kind}</span>
       ) : null}
+      <CopyButton value={wallet.address ?? wallet.display} label={`Copy ${wallet.display}`} />
       {canUnlink ? (
         <button
           type="button"
@@ -232,7 +301,12 @@ const AccountMenu: React.FC<{
           <span className={styles.waapMeta}>
             <span className={styles.waapName}>{account.display}</span>
             {account.email ? <span className={styles.waapLine}>{account.email}</span> : null}
-            {account.address ? <span className={styles.waapAddr}>{account.address}</span> : null}
+            {account.address ? (
+              <span className={styles.waapAddrRow}>
+                <span className={styles.waapAddr}>{account.address}</span>
+                <CopyButton value={account.address} label="Copy address" />
+              </span>
+            ) : null}
           </span>
         </div>
 
@@ -336,6 +410,7 @@ export const PassportShell: React.FC<PassportShellProps> = ({
   appIcon,
   appIconTooltip,
   account,
+  accountSelector = true,
   activeAccountIndex = 0,
   onSelectAccount,
   onLinkWallet,
@@ -358,10 +433,15 @@ export const PassportShell: React.FC<PassportShellProps> = ({
     </span>
   ) : null;
 
+  // Whether the account selector actually shows: gated by the accountSelector
+  // knob AND by an account being supplied.
+  const showAccount = accountSelector && Boolean(account);
+
   // The pill is a true single row: the score ring stands in for the app-icon,
   // the account preview and the one action live in the window itself. It carries
-  // no chrome (no app-icon, no account menu, no ⓘ) and no footer, so the whole
-  // widget is one pill-height row. (See PassportShell.stories / item 1.)
+  // no header chrome (no app-icon, no account menu, no ⓘ), but it DOES keep the
+  // shared "Secured by human.tech" lockup in a compact form beneath the row so
+  // the mark is never dropped. (See PassportShell.stories / item 1.)
   if (size === "pill") {
     return (
       <div
@@ -370,6 +450,7 @@ export const PassportShell: React.FC<PassportShellProps> = ({
       >
         <div className={styles.fx} aria-hidden="true" />
         <div className={styles.content}>{children}</div>
+        <SecuredByFooter compact />
       </div>
     );
   }
@@ -395,7 +476,7 @@ export const PassportShell: React.FC<PassportShellProps> = ({
           )
         ) : null}
 
-        {account ? (
+        {showAccount && account ? (
           <AccountMenu
             account={account}
             activeIndex={activeAccountIndex}
