@@ -116,3 +116,31 @@ export const SAMPLE_STAMPS = [
   { id: "social", label: "Social", points: 5 },
   { id: "onchain", label: "On-chain", points: 3 },
 ];
+
+// Medallion-stamp sample data for the Stamps window. A mix of verified /
+// unverified and minted / mintable / off-chain so every face state is visible.
+// Two categories (three each) so it reads as a full grid on one page. Icons are
+// plain emoji (valid ReactNode) so the stories need no asset pipeline.
+export const SAMPLE_MEDALLION_STAMPS = [
+  { id: "gov-id", name: "Government ID", category: "Identity", points: 6, verified: true, onchain: "minted" as const, icon: "🪪" },
+  { id: "clean-hands", name: "Clean Hands", category: "Identity", points: 5, verified: true, onchain: "mintable" as const, icon: "🤝" },
+  { id: "phone", name: "Phone", category: "Identity", points: 2, verified: false, onchain: "none" as const, icon: "📱" },
+  { id: "github", name: "GitHub", category: "Social", points: 3, verified: true, onchain: "none" as const, icon: "🐙" },
+  { id: "discord", name: "Discord", category: "Social", points: 1, verified: false, onchain: "none" as const, icon: "💬" },
+  { id: "x-social", name: "X", category: "Social", points: 1, verified: false, onchain: "none" as const, icon: "✖️" },
+];
+
+// A larger catalog that spills past one page (>6), so pagination shows two pages
+// with dots + arrows and the "never scrolled" rule is visible.
+export const SAMPLE_MEDALLION_STAMPS_PAGED = [
+  { id: "gov-id", name: "Government ID", category: "Identity", points: 6, verified: true, onchain: "minted" as const, icon: "🪪" },
+  { id: "clean-hands", name: "Clean Hands", category: "Identity", points: 5, verified: true, onchain: "mintable" as const, icon: "🤝" },
+  { id: "phone", name: "Phone", category: "Identity", points: 2, verified: false, onchain: "none" as const, icon: "📱" },
+  { id: "biometric", name: "Biometric", category: "Biometrics", points: 5, verified: true, onchain: "minted" as const, icon: "🫆" },
+  { id: "face-scan", name: "Face scan", category: "Biometrics", points: 4, verified: false, onchain: "none" as const, icon: "🙂" },
+  { id: "github", name: "GitHub", category: "Social", points: 3, verified: true, onchain: "none" as const, icon: "🐙" },
+  { id: "discord", name: "Discord", category: "Social", points: 1, verified: false, onchain: "none" as const, icon: "💬" },
+  { id: "linkedin", name: "LinkedIn", category: "Social", points: 2, verified: false, onchain: "none" as const, icon: "🔗" },
+  { id: "eth-activity", name: "Ethereum activity", category: "On-chain activity", points: 4, verified: true, onchain: "mintable" as const, icon: "⟠" },
+  { id: "gitcoin", name: "Gitcoin", category: "On-chain activity", points: 3, verified: false, onchain: "none" as const, icon: "🌱" },
+];
