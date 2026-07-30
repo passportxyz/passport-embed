@@ -53,6 +53,14 @@ export type ScoreWindowProps = {
   subtext?: string;
 
   /**
+   * Pill-only: the account name / short address preview shown between the score
+   * ring and the action on the single pill row (e.g. "Shady.eth" or
+   * "0x1332…4a9f"). Ignored by the full / mini layouts, which carry the account
+   * in the shell chrome instead.
+   */
+  accountPreview?: string;
+
+  /**
    * Size variant, mirrors the shell's. `full` (default) is the crafted card;
    * `mini` is a condensed ~half-size card; `pill` is a compact single-row pill
    * (mark + score + one action). Pass the SAME value you pass to PassportShell.
@@ -160,6 +168,7 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
   errorMessage,
   headline,
   subtext,
+  accountPreview,
   size = "full",
 }) => {
   const reduced = useReducedMotion();
@@ -242,7 +251,10 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
     </Tooltip>
   );
 
-  // ---- pill: one compact horizontal row (mark/score + label + one action) ----
+  // ---- pill: one true single row. The score ring stands in for the app-icon
+  // at the left, then the account name / short address preview, then one narrow
+  // action on the same row. No "Verified" word, no separate label; the only
+  // tooltip is the score-hover on the ring. ----
   if (size === "pill") {
     return (
       <div className={winClass}>
@@ -250,12 +262,9 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
           Score {roundedScore} of {threshold}. {verified ? "Above the threshold." : `${toGo} to go.`}
         </p>
         {ringButton}
-        <span className={styles.pillText}>{headline ?? (verified ? "Verified" : `${toGo} to go`)}</span>
+        {accountPreview ? <span className={styles.pillText}>{accountPreview}</span> : <span className={styles.pillText} />}
         {verified ? (
           <button type="button" className={`${styles.cta} ${styles.ctaInline}`} onClick={onContinue}>
-            <span className={styles.ctaIcon}>
-              <CheckIcon size={14} strokeWidth={2} />
-            </span>
             <span className={styles.ctaLabel}>{continueLabel ?? "Continue"}</span>
           </button>
         ) : addCta.hidden ? null : (
@@ -279,39 +288,51 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
       {ringButton}
 
       {verified ? (
-        <>
-          <div className={`${styles.verifiedLine} ${reduced ? styles.verifiedLineStatic : ""}`}>
-            {/* The external seal / check now sits inline with the headline, and
-                animates in together with the text. Its tooltip carries the
-                "Score N. Above the threshold" detail, and it is tappable. */}
-            <Tooltip
-              content={
-                <>
-                  <b>Score {roundedScore}.</b> Above the threshold. <em>Tap to see how it&rsquo;s computed.</em>
-                </>
-              }
-              placement="top"
-              className={glass.tip}
-            >
-              <button
-                type="button"
-                className={styles.inlineSeal}
-                onClick={onDrilldown}
-                aria-label={`Score ${roundedScore}. Above the threshold. Tap to see how it's computed.`}
-              >
-                <CheckIcon size={14} strokeWidth={2.6} />
-              </button>
-            </Tooltip>
-            <span className={styles.verifiedText}>{headline ?? "You're verified"}</span>
-          </div>
-
+        compact ? (
+          // mini: no standalone verified line. The verified state folds into the
+          // CTA itself (check + "You're verified"), which continues on tap. Ring
+          // + this one button + footer, nothing else, to save vertical space.
           <button type="button" className={styles.cta} onClick={onContinue}>
             <span className={styles.ctaIcon}>
               <CheckIcon size={15} strokeWidth={2} />
             </span>
-            <span className={styles.ctaLabel}>{continueLabel ?? "Continue"}</span>
+            <span className={styles.ctaLabel}>{headline ?? "You're verified"}</span>
           </button>
-        </>
+        ) : (
+          <>
+            <div className={`${styles.verifiedLine} ${reduced ? styles.verifiedLineStatic : ""}`}>
+              {/* The external seal / check now sits inline with the headline, and
+                  animates in together with the text. Its tooltip carries the
+                  "Score N. Above the threshold" detail, and it is tappable. */}
+              <Tooltip
+                content={
+                  <>
+                    <b>Score {roundedScore}.</b> Above the threshold. <em>Tap to see how it&rsquo;s computed.</em>
+                  </>
+                }
+                placement="top"
+                className={glass.tip}
+              >
+                <button
+                  type="button"
+                  className={styles.inlineSeal}
+                  onClick={onDrilldown}
+                  aria-label={`Score ${roundedScore}. Above the threshold. Tap to see how it's computed.`}
+                >
+                  <CheckIcon size={14} strokeWidth={2.6} />
+                </button>
+              </Tooltip>
+              <span className={styles.verifiedText}>{headline ?? "You're verified"}</span>
+            </div>
+
+            <button type="button" className={styles.cta} onClick={onContinue}>
+              <span className={styles.ctaIcon}>
+                <CheckIcon size={15} strokeWidth={2} />
+              </span>
+              <span className={styles.ctaLabel}>{continueLabel ?? "Continue"}</span>
+            </button>
+          </>
+        )
       ) : (
         <>
           <p className={styles.headline}>{headline ?? "Almost verified"}</p>
