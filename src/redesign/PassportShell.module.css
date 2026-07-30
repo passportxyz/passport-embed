@@ -49,6 +49,14 @@
   gap: var(--space-2-c6dbf459);
 }
 
+/* The chrome row (and the account dropdown it contains) must outrank the score
+ * content below it, or the ring — a later `.shell > *` at the same z-index —
+ * paints over the open menu. Higher-specificity + later-in-file than the shared
+ * `.shell > *:not(.fx)` rule, so it wins without !important. */
+.shell > .chrome {
+  z-index: 3;
+}
+
 .gl {
   display: block;
 }
@@ -159,8 +167,14 @@
   z-index: 400;
   padding: var(--space-1-c6dbf459);
   border-radius: var(--radius-lg-c6dbf459);
-  background: rgb(var(--surface));
-  border: 1px solid rgba(var(--border), 0.5);
+  /* Elevated surface: lift the menu off the shell so it reads as a distinct
+   * layer in BOTH themes (on white it darkens slightly; on near-black it lightens
+   * slightly) — never black-on-black. Opaque (rgb base) so content never bleeds
+   * through. Stronger border + shadow carry the separation. */
+  background:
+    linear-gradient(rgba(var(--on-surface), 0.07), rgba(var(--on-surface), 0.07)),
+    rgb(var(--surface));
+  border: 1px solid rgba(var(--border), 0.9);
   box-shadow: var(--shadow-md-c6dbf459);
   opacity: 0;
   transform: translateY(-4px) scale(0.98);
