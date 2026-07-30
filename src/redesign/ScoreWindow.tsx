@@ -120,7 +120,7 @@ const ScoreRing: React.FC<{
  * Interim loader for the score-loading state: a simple indeterminate emerald arc.
  * TODO: swap to the shared Cryptex loader from `@holonym-foundation/ui` once that
  * package is installable by this build. Do NOT vendor its source into this public
- * repo — consume it as a dependency (see design-sop §7 reuse-shared-components).
+ * repo. Consume it as a dependency (see design-sop §7 reuse-shared-components).
  */
 const ScoreLoader: React.FC<{ size: ShellSize }> = ({ size }) => {
   const reduced = useReducedMotion();

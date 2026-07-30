@@ -209,7 +209,7 @@
 
 /* Interim loading spinner (indeterminate emerald arc). To be replaced by the
  * shared Cryptex loader from @holonym-foundation/ui once it is an installable
- * dependency — its source is NOT vendored into this public repo. */
+ * dependency. Its source is NOT vendored into this public repo. */
 .spin {
   animation: rdSpin 1s linear infinite;
   transform-origin: center;
