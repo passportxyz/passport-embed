@@ -1,10 +1,12 @@
 import React, { useMemo, useRef } from "react";
 import styles from "./ScoreDrilldown.module.css";
-import { ArrowLeftIcon } from "./icons";
+import { ArrowLeftIcon, SparkIcon } from "./icons";
 import { deriveTints } from "./deriveTints";
 import { useAccentRgb, useCountUp, useReducedMotion } from "./hooks";
 
 export type StampContribution = {
+  /** Stable id passed back through onSelectStamp. Falls back to `label`. */
+  id?: string;
   /** Short stamp label, e.g. "Government ID". */
   label: string;
   /** Points this stamp contributes to the total. */
@@ -17,21 +19,26 @@ export type ScoreDrilldownProps = {
   total?: number;
   /** Override the accent triplet ("r, g, b"). Defaults to the resolved --accent. */
   accentRgb?: string;
-  /** Return to the Score window (exponent toggle). */
+  /** Return to the Score window. */
   onBack?: () => void;
-  title?: string;
+  /** Fired when a breakdown segment is tapped (stamp-detail is a later slice). */
+  onSelectStamp?: (stampId: string) => void;
+  /** Fired by the "See all stamps" CTA. */
+  onSeeAllStamps?: () => void;
 };
 
 // Ring geometry lives inside a generous viewBox that scales down to the widget
-// width, so labels are always INSIDE the frame — nothing clips (SOP §4).
+// width, so labels are always INSIDE the frame and nothing clips. The breakdown
+// is the whole window now (no header), so the ring is larger.
 const CX = 180;
-const CY = 120;
-const R = 70;
-const SW = 16; // uniform stroke-width on EVERY arc — contribution shows in LENGTH only
+const CY = 118;
+const R = 78;
+const SW = 16; // uniform stroke-width on EVERY arc: contribution shows in LENGTH only
 const GAP = 8;
 const C = 2 * Math.PI * R;
 
 type Segment = {
+  id: string;
   label: string;
   points: number;
   color: string;
@@ -49,7 +56,8 @@ export const ScoreDrilldown: React.FC<ScoreDrilldownProps> = ({
   total,
   accentRgb,
   onBack,
-  title = "How your score is computed",
+  onSelectStamp,
+  onSeeAllStamps,
 }) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
@@ -73,6 +81,7 @@ export const ScoreDrilldown: React.FC<ScoreDrilldownProps> = ({
       const uy = Math.sin(midAngle);
       const lr = R + SW / 2 + 12;
       const seg: Segment = {
+        id: s.id ?? s.label,
         label: s.label,
         points: s.points,
         color: tints[Math.max(0, rank)],
@@ -100,16 +109,32 @@ export const ScoreDrilldown: React.FC<ScoreDrilldownProps> = ({
         ) : (
           <span />
         )}
-        <p className={styles.title}>{title}</p>
       </div>
 
-      <svg className={styles.arcSvg} viewBox="0 0 360 240" role="img" aria-label={`${title}: total ${sum}`}>
+      <svg className={styles.arcSvg} viewBox="0 0 360 236" role="img" aria-label={`Score breakdown, total ${sum}`}>
         {/* faint track the arcs sit on */}
         <circle className={styles.track} cx={CX} cy={CY} r={R} />
 
         <g className={reduced ? "" : styles.resolveIn}>
           {segments.map((seg, i) => (
-            <g key={`${seg.label}-${i}`}>
+            <g
+              key={`${seg.id}-${i}`}
+              className={onSelectStamp ? styles.segment : undefined}
+              role={onSelectStamp ? "button" : undefined}
+              tabIndex={onSelectStamp ? 0 : undefined}
+              aria-label={onSelectStamp ? `${seg.label}, ${seg.points} points. Open stamp.` : undefined}
+              onClick={onSelectStamp ? () => onSelectStamp(seg.id) : undefined}
+              onKeyDown={
+                onSelectStamp
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onSelectStamp(seg.id);
+                      }
+                    }
+                  : undefined
+              }
+            >
               <circle
                 className={styles.arc}
                 cx={CX}
@@ -149,6 +174,11 @@ export const ScoreDrilldown: React.FC<ScoreDrilldownProps> = ({
           {Math.round(counted)}
         </text>
       </svg>
+
+      <button type="button" className={styles.seeAll} onClick={onSeeAllStamps}>
+        <SparkIcon size={15} strokeWidth={1.9} />
+        See all stamps
+      </button>
     </div>
   );
 };

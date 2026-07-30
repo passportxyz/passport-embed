@@ -1,6 +1,7 @@
 /*
- * ScoreWindow — the home / spine. True SVG ring, stateful exponent, crafted
- * loader, verified reward. Tokens only (§1); legible in both themes (§2/§8);
+ * ScoreWindow - the home / spine. True SVG ring (emerald at/above threshold,
+ * amber below), score is the tap target, cryptex-spirit loader, inline verified
+ * reward. Tokens only (§1); legible in both themes (§2/§8);
  * all motion degrades under reduced-motion (§4).
  *
  * Local display sizes: the big score digit is intentionally larger than the
@@ -53,10 +54,37 @@
 
 .ringProgress {
   fill: none;
-  stroke: rgb(var(--accent));
   stroke-width: 9;
   stroke-linecap: round;
-  transition: stroke-dashoffset var(--motion-slow-c6dbf459) var(--ease-standard-c6dbf459);
+  transition:
+    stroke-dashoffset var(--motion-slow-c6dbf459) var(--ease-standard-c6dbf459),
+    stroke var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459);
+}
+/* Emerald only at or above the threshold. */
+.ringPass {
+  stroke: rgb(var(--accent));
+}
+/* Warm amber below the threshold: "almost there, not yet passing". */
+.ringWarn {
+  stroke: rgb(var(--warn));
+}
+
+/* The whole score (ring + number) is the hover / tap target. Bare button:
+ * no background, no border (no hard lines), just a pointer + focus ring. */
+.ringButton {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  display: block;
+  cursor: pointer;
+  color: inherit;
+  border-radius: var(--radius-pill-c6dbf459);
+}
+.ringButton:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 4px;
 }
 
 .ringNum {
@@ -89,77 +117,63 @@
   margin-left: 3px;
 }
 
-/* ---- stateful exponent (rides the digit like a superscript) ---- */
-.exp {
+/* ---- verified: inline "check + You're verified", animated in together ---- */
+.verifiedLine {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2-c6dbf459);
+  margin: var(--space-3-c6dbf459) 0 0;
+  animation: verifiedIn 0.5s var(--ease-standard-c6dbf459) 0.35s both;
+}
+.verifiedLineStatic {
+  animation: none;
+}
+@keyframes verifiedIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The green seal / check, now inline with the headline and tappable. */
+.inlineSeal {
   appearance: none;
-  border: 1px solid rgba(var(--surface), 0.6);
-  position: absolute;
-  top: -4px;
-  right: -18px;
-  width: 17px;
-  height: 17px;
+  border: 0;
+  position: relative;
+  width: 24px;
+  height: 24px;
+  flex: none;
   border-radius: var(--radius-pill-c6dbf459);
   display: grid;
   place-items: center;
-  font-size: 10px;
-  font-weight: var(--weight-bold-c6dbf459);
-  line-height: 1;
   cursor: pointer;
   color: rgb(var(--on-accent));
+  background: radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.9), rgb(var(--accent)) 80%);
   box-shadow: var(--shadow-sm-c6dbf459);
   transition: filter var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
 }
-/* Invisible ≥40px hit target (a11y §8): 17px + 2×12px = 41px. Visual size unchanged. */
-.exp::before {
+/* Invisible >=40px hit target (a11y §8): 24px + 2×8px = 40px. */
+.inlineSeal::before {
   content: "";
   position: absolute;
-  inset: -12px;
+  inset: -8px;
 }
-.exp:hover {
-  filter: brightness(1.08);
+.inlineSeal:hover {
+  filter: brightness(1.06);
 }
-.exp:focus-visible {
+.inlineSeal:focus-visible {
   outline: 2px solid rgb(var(--accent));
   outline-offset: 2px;
 }
-.expQ {
-  background: rgb(var(--accent));
-}
-.expOk {
-  background: rgb(var(--accent));
-}
 
-/* ---- verified reward: seal + glow + shimmer ---- */
-.seal {
-  position: absolute;
-  top: 70px;
-  right: 12px;
-  width: 30px;
-  height: 30px;
-  z-index: 4;
-  border-radius: var(--radius-pill-c6dbf459);
-  display: grid;
-  place-items: center;
-  color: rgb(var(--on-accent));
-  background: radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.85), rgb(var(--accent)) 78%);
-  box-shadow: var(--shadow-sm-c6dbf459);
-  transform: scale(0);
-  opacity: 0;
-  animation: sealPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.9s both;
-}
-@keyframes sealPop {
-  0% {
-    transform: scale(0) rotate(-30deg);
-    opacity: 0;
-  }
-  60% {
-    transform: scale(1.18) rotate(4deg);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1) rotate(0);
-    opacity: 1;
-  }
+.verifiedText {
+  font-weight: var(--weight-semibold-c6dbf459);
+  font-size: var(--font-size-lg-c6dbf459);
+  color: rgb(var(--on-surface));
 }
 
 .ringGlow {
@@ -187,8 +201,19 @@
   }
 }
 
-/* ---- loader ---- */
-.loaderSpin {
+/* ---- cryptex-spirit loader: hex glyphs settling around a resolving core ---- */
+.cryptexSvg {
+  width: 150px;
+  height: 150px;
+  display: block;
+}
+.loaderArc {
+  fill: none;
+  stroke: rgb(var(--accent));
+  stroke-width: 9;
+  stroke-linecap: round;
+}
+.loaderArcSpin {
   animation: loaderSpin 1.1s linear infinite;
   transform-origin: 75px 75px;
 }
@@ -197,11 +222,22 @@
     transform: rotate(360deg);
   }
 }
-.loaderArc {
-  fill: none;
-  stroke: rgb(var(--accent));
-  stroke-width: 9;
-  stroke-linecap: round;
+.cryptexGlyph {
+  fill: rgba(var(--accent), 0.85);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 10px;
+  font-weight: var(--weight-bold-c6dbf459);
+  opacity: 0.25;
+  animation: cryptexTwinkle 1.6s var(--ease-standard-c6dbf459) infinite;
+}
+@keyframes cryptexTwinkle {
+  0%,
+  100% {
+    opacity: 0.22;
+  }
+  50% {
+    opacity: 0.9;
+  }
 }
 .loaderMark {
   color: var(--rd-loader-mark);
@@ -261,7 +297,8 @@
   display: block;
   height: 100%;
   border-radius: var(--radius-pill-c6dbf459);
-  background: rgb(var(--accent));
+  /* Below the threshold, so the progress fill is amber to match the ring. */
+  background: rgb(var(--warn));
   transition: width var(--motion-slow-c6dbf459) var(--ease-standard-c6dbf459);
 }
 .toGoLabel {
@@ -283,7 +320,16 @@
   background: rgba(var(--danger), 0.12);
 }
 
-/* ---- CTA ---- */
+/* ---- CTAs ---- */
+/* Below-threshold action area holds the two configurable CTAs, stacked. */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2-c6dbf459);
+  width: 100%;
+  margin-top: var(--space-4-c6dbf459);
+}
+
 .cta {
   appearance: none;
   border: 0;
@@ -304,7 +350,12 @@
   box-shadow: var(--shadow-sm-c6dbf459);
   transition:
     filter var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459),
+    background var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459),
     transform var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+/* Buttons inside the stacked action area own their spacing via the flex gap. */
+.actions .cta {
+  margin-top: 0;
 }
 .cta:hover {
   filter: brightness(1.08);
@@ -316,6 +367,19 @@
   outline: 2px solid rgb(var(--accent));
   outline-offset: 2px;
 }
+
+/* Secondary CTA (link wallet): tonal, no hard line. Reads as a quieter step
+ * than the emerald primary, legible in both themes via on-surface tint. */
+.ctaSecondary {
+  background: rgba(var(--on-surface), 0.07);
+  color: rgb(var(--on-surface));
+  box-shadow: none;
+}
+.ctaSecondary:hover {
+  filter: none;
+  background: rgba(var(--on-surface), 0.12);
+}
+
 .ctaIcon {
   display: inline-flex;
 }
@@ -326,14 +390,14 @@
   .cta {
     transition: none;
   }
-  .seal,
   .ringGlow,
-  .loaderSpin,
-  .loaderMark {
+  .loaderArcSpin,
+  .loaderMark,
+  .cryptexGlyph,
+  .verifiedLine {
     animation: none;
   }
-  .seal {
-    transform: none;
-    opacity: 1;
+  .cryptexGlyph {
+    opacity: 0.6;
   }
 }

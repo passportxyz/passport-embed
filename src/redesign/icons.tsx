@@ -101,3 +101,46 @@ export const SparkIcon: React.FC<IconProps> = (p) => (
     <path d="M12 3v4M12 17v4M4.9 7.4l2.6 2.6M16.5 14l2.6 2.6M3 12h4M17 12h4M4.9 16.6l2.6-2.6M16.5 10l2.6-2.6" />
   </Svg>
 );
+
+/** Wallet (used for the link-wallet CTA + linked-wallet rows). */
+export const WalletIcon: React.FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M3 7.5A2.5 2.5 0 0 1 5.5 5H18a2 2 0 0 1 2 2v1H6a1.5 1.5 0 0 0 0 3H20a1 1 0 0 1 1 1v3a2 2 0 0 1-2 2H5.5A2.5 2.5 0 0 1 3 15.5z" />
+    <path d="M16.5 12.5h.01" />
+  </Svg>
+);
+
+/** Plus / add affordance (link additional wallet, add verifications). */
+export const PlusIcon: React.FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M12 5v14M5 12h14" />
+  </Svg>
+);
+
+/** Sign out. */
+export const LogoutIcon: React.FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
+    <path d="M10 17l-5-5 5-5M4 12h11" />
+  </Svg>
+);
+
+/** Switch accounts (two-way). */
+export const SwitchIcon: React.FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M4 8h13l-3-3M20 16H7l3 3" />
+  </Svg>
+);
+
+/**
+ * WaaP mark - the "Wallet as a Passport" account behind the passport. A small
+ * booklet/passport glyph with a quatrefoil-ish humanity dot, drawn on brand and
+ * legible in both themes (currentColor stroke). Not a crop of the full lockup.
+ */
+export const WaaPIcon: React.FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H17a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6.5A1.5 1.5 0 0 1 5 19.5z" />
+    <path d="M5 17h12" />
+    <circle cx="12" cy="9" r="2.4" />
+  </Svg>
+);

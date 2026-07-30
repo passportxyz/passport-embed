@@ -1,0 +1,50 @@
+/*
+ * Glass tooltip skin for the redesign (§ materials / tooltips-become-glass).
+ *
+ * Passed as `className` to the shared <Tooltip>, so it layers onto the tooltip's
+ * own `.tooltip` element WITHOUT editing the shipped Tooltip module (which the
+ * live widget still uses). Translucent + blurred material, soft, no hard border.
+ *
+ * Legibility first (§8, >=4.5:1): the tooltip floats over unknown host content,
+ * so a single translucent layer is not enough on its own. We stack a near-opaque
+ * surface SCRIM (0.9 of --surface) under the blur, so the text always sits on a
+ * strong, on-theme backdrop while the edges still read as glass. `--on-surface`
+ * over 0.9 `--surface` clears AA in both themes.
+ */
+.tip {
+  /* override the shipped solid surface + 1px border with glass */
+  background:
+    linear-gradient(rgba(var(--surface), 0.9), rgba(var(--surface), 0.9)),
+    rgba(var(--surface), 0.6) !important;
+  border: 0 !important;
+  color: rgb(var(--on-surface)) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  backdrop-filter: blur(14px) saturate(1.3);
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.22),
+    inset 0 0 0 1px rgba(var(--on-surface), 0.06) !important;
+  font-size: var(--font-size-sm-c6dbf459) !important;
+  font-weight: var(--weight-medium-c6dbf459);
+  line-height: var(--line-normal-c6dbf459) !important;
+  max-width: 240px !important;
+}
+
+/* The arrow is the tooltip's LAST child div (after the .content div). Reskin it
+ * to match the glass and drop its hard border, without reaching into the other
+ * module's hashed class name. */
+.tip > div:last-child {
+  background: rgba(var(--surface), 0.9) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Emphasis + the "tap to see how it's computed" tail read a touch quieter. */
+.tip b,
+.tip strong {
+  color: rgb(var(--on-surface));
+  font-weight: var(--weight-semibold-c6dbf459);
+}
+.tip em {
+  font-style: normal;
+  color: rgba(var(--on-surface), 0.72);
+}
