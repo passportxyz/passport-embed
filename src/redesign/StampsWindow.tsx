@@ -444,6 +444,10 @@ const FilterTabs: React.FC<{
       <button
         type="button"
         className={`${styles.filterSeg} ${value === f ? styles.filterSegOn : ""}`}
+        // The active segment is tinted by its semantic state colour (verified
+        // emerald / pending sky / expired grey / all neutral), so data-seg drives
+        // the active label colour in the CSS.
+        data-seg={f}
         aria-pressed={value === f}
         onClick={() => onSelect(f)}
       >

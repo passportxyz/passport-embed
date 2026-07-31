@@ -206,9 +206,17 @@
 /* Top filter: a subtle inline segmented control on the category bar. Tonal track,
  * an emerald-tinted active segment; no hard border. Sits on the right of the bar
  * so it costs no extra height in the fixed shell. */
+/* The filter is the ONLY control on its bar (it replaces the category summary on
+ * full, and the title + count on mini). Auto horizontal margins CENTER the lone
+ * segmented control in its flex row rather than leaving it hard against the left
+ * edge (founder review: the All / Verified / Pending / Expired control reads
+ * centered). Auto-margin is used instead of the parent's justify-content so it
+ * works regardless of how CSS Modules scope selectors. */
 .filter {
   flex: none;
   align-self: center;
+  margin-left: auto;
+  margin-right: auto;
   display: inline-flex;
   align-items: center;
   flex-wrap: nowrap;
@@ -245,10 +253,22 @@
   outline: 2px solid rgb(var(--accent));
   outline-offset: 2px;
 }
+/* Active segment: a raised surface chip. The LABEL is tinted by the segment's
+ * SEMANTIC color so the active lens reads its own state colour (the color system:
+ * verified emerald, pending sky, expired muted grey, all neutral). */
 .filterSegOn {
   background: rgb(var(--surface));
-  color: rgb(var(--accent));
+  color: rgb(var(--on-surface));
   box-shadow: var(--shadow-sm-c6dbf459);
+}
+.filterSegOn[data-seg="verified"] {
+  color: rgb(var(--accent));
+}
+.filterSegOn[data-seg="verifiable"] {
+  color: rgb(var(--pending));
+}
+.filterSegOn[data-seg="expired"] {
+  color: rgba(var(--on-surface), 0.55);
 }
 
 /* Press micro-interaction on the category tabs (hover + focus already above). */
@@ -332,13 +352,35 @@
   );
 }
 
-/* Mintable (verified, not notarized yet): an emerald outline invite. Emerald,
- * never gold. A soft ring lifts it above the calm off-chain medallion. */
+/* Mintable (verified, not notarized yet): a SKY-BLUE invitation, never emerald.
+ * Emerald is reserved for verified + minted only, so a mintable stamp must not
+ * read as an already-minted green one (founder review). The whole disc shifts to
+ * sky: a sky conic rim + a soft sky invite ring, lifting it above the calm
+ * off-chain medallion without ever looking "done". */
 .medallion[data-verified="true"][data-onchain="mintable"] {
+  background: conic-gradient(
+    from 210deg,
+    rgba(var(--pending), 0.3),
+    rgba(var(--pending), 0.85),
+    rgba(var(--pending), 0.35),
+    rgba(var(--pending), 0.8),
+    rgba(var(--pending), 0.3)
+  );
   box-shadow:
     var(--shadow-sm-c6dbf459),
     inset 0 1px 0 rgba(255, 255, 255, 0.25),
-    0 0 0 1.5px rgba(var(--accent), 0.45);
+    0 0 0 1.5px rgba(var(--pending), 0.55);
+}
+/* Mintable face: a calm FLAT sky tint (never the emerald "earned / done" fill),
+ * and never embossed (only a minted stamp is struck). Reads as "available to
+ * mint", an invitation, distinct from the emerald off-chain verified face. */
+.medallion[data-verified="true"][data-onchain="mintable"] .face {
+  background: linear-gradient(160deg, rgba(var(--pending), 0.2), rgba(var(--pending), 0.06));
+}
+/* Points stay on the sky invite disc, so the earned "+N" ribbon reads on sky. */
+.medallion[data-verified="true"][data-onchain="mintable"] .points {
+  background: rgb(var(--pending));
+  color: rgb(var(--on-pending));
 }
 
 /* Minted (notarized on-chain): the "special" state. A stronger emerald ring plus
@@ -386,20 +428,23 @@
     inset 0 1px 2px rgba(0, 0, 0, 0.28),
     inset 0 -1px 1px rgba(255, 255, 255, 0.2);
 }
-/* A clean official sheen sweeps ONCE on load for a minted stamp (a struck-coin
- * glint that says "freshly stamped"). Degrades to nothing under reduced motion. */
+/* A clean official sheen sweeps ONCE for a minted stamp (a struck-coin glint that
+ * says "freshly stamped"). It waits ~2.4s after mount so it reads as a gentle,
+ * deliberate settle rather than an instant flash, then sweeps softly once. Only a
+ * MINTED medallion gets it (unstamped medallions are flat, no glint). Degrades to
+ * nothing under reduced motion. */
 .medallion:not([data-expired="true"])[data-onchain="minted"][data-verified="true"] .face::after {
   content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(
     115deg,
-    transparent 34%,
-    rgba(255, 255, 255, 0.55) 50%,
-    transparent 66%
+    transparent 36%,
+    rgba(255, 255, 255, 0.42) 50%,
+    transparent 64%
   );
   transform: translateX(-130%);
-  animation: rdSheen 1.4s var(--ease-standard-c6dbf459) 0.25s 1;
+  animation: rdSheen 1.8s var(--ease-standard-c6dbf459) 2.4s 1;
   pointer-events: none;
 }
 @keyframes rdSheen {
@@ -493,10 +538,20 @@
 }
 .ringArc {
   fill: none;
-  stroke: rgb(var(--warn));
+  stroke: rgb(var(--expiring));
   stroke-width: 5;
   stroke-linecap: round;
   transition: stroke-dasharray var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459);
+  /* Animate-FILL on mount: the arc sweeps from empty up to its day-count value
+   * (set inline as the final stroke-dasharray), like a score ring filling. The
+   * keyframe only pins the FROM (empty), so the TO resolves to the inline value.
+   * Reduced motion shows the final arc immediately (rule below). */
+  animation: rdRingFill var(--motion-slow-c6dbf459) var(--ease-standard-c6dbf459) 0.15s 1 both;
+}
+@keyframes rdRingFill {
+  from {
+    stroke-dasharray: 0 100;
+  }
 }
 
 /* Corner tag: the top-right single slot when the state is time-sensitive. "Nd"
@@ -519,8 +574,8 @@
   box-shadow: 0 0 0 2px rgb(var(--surface));
 }
 .cornerTag[data-tone="soon"] {
-  color: rgb(var(--on-warn));
-  background: rgb(var(--warn));
+  color: rgb(var(--on-expiring));
+  background: rgb(var(--expiring));
 }
 .cornerTag[data-tone="expired"] {
   color: rgba(var(--on-surface), 0.72);
@@ -825,5 +880,9 @@
   .medallion[data-onchain="minted"] .face::after {
     animation: none;
     display: none;
+  }
+  /* The expiring ring shows its final value immediately, no fill sweep. */
+  .ringArc {
+    animation: none;
   }
 }
