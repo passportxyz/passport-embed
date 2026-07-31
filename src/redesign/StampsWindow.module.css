@@ -192,6 +192,61 @@
   white-space: nowrap;
 }
 
+/* Top filter: a subtle inline segmented control on the category bar. Tonal track,
+ * an emerald-tinted active segment; no hard border. Sits on the right of the bar
+ * so it costs no extra height in the fixed shell. */
+.filter {
+  flex: none;
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-pill-c6dbf459);
+  background: rgba(var(--on-surface), 0.06);
+}
+.filterSeg {
+  appearance: none;
+  border: 0;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill-c6dbf459);
+  background: transparent;
+  color: rgba(var(--on-surface), 0.6);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: var(--weight-semibold-c6dbf459);
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    color var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    transform var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.filterSeg:hover {
+  color: rgb(var(--on-surface));
+}
+.filterSeg:active {
+  transform: scale(0.96);
+}
+.filterSeg:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+.filterSegOn {
+  background: rgb(var(--surface));
+  color: rgb(var(--accent));
+  box-shadow: var(--shadow-sm-c6dbf459);
+}
+
+/* Press micro-interaction on the category tabs (hover + focus already above). */
+.tab:active {
+  transform: scale(0.97);
+}
+.badge:active {
+  transform: translateY(0) scale(0.97);
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -307,9 +362,20 @@
     radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.42), transparent 55%),
     linear-gradient(160deg, rgba(var(--accent), 0.24), rgba(var(--accent), 0.1));
 }
-/* Unverified reads quieter: the face art recedes so earned badges stand out. */
+/* Available (not verified): a GHOSTED OUTLINE, not a filled disc. Fill = verified
+ * (design-sop state system): the rim drops to a thin neutral ring, the face is a
+ * near-empty recess, and the glyph is muted, so scanning the grid reads lit
+ * (have) vs ghost (do not have) at a glance. */
+.medallion[data-verified="false"] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px rgba(var(--on-surface), 0.16);
+}
+.medallion[data-verified="false"] .face {
+  background: rgba(var(--on-surface), 0.02);
+  box-shadow: inset 0 0 0 1px rgba(var(--on-surface), 0.05);
+}
 .medallion[data-verified="false"] .glyph {
-  opacity: 0.6;
+  opacity: 0.55;
 }
 
 .glyph {
@@ -367,23 +433,59 @@
   height: 15px;
 }
 
-/* Expiring-soon dot: the ONLY amber on the medallion, a small indicator in the
- * SAME top-right corner as the minted badge (they never render together, so the
- * corner holds exactly one indicator and there is no top-left mark). No text; the
- * medallion tooltip and the drawer timer name the days. */
-.expiringDot {
+/* Expiring-soon validity ring: a thin amber ARC on the medallion rim, the ONLY
+ * amber on the medallion. Its length is the days left (Medallion sets the
+ * dasharray), so it visibly drains toward expiry. Drawn over the rim, under the
+ * corner tag; rotated so it starts at the top. */
+.ring {
   position: absolute;
-  top: -3px;
-  right: -3px;
-  width: 10px;
-  height: 10px;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  pointer-events: none;
+  overflow: visible;
+}
+.ringArc {
+  fill: none;
+  stroke: rgb(var(--warn));
+  stroke-width: 5;
+  stroke-linecap: round;
+  transition: stroke-dasharray var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459);
+}
+
+/* Corner tag: the top-right single slot when the state is time-sensitive. "Nd"
+ * (amber) names the days left for an expiring stamp; "Expired" (neutral) marks a
+ * lapsed one. It shares the corner with the minted link-chip (never both), so the
+ * medallion keeps exactly ONE indicator location and no top-left mark. A surface
+ * ring lifts it off the face so it always reads. */
+.cornerTag {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  padding: 1px 5px;
   border-radius: var(--radius-pill-c6dbf459);
-  background: rgb(var(--warn));
+  font-size: 10px;
+  font-weight: var(--weight-bold-c6dbf459);
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   box-shadow: 0 0 0 2px rgb(var(--surface));
 }
-.medallionSm .expiringDot {
-  width: 9px;
-  height: 9px;
+.cornerTag[data-tone="soon"] {
+  color: rgb(var(--on-warn));
+  background: rgb(var(--warn));
+}
+.cornerTag[data-tone="expired"] {
+  color: rgba(var(--on-surface), 0.72);
+  background: rgba(var(--on-surface), 0.16);
+}
+.medallionSm .cornerTag {
+  font-size: 9px;
+  padding: 0 4px;
+  top: -5px;
+  right: -5px;
 }
 
 /* Points chip: overlaps the medallion foot like a badge ribbon. Emerald when
@@ -406,6 +508,14 @@
   background: rgb(var(--accent));
   color: rgb(var(--on-accent));
   box-shadow: var(--shadow-sm-c6dbf459);
+}
+/* An expired stamp keeps its points visible but drops the earned emerald, so the
+ * whole medallion reads inactive (the corner already says "Expired"). */
+.medallion[data-expired="true"] .points,
+.points[data-expired="true"] {
+  background: rgba(var(--on-surface), 0.14);
+  color: rgba(var(--on-surface), 0.6);
+  box-shadow: none;
 }
 
 .name {
@@ -650,8 +760,17 @@
   .medallion,
   .cta,
   .pagerArrow,
-  .pagerDot {
+  .pagerDot,
+  .tab,
+  .filterSeg,
+  .ringArc {
     transition: none;
+  }
+  .badge:active,
+  .tab:active,
+  .filterSeg:active,
+  .cta:active {
+    transform: none;
   }
   .spin {
     animation: none;

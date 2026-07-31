@@ -140,6 +140,17 @@ const statusPhrase = (s: Stamp): string => {
 const stampLabel = (s: Stamp) =>
   `${s.name}. ${pointsPhrase(s)}. ${statusPhrase(s)}. Open stamp.`;
 
+/** The top filter's three lenses. `all` shows everything; the other two isolate
+ *  what is minted on chain / expiring soon in one tap (design-sop top filter). */
+type StampFilter = "all" | "onchain" | "expiring";
+
+/** Minted on chain (a verified, notarized stamp). */
+const isOnchain = (s: Stamp): boolean => s.verified && s.onchain === "minted";
+/** Expiring soon (inside the amber window), not already expired. */
+const isExpiring = (s: Stamp): boolean => formatExpiry(s.expirationDate)?.state === "soon";
+const matchesFilter = (s: Stamp, f: StampFilter): boolean =>
+  f === "all" ? true : f === "onchain" ? isOnchain(s) : isExpiring(s);
+
 /** Split a flat list into fixed-size pages. */
 const paginate = <T,>(items: T[], per: number): T[][] => {
   if (per <= 0) return [items];
@@ -213,14 +224,45 @@ export const Medallion: React.FC<MedallionProps> = ({
   const expiry = formatExpiry(stamp.expirationDate);
   const expired = expiry?.state === "expired";
   const soon = expiry?.state === "soon";
-  // Minted is the "special" state: a static emerald chain-link badge + glow ring.
+  // Minted is the "special" state: an emerald glow ring + the corner link-chip.
   const minted = stamp.verified && stamp.onchain === "minted" && !expired;
+  // Expiring ring: a thin amber arc whose LENGTH is the days left out of the
+  // 14-day "soon" window, so the arc visibly drains as the stamp nears expiry.
+  const arcPct = soon && expiry ? Math.max(6, Math.min(100, (expiry.days / 14) * 100)) : 0;
+
+  // The ONE top-right corner slot. Time-sensitive states win over the minted
+  // link-chip, so an expiring minted stamp surfaces the actionable day count while
+  // the drawer still carries its on-chain state. Never a top-left mark.
+  let corner: React.ReactNode = null;
+  if (showPip) {
+    if (soon && expiry) {
+      corner = (
+        <span className={styles.cornerTag} data-tone="soon" aria-hidden="true">
+          {expiry.short}
+        </span>
+      );
+    } else if (expired) {
+      corner = (
+        <span className={styles.cornerTag} data-tone="expired" aria-hidden="true">
+          Expired
+        </span>
+      );
+    } else if (minted) {
+      corner = (
+        <span className={styles.pip} aria-hidden="true">
+          <LinkIcon size={compact ? 8 : 9} strokeWidth={2} />
+        </span>
+      );
+    }
+  }
+
   return (
     <span
       className={`${styles.medallion} ${compact ? styles.medallionSm : ""}`}
       data-verified={stamp.verified ? "true" : "false"}
       data-onchain={stamp.onchain}
       data-expired={expired ? "true" : undefined}
+      data-soon={soon && !expired ? "true" : undefined}
       style={sizePx ? ({ "--rd-med": `${sizePx}px` } as React.CSSProperties) : undefined}
     >
       <span className={styles.face}>
@@ -228,18 +270,26 @@ export const Medallion: React.FC<MedallionProps> = ({
           {stamp.icon ?? <StarIcon size={compact ? 15 : 20} strokeWidth={1.6} />}
         </span>
       </span>
-      {/* Top-right corner = the ONE indicator slot. Minted shows the static
-          chain-link badge (the "notarized on chain" mark). Otherwise an expiring
-          stamp shows the amber dot in the same corner. They never both render, so
-          the corner is never crowded and there is no top-left indicator. */}
-      {showPip && minted ? (
-        <span className={styles.pip} aria-hidden="true">
-          <LinkIcon size={compact ? 8 : 9} strokeWidth={2} />
-        </span>
-      ) : showPip && soon && !expired ? (
-        <span className={styles.expiringDot} aria-hidden="true" />
+      {/* Expiring-soon validity ring: a thin amber arc drawn on the medallion rim.
+          The ONLY amber on the medallion; it pairs with the corner day count. */}
+      {soon && !expired ? (
+        <svg className={styles.ring} viewBox="0 0 100 100" aria-hidden="true">
+          <circle
+            className={styles.ringArc}
+            cx="50"
+            cy="50"
+            r="47"
+            pathLength={100}
+            strokeDasharray={`${arcPct} 100`}
+          />
+        </svg>
       ) : null}
-      {showPoints ? <span className={styles.points}>+{stamp.points}</span> : null}
+      {corner}
+      {showPoints ? (
+        <span className={styles.points} data-expired={expired ? "true" : undefined}>
+          +{stamp.points}
+        </span>
+      ) : null}
     </span>
   );
 };
@@ -377,6 +427,50 @@ const CategoryTabs: React.FC<{
 );
 
 /**
+ * Top filter (full only): a subtle segmented control that isolates what is minted
+ * on chain or expiring soon in one tap. Only the segments that have items render
+ * (All is always present), so it never offers an empty lens. Sits on the category
+ * bar row, so it costs no extra height in the fixed shell.
+ */
+const FilterTabs: React.FC<{
+  value: StampFilter;
+  onchainCount: number;
+  expiringCount: number;
+  onSelect: (f: StampFilter) => void;
+}> = ({ value, onchainCount, expiringCount, onSelect }) => (
+  <div className={styles.filter} role="group" aria-label="Filter stamps">
+    <button
+      type="button"
+      className={`${styles.filterSeg} ${value === "all" ? styles.filterSegOn : ""}`}
+      aria-pressed={value === "all"}
+      onClick={() => onSelect("all")}
+    >
+      All
+    </button>
+    {onchainCount > 0 ? (
+      <button
+        type="button"
+        className={`${styles.filterSeg} ${value === "onchain" ? styles.filterSegOn : ""}`}
+        aria-pressed={value === "onchain"}
+        onClick={() => onSelect("onchain")}
+      >
+        On-chain
+      </button>
+    ) : null}
+    {expiringCount > 0 ? (
+      <button
+        type="button"
+        className={`${styles.filterSeg} ${value === "expiring" ? styles.filterSegOn : ""}`}
+        aria-pressed={value === "expiring"}
+        onClick={() => onSelect("expiring")}
+      >
+        Expiring
+      </button>
+    ) : null}
+  </div>
+);
+
+/**
  * StampsWindow - the medallion catalog, rendered INSIDE PassportShell like the
  * Score window. Stamps are glass plaques navigated BY CATEGORY (a segmented
  * control at the top), and within a category paginated and never scrolled
@@ -409,22 +503,44 @@ export const StampsWindow: React.FC<StampsWindowProps> = ({
   // old flat pager split a single category across pages and mislabeled counts).
   const [active, setActive] = useState(initialActive);
   const [page, setPage] = useState(0);
+  // Top filter (full only): All / On-chain / Expiring. Resets with the category.
+  const [filter, setFilter] = useState<StampFilter>("all");
   const activeIndex = Math.min(active, Math.max(0, categories.length - 1));
   const selectCategory = (i: number) => {
     setActive(i);
     setPage(0);
+    setFilter("all");
   };
   // Keep the page valid if the active category or data shrinks under the cursor.
   useEffect(() => {
     setPage(0);
+    setFilter("all");
   }, [activeIndex]);
+  // Changing the filter narrows the set, so return to its first page.
+  useEffect(() => {
+    setPage(0);
+  }, [filter]);
 
   const verifiedCount = useMemo(() => stamps.filter((s) => s.verified).length, [stamps]);
 
   // full navigates a single category; mini flattens the whole list (no tabs) to
   // keep the half-size card to one short paged row.
   const activeGroup = categories[activeIndex];
-  const source = compact ? stamps : activeGroup ? activeGroup.stamps : [];
+  // The filter only earns its space when the active category actually has minted
+  // and / or expiring stamps to isolate; otherwise it stays hidden (subtle, only
+  // if it earns its space). Counts drive which segments render.
+  const onchainCount = useMemo(
+    () => (activeGroup ? activeGroup.stamps.filter(isOnchain).length : 0),
+    [activeGroup]
+  );
+  const expiringCount = useMemo(
+    () => (activeGroup ? activeGroup.stamps.filter(isExpiring).length : 0),
+    [activeGroup]
+  );
+  const showFilter = !compact && (onchainCount > 0 || expiringCount > 0);
+  const effectiveFilter = showFilter ? filter : "all";
+  const baseSource = compact ? stamps : activeGroup ? activeGroup.stamps : [];
+  const source = baseSource.filter((s) => matchesFilter(s, effectiveFilter));
   const pages = useMemo(() => paginate(source, per), [source, per]);
   const pageCount = pages.length;
   const current = Math.min(page, pageCount - 1);
@@ -556,9 +672,21 @@ export const StampsWindow: React.FC<StampsWindowProps> = ({
             </span>
             <span className={styles.catNameText}>{activeGroup.category}</span>
           </span>
-          <span className={styles.catSummary}>
-            {verifiedCount} of {stamps.length} verified
-          </span>
+          {/* The filter takes the right of the category bar when the category has
+              minted / expiring stamps to isolate; otherwise the plain overall
+              progress summary sits there. Either way the row height is the same. */}
+          {showFilter ? (
+            <FilterTabs
+              value={filter}
+              onchainCount={onchainCount}
+              expiringCount={expiringCount}
+              onSelect={setFilter}
+            />
+          ) : (
+            <span className={styles.catSummary}>
+              {verifiedCount} of {stamps.length} verified
+            </span>
+          )}
         </div>
       ) : null}
 
