@@ -101,16 +101,44 @@ const groupByCategory = (items: Stamp[]): Array<{ category: string; stamps: Stam
   return order.map((category) => ({ category, stamps: map.get(category)! }));
 };
 
+export type MedallionProps = {
+  /** The stamp whose face, on-chain pip, and points chip to render. */
+  stamp: Stamp;
+  /** Condensed ~half-size medallion (mini card). */
+  compact?: boolean;
+  /** Show the overlapping points chip. Default true. The drawer header carries
+   *  the total as its own text, so it renders the medallion WITHOUT the chip to
+   *  avoid stating the points twice (one carrier per signal). */
+  showPoints?: boolean;
+  /** Show the corner on-chain pip. Default true. The drawer header carries the
+   *  on-chain state in its status pill instead, so it drops the medallion pip. */
+  showPip?: boolean;
+  /** Override the diameter (px). Sets --rd-med inline (wins over the size rule). */
+  sizePx?: number;
+};
+
 /**
  * A single glass medallion: a rim + embossed face carrying the stamp icon, a
  * corner on-chain pip, and a points chip. Verified vs not is carried by the face
  * / rim tone; on-chain by the pip; points by the chip. One signal per meaning.
+ *
+ * Exported so the stamp detail drawer reuses the exact medallion look for its
+ * header (a shared primitive, not a duplicated treatment). The header passes
+ * showPoints/showPip false so the same on-chain + points signal is not stated
+ * twice (§ no redundancy).
  */
-const Medallion: React.FC<{ stamp: Stamp; compact?: boolean }> = ({ stamp, compact }) => (
+export const Medallion: React.FC<MedallionProps> = ({
+  stamp,
+  compact,
+  showPoints = true,
+  showPip = true,
+  sizePx,
+}) => (
   <span
     className={`${styles.medallion} ${compact ? styles.medallionSm : ""}`}
     data-verified={stamp.verified ? "true" : "false"}
     data-onchain={stamp.onchain}
+    style={sizePx ? ({ "--rd-med": `${sizePx}px` } as React.CSSProperties) : undefined}
   >
     <span className={styles.face}>
       <span className={styles.glyph} aria-hidden="true">
@@ -119,10 +147,12 @@ const Medallion: React.FC<{ stamp: Stamp; compact?: boolean }> = ({ stamp, compa
     </span>
     {/* On-chain pip: the ONE carrier of on-chain state. Glyph only when it relates
         to the chain (minted / mintable); "none" is a recessive muted disc. */}
-    <span className={styles.pip} aria-hidden="true">
-      {stamp.onchain === "none" ? null : <LinkIcon size={compact ? 8 : 9} strokeWidth={2} />}
-    </span>
-    <span className={styles.points}>+{stamp.points}</span>
+    {showPip ? (
+      <span className={styles.pip} aria-hidden="true">
+        {stamp.onchain === "none" ? null : <LinkIcon size={compact ? 8 : 9} strokeWidth={2} />}
+      </span>
+    ) : null}
+    {showPoints ? <span className={styles.points}>+{stamp.points}</span> : null}
   </span>
 );
 
