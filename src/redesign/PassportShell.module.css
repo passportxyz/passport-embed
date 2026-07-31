@@ -64,7 +64,19 @@
   }
 }
 
-/* ---- size variants: one standard shell height across states (§ structure) ---- */
+/* ---- size variants: one standard shell WIDTH and HEIGHT across states ------- */
+/* A fixed width per size variant so category switches, pagination, and state
+ * changes never resize the frame (the shell used to shrink-to-fit its content,
+ * so a longer name or a different page jiggled the width). max-width:100% keeps
+ * it responsive: it caps to the host on a narrower surface, but is otherwise
+ * pixel-stable at 300 regardless of what the window renders. */
+.full,
+.mini,
+.pill {
+  width: 300px;
+  max-width: 100%;
+}
+
 /* `full` gives the content region a FIXED height so the default score, account,
  * and drill-down states share one shell height AND so the window's bottom-pinned
  * action area lands the primary CTA at the same coordinates in every state. */
