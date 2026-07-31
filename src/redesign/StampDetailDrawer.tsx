@@ -1,8 +1,6 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./StampDetailDrawer.module.css";
-import glass from "./glassTip.module.css";
-import { Tooltip } from "../components/Tooltip";
-import { Medallion, type Stamp, type StampOnchain } from "./StampsWindow";
+import { Medallion, type Stamp } from "./StampsWindow";
 import {
   ArrowLeftIcon,
   CaretDownIcon,
@@ -13,7 +11,7 @@ import {
   PlusIcon,
   RetryIcon,
 } from "./icons";
-import { OptimismIcon } from "./stampIcons";
+import { OptimismMark } from "./stampIcons";
 import { deriveTints } from "./deriveTints";
 import { formatExpiry } from "./expiry";
 import { useAccentRgb } from "./hooks";
@@ -192,8 +190,6 @@ export type StampDetailDrawerProps = {
   verifiedLabel?: string;
   renewLabel?: string;
 
-  /** Override the on-chain status pill's glass tooltip copy. */
-  statusTooltip?: React.ReactNode;
   /**
    * Render the "Onchain credential" accordion expanded on first paint (Human ID
    * SBT / attestation stamps only, and only when `stamp.onchainCredential` is
@@ -203,18 +199,14 @@ export type StampDetailDrawerProps = {
   defaultOnchainOpen?: boolean;
 };
 
-const ONCHAIN_TIP: Record<StampOnchain, string> = {
-  minted: "This stamp is recorded on chain.",
-  mintable: "You can mint this stamp on chain to earn the reward.",
-  none: "This stamp lives off chain. Nothing is written on chain.",
-};
-
 /**
  * The header STATE pill: one word (or short phrase) that names the stamp's state,
  * matching the grid medallion's carrier so the two never disagree. Precedence puts
  * the time-sensitive states first, so an expiring minted stamp reads the actionable
  * "Expiring in Nd" while its onchain state is still carried by the drawer's onchain
- * block. `showLink` renders the chain-link dot only when the state IS an onchain one.
+ * block. `showLink` renders the chain-link dot only when the state IS an onchain
+ * one. No tooltip: the pill states the state in a word; the onchain block carries
+ * the credential detail, so each fact is stated exactly once (founder review).
  */
 type StatePill = {
   label: string;
@@ -222,37 +214,20 @@ type StatePill = {
    *  (amber), expired / none (neutral). */
   tone: "minted" | "mintable" | "verified" | "soon" | "expired" | "none";
   showLink: boolean;
-  tip: string;
 };
 
-const deriveStatePill = (
-  stamp: StampDetail,
-  expiry: ReturnType<typeof formatExpiry>,
-  override?: React.ReactNode
-): StatePill => {
-  const tipFor = (fallback: string): string =>
-    typeof override === "string" ? override : fallback;
-  if (expiry?.state === "expired") {
-    return { label: "Expired", tone: "expired", showLink: false, tip: tipFor("This stamp has expired. Renew it to keep the points.") };
-  }
-  if (expiry?.state === "soon") {
+const deriveStatePill = (stamp: StampDetail, expiry: ReturnType<typeof formatExpiry>): StatePill => {
+  if (expiry?.state === "expired") return { label: "Expired", tone: "expired", showLink: false };
+  if (expiry?.state === "soon")
     return {
       label: `Expiring in ${expiry.days}${expiry.days === 1 ? " day" : "d"}`,
       tone: "soon",
       showLink: false,
-      tip: tipFor(`${expiry.long}. Renew it to keep the points.`),
     };
-  }
-  if (!stamp.verified) {
-    return { label: "Not verified", tone: "none", showLink: false, tip: tipFor(ONCHAIN_TIP.none) };
-  }
-  if (stamp.onchain === "minted") {
-    return { label: "Minted", tone: "minted", showLink: true, tip: tipFor(ONCHAIN_TIP.minted) };
-  }
-  if (stamp.onchain === "mintable") {
-    return { label: "Mintable", tone: "mintable", showLink: true, tip: tipFor(ONCHAIN_TIP.mintable) };
-  }
-  return { label: "Verified", tone: "verified", showLink: false, tip: tipFor(ONCHAIN_TIP.none) };
+  if (!stamp.verified) return { label: "Not verified", tone: "none", showLink: false };
+  if (stamp.onchain === "minted") return { label: "Minted", tone: "minted", showLink: true };
+  if (stamp.onchain === "mintable") return { label: "Mintable", tone: "mintable", showLink: true };
+  return { label: "Verified", tone: "verified", showLink: false };
 };
 
 // Components fit within the expanded breakdown accordion, paginating (never
@@ -378,7 +353,6 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
   viewOnchainLabel,
   verifiedLabel,
   renewLabel,
-  statusTooltip,
   defaultOnchainOpen = false,
 }) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -459,9 +433,10 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
     }));
   }, [stamp.components, accent]);
 
-  // Every stamp expires as a whole. Rather than a long line at the top, the
-  // validity / renewal copy now lives in the header timer's tooltip. Human ID
-  // SBTs add the auto renew note.
+  // Every stamp expires as a whole. The expiring / expired states are named in
+  // the header state pill; the SBT stamps carry the exact Issued / Expires dates
+  // in the onchain block. There is no separate header clock (its tooltip was the
+  // kind of overuse this pass removes), so no standalone validity line here.
   const expiry = formatExpiry(stamp.expirationDate);
   const expired = expiry?.state === "expired";
 
@@ -475,17 +450,7 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
   const showRenew =
     Boolean(onRenew) && stamp.verified && action !== "claim" && !renewPrimary;
   const twoActions = showRenew || secondaryView;
-  const statePill = deriveStatePill(stamp, expiry, statusTooltip);
-  const renewNote = stamp.isHumanId
-    ? " Auto renews after 90 days, full reverification after a year."
-    : "";
-  const expiryLead = expiry
-    ? expiry.state === "expired"
-      ? "This stamp has expired."
-      : `${expiry.long}.`
-    : "";
-  const expiryTip = expiry ? `${expiryLead}${renewNote}` : null;
-  const expiryAria = expiry ? `Validity. ${expiryLead}${renewNote}` : "";
+  const statePill = deriveStatePill(stamp, expiry);
 
   const compact = size !== "full";
   const medallionPx = compact ? 40 : 42;
@@ -536,57 +501,32 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
         </div>
 
         {/* Header: clean medallion (no chip / pip, so points + on-chain are stated
-            once, below) + name + total points + on-chain status pill + a small
-            timer whose tooltip carries the whole-stamp validity / renewal copy, so
-            the long validity line no longer crowds the top. */}
+            once, below) + name + total points + on-chain state pill. The stamp's
+            state is carried HERE in one word; the exact dates + credential detail
+            live in the onchain block, so nothing repeats (founder review). */}
         <header className={styles.header}>
           <Medallion stamp={stamp} showPoints={false} showPip={false} sizePx={medallionPx} />
           <div className={styles.headMeta}>
             <h3 className={styles.name}>{stamp.name}</h3>
             <div className={styles.headSub}>
               {/* State pill: the ONE header carrier of the stamp's state, naming it
-                  in words (Minted / Mintable / Verified / Expiring in Nd / Expired)
-                  so it matches the grid medallion. Its glass tooltip carries the
-                  detail. */}
-              <Tooltip content={statePill.tip} placement="top" className={glass.tip}>
-                <span
-                  className={styles.statusPill}
-                  data-state={statePill.tone}
-                  tabIndex={0}
-                  role="button"
-                  aria-label={`${statePill.label}. ${statePill.tip}`}
-                >
-                  {statePill.showLink ? (
-                    <span className={styles.statusDot} aria-hidden="true">
-                      <LinkIcon size={9} strokeWidth={2} />
-                    </span>
-                  ) : null}
-                  <span className={styles.statusPillLabel}>{statePill.label}</span>
-                </span>
-              </Tooltip>
+                  in a word (Minted / Mintable / Verified / Expiring in Nd / Expired)
+                  so it matches the grid medallion. Plain, no tooltip. */}
+              <span
+                className={styles.statusPill}
+                data-state={statePill.tone}
+                aria-label={`State. ${statePill.label}.`}
+              >
+                {statePill.showLink ? (
+                  <span className={styles.statusDot} aria-hidden="true">
+                    <LinkIcon size={9} strokeWidth={2} />
+                  </span>
+                ) : null}
+                <span className={styles.statusPillLabel}>{statePill.label}</span>
+              </span>
               {/* Points, shown ONCE (the medallion drops its chip): a first-class
                   "+N points" pill. */}
               <span className={styles.headPoints}>+{earned} points</span>
-              {/* Timer: the validity affordance for a VALID stamp, whose state pill
-                  says nothing about time. Its tooltip carries "Valid for N days".
-                  For an expiring / expired stamp the state pill already names the
-                  timeframe ("Expiring in Nd" / "Expired") and its own tooltip
-                  carries the detail, so the standalone clock is dropped there (no
-                  redundant icon, and the three-item header row never overflows the
-                  shell edge at 300px, both themes). */}
-              {expiry && expiry.state === "valid" ? (
-                <Tooltip content={expiryTip} placement="top" className={glass.tip}>
-                  <span
-                    className={styles.timer}
-                    data-state={expiry.state}
-                    tabIndex={0}
-                    role="button"
-                    aria-label={expiryAria}
-                  >
-                    <ClockIcon size={14} strokeWidth={1.9} />
-                  </span>
-                </Tooltip>
-              ) : null}
             </div>
           </div>
         </header>
@@ -654,11 +594,12 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
         ) : null}
 
         {/* Onchain credential accordion (Human ID SBT / attestation stamps only).
-            One coherent section: protocol + chain (with the Optimism mark), a
-            compact Issued / Expires line, the verified issuer as a named on-chain
-            identity with a view link, the credential type, revocation status, and
-            a protocol-accurate "View on chain" / "View on Sign Protocol" link. All
-            non-PII (see StampDetail.onchainCredential). */}
+            A CANONICAL label:value layout (not a scattered pile): one aligned
+            column of rows for the credential facts, then the privacy note, then
+            all the view actions grouped in one place, then the ZK trust tag. The
+            stamp STATE (Minted / Valid) is NOT restated here; the header pill owns
+            it. This block owns the details: network, protocol, dates, issuer,
+            revocation. All non-PII (see StampDetail.onchainCredential). */}
         {oc ? (
           <div className={styles.section}>
             <button
@@ -675,166 +616,124 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
             </button>
             {onchainOpen ? (
               <div className={styles.ocBody}>
-                {/* Protocol + chain led by the Optimism mark (never the word alone),
-                    with the Valid / Revoked status on the same row so the block
-                    stays compact and fits the fixed drawer height. Both the SBT and
-                    the Sign Protocol attestation live on Optimism (chain id 10). */}
-                <div className={styles.ocProtocol}>
-                  <span className={styles.ocChain} aria-hidden="true">
-                    <OptimismIcon size={14} />
-                  </span>
-                  <span className={styles.ocProtocolText}>
-                    {oc.protocol === "sbt" ? `Onchain SBT · ${oc.chain}` : `Sign Protocol · ${oc.chain}`}
-                  </span>
-                  <span className={styles.ocStatus} data-revoked={oc.revoked ? "true" : "false"}>
-                    {oc.revoked ? "Revoked" : "Valid"}
-                  </span>
-                </div>
+                {/* One aligned column of label:value rows. Consistent Key on the
+                    left, value on the right, so the block reads as an organised
+                    record, not scattered icons. */}
+                <dl className={styles.ocGrid}>
+                  {/* Network, led by the REAL Optimism mark in brand red (the chain
+                      logo is the brand-color exception to monochrome, §7.5). Both
+                      the SBT and the Sign Protocol attestation live on Optimism. */}
+                  <div className={styles.ocItem}>
+                    <dt className={styles.ocKey}>Network</dt>
+                    <dd className={styles.ocVal}>
+                      <span className={styles.ocChain} aria-hidden="true">
+                        <OptimismMark size={14} />
+                      </span>
+                      {oc.chain}
+                    </dd>
+                  </div>
+                  {/* Protocol: what KIND of on-chain record this is. Stated once
+                      here, not duplicated by the header's "Minted". */}
+                  <div className={styles.ocItem}>
+                    <dt className={styles.ocKey}>Protocol</dt>
+                    <dd className={styles.ocVal}>{oc.protocol === "sbt" ? "Onchain SBT" : "Sign Protocol"}</dd>
+                  </div>
+                  {oc.issued ? (
+                    <div className={styles.ocItem}>
+                      <dt className={styles.ocKey}>Issued</dt>
+                      <dd className={styles.ocVal}>{oc.issued}</dd>
+                    </div>
+                  ) : null}
+                  {oc.expires ? (
+                    <div className={styles.ocItem}>
+                      <dt className={styles.ocKey}>Expires</dt>
+                      <dd className={styles.ocVal}>{oc.expires}</dd>
+                    </div>
+                  ) : null}
+                  {/* Verified issuer: a named on-chain identity (human.tech) with a
+                      small check + a view link, never a raw hex address. */}
+                  <div className={styles.ocItem}>
+                    <dt className={styles.ocKey}>Issuer</dt>
+                    <dd className={styles.ocVal}>
+                      {oc.issuerUrl ? (
+                        <a className={styles.ocIssuer} href={oc.issuerUrl} target="_blank" rel="noreferrer noopener">
+                          <span className={styles.ocVerifiedMark} aria-hidden="true">
+                            <CheckIcon size={9} strokeWidth={2.8} />
+                          </span>
+                          {oc.issuer}
+                        </a>
+                      ) : (
+                        <span className={styles.ocIssuer}>
+                          <span className={styles.ocVerifiedMark} aria-hidden="true">
+                            <CheckIcon size={9} strokeWidth={2.8} />
+                          </span>
+                          {oc.issuer}
+                        </span>
+                      )}
+                    </dd>
+                  </div>
+                  {/* A healthy credential is not labelled "Valid" here (the header
+                      pill owns the state, no repeat). Revocation is the exception,
+                      and it is stated once by the revoke band below (which leads
+                      with "Revoked on {date}"), so there is no separate Status row. */}
+                </dl>
 
-                {/* Issued / Expires on ONE compact line (keeps the block short so it
-                    fits the fixed drawer height). The Credential type is not restated
-                    here (the drawer header already names it once). */}
-                {oc.issued || oc.expires ? (
-                  <p className={styles.ocLine}>
-                    {oc.issued ? `Issued ${oc.issued}` : ""}
-                    {oc.issued && oc.expires ? " · " : ""}
-                    {oc.expires ? `Expires ${oc.expires}` : ""}
-                  </p>
+                {/* Clean Hands privacy note (default valid state). Identity held
+                    encrypted; disclosure is rule-based, gated by pre-committed
+                    on-chain conditions. Steps aside once revoked. */}
+                {oc.protocol === "sign" && !oc.revoked ? (
+                  <p className={styles.ocLine}>Identity encrypted to the Human Network.</p>
                 ) : null}
 
-                {/* Verified issuer: a named on-chain identity (human.tech) with a
-                    small check + a view link, never a raw hex address. */}
-                <p className={styles.ocLine}>
-                  Verified issuer.{" "}
-                  {oc.issuerUrl ? (
-                    <a
-                      className={styles.ocIssuer}
-                      href={oc.issuerUrl}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                    >
-                      <span className={styles.ocVerifiedMark} aria-hidden="true">
-                        <CheckIcon size={9} strokeWidth={2.8} />
-                      </span>
-                      {oc.issuer}
-                    </a>
-                  ) : (
-                    <span className={styles.ocIssuer}>
-                      <span className={styles.ocVerifiedMark} aria-hidden="true">
-                        <CheckIcon size={9} strokeWidth={2.8} />
-                      </span>
-                      {oc.issuer}
-                    </span>
-                  )}
-                </p>
-
-                {/* Revocation is the ONE real per-user observable state change (the
-                    SDK exposes no decryption signal, so there is no "decrypted"
-                    state). When revoked, show when + why + a link to the revoke
-                    transaction. */}
+                {/* Revocation detail (only when revoked): when + why + a link to the
+                    revoke transaction, grouped in a tonal band. */}
                 {oc.revoked ? (
                   <div className={styles.ocRevoke}>
-                    {oc.revokedAt ? (
-                      <p className={styles.ocLine}>Revoked on {oc.revokedAt}.</p>
-                    ) : null}
-                    {oc.revokeReason ? (
-                      <p className={styles.ocLine}>Reason. {oc.revokeReason}</p>
-                    ) : null}
+                    {oc.revokedAt ? <p className={styles.ocLine}>Revoked on {oc.revokedAt}.</p> : null}
+                    {oc.revokeReason ? <p className={styles.ocLine}>Reason. {oc.revokeReason}</p> : null}
                     {oc.revokeTxUrl ? (
-                      <a
-                        className={styles.ocView}
-                        href={oc.revokeTxUrl}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                      >
-                        <LinkIcon size={13} strokeWidth={1.9} />
+                      <a className={styles.ocView} href={oc.revokeTxUrl} target="_blank" rel="noreferrer noopener">
+                        <ExternalLinkIcon size={13} strokeWidth={1.9} />
                         View revoke transaction
                       </a>
                     ) : null}
                   </div>
                 ) : null}
 
-                {/* Clean Hands privacy line, on its OWN line under the status row.
-                    The identity is held encrypted; disclosure is rule-based, gated
-                    by pre-committed on-chain conditions (that gate is real and
-                    linkable, the raw decryption is not). Never "nothing is stored"
-                    and never "no single party can decrypt". This describes the
-                    DEFAULT valid state, so it steps aside once revoked (the revoke
-                    detail above is then the focus). */}
-                {oc.protocol === "sign" && !oc.revoked ? (
-                  <div className={styles.ocPrivacy}>
-                    <p className={styles.ocLine}>Identity encrypted to the Human Network.</p>
-                    {oc.disclosureUrl ? (
-                      <a
-                        className={styles.ocView}
-                        href={oc.disclosureUrl}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                      >
-                        <LinkIcon size={13} strokeWidth={1.9} />
-                        Disclosure only under pre-committed on-chain conditions
-                      </a>
-                    ) : null}
-                  </div>
-                ) : null}
-
-                {/* Trust tags + view affordances on ONE compact row (tasteful,
-                    non-PII), so the block fits the fixed drawer height. The
-                    "Proven with VOLE-based ZK" tag reads in words (its tooltip
-                    carries the provenance); the two view affordances are compact
-                    glass-tooltip icon links, DISTINCT from each other: a "View
-                    transaction" link from the transactionHash and the contract /
-                    attestation link. The user address and the nullifier are still
-                    never rendered. */}
-                <div className={styles.ocTags}>
-                  {oc.zkProof && !oc.revoked ? (
-                    <Tooltip content={oc.zkProof} placement="top" className={glass.tip}>
-                      <span
-                        className={styles.ocTag}
-                        tabIndex={0}
-                        role="button"
-                        aria-label={`Proven with VOLE-based zero knowledge. ${oc.zkProof}`}
-                      >
-                        <span className={styles.ocTagDot} aria-hidden="true">
-                          <CheckIcon size={9} strokeWidth={2.8} />
-                        </span>
-                        Proven with VOLE-based ZK
-                      </span>
-                    </Tooltip>
+                {/* All view actions GROUPED in one place: labeled text links, not
+                    scattered icon-only buttons with tooltips. Each names itself, so
+                    no tooltip is needed. */}
+                <div className={styles.ocActions}>
+                  {oc.explorerUrl ? (
+                    <a className={styles.ocView} href={oc.explorerUrl} target="_blank" rel="noreferrer noopener">
+                      <LinkIcon size={13} strokeWidth={1.9} />
+                      {oc.protocol === "sign" ? "View on Sign Protocol" : "View on chain"}
+                    </a>
                   ) : null}
-                  <span className={styles.ocViewGroup}>
-                    {oc.txUrl ? (
-                      <Tooltip content="View transaction" placement="top" className={glass.tip}>
-                        <a
-                          className={styles.ocIconLink}
-                          href={oc.txUrl}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                          aria-label="View transaction"
-                        >
-                          <ExternalLinkIcon size={14} strokeWidth={1.9} />
-                        </a>
-                      </Tooltip>
-                    ) : null}
-                    {oc.explorerUrl ? (
-                      <Tooltip
-                        content={oc.protocol === "sign" ? "View on Sign Protocol" : "View on chain"}
-                        placement="top"
-                        className={glass.tip}
-                      >
-                        <a
-                          className={styles.ocIconLink}
-                          href={oc.explorerUrl}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                          aria-label={oc.protocol === "sign" ? "View on Sign Protocol" : "View on chain"}
-                        >
-                          <LinkIcon size={14} strokeWidth={1.9} />
-                        </a>
-                      </Tooltip>
-                    ) : null}
-                  </span>
+                  {oc.txUrl ? (
+                    <a className={styles.ocView} href={oc.txUrl} target="_blank" rel="noreferrer noopener">
+                      <ExternalLinkIcon size={13} strokeWidth={1.9} />
+                      View transaction
+                    </a>
+                  ) : null}
+                  {oc.protocol === "sign" && !oc.revoked && oc.disclosureUrl ? (
+                    <a className={styles.ocView} href={oc.disclosureUrl} target="_blank" rel="noreferrer noopener">
+                      <LinkIcon size={13} strokeWidth={1.9} />
+                      Disclosure conditions
+                    </a>
+                  ) : null}
                 </div>
+
+                {/* Trust tag: reads in words, no tooltip (the provenance detail is
+                    not essential to the glance). */}
+                {oc.zkProof && !oc.revoked ? (
+                  <span className={styles.ocTag}>
+                    <span className={styles.ocTagDot} aria-hidden="true">
+                      <CheckIcon size={9} strokeWidth={2.8} />
+                    </span>
+                    Proven with VOLE-based ZK
+                  </span>
+                ) : null}
               </div>
             ) : null}
           </div>

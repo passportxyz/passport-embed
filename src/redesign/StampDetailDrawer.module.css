@@ -636,7 +636,7 @@
 }
 .ocItem {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-3-c6dbf459);
   min-width: 0;
@@ -650,12 +650,14 @@
 .ocVal {
   margin: 0;
   min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
   font-size: var(--font-size-xs-c6dbf459);
   font-weight: var(--weight-medium-c6dbf459);
   color: rgb(var(--on-surface));
   font-variant-numeric: tabular-nums;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 /* Not revoked reads positive (emerald); revoked reads as a warn state. */
@@ -719,8 +721,9 @@ a.ocIssuer:focus-visible {
 .ocRevoke {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: var(--space-1-c6dbf459) var(--space-2-c6dbf459);
+  gap: 2px;
+  margin-top: var(--space-1-c6dbf459);
+  padding: 6px var(--space-2-c6dbf459);
   border-radius: var(--radius-md-c6dbf459);
   background: rgba(var(--warn), 0.1);
 }
@@ -736,20 +739,18 @@ a.ocIssuer:focus-visible {
   gap: 2px;
 }
 
-/* Trust tags row: the VOLE-based ZK tag (left) + compact view-affordance icon
- * links (right), on one compact row so the block fits the fixed drawer height. */
-.ocTags {
+/* All view actions grouped in ONE row: labeled text links (View on chain / View
+ * transaction / Disclosure conditions), never icon-only buttons with tooltips.
+ * Wraps if they do not fit; a small top margin separates it from the record. */
+.ocActions {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
-  gap: var(--space-1-c6dbf459) var(--space-2-c6dbf459);
-}
-/* The view affordances (transaction / contract) cluster to the right. */
-.ocViewGroup {
-  display: inline-flex;
   align-items: center;
-  gap: var(--space-1-c6dbf459);
-  margin-left: auto;
+  gap: var(--space-1-c6dbf459) var(--space-3-c6dbf459);
+  margin-top: var(--space-1-c6dbf459);
+}
+.ocActions .ocView {
+  margin-top: 0;
 }
 /* Compact icon link: a distinct, tappable glass-tooltip affordance. A >=40px hit
  * area (a11y §8) is provided by the invisible ::before, the visual is 26px. */
@@ -779,7 +780,10 @@ a.ocIssuer:focus-visible {
   outline: 2px solid rgb(var(--accent));
   outline-offset: 2px;
 }
+/* Static trust tag (no tooltip): reads in words on one line. */
 .ocTag {
+  align-self: flex-start;
+  margin-top: var(--space-1-c6dbf459);
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -789,12 +793,7 @@ a.ocIssuer:focus-visible {
   font-weight: var(--weight-semibold-c6dbf459);
   color: rgb(var(--accent));
   background: rgba(var(--accent), 0.1);
-  cursor: help;
   white-space: nowrap;
-}
-.ocTag:focus-visible {
-  outline: 2px solid rgb(var(--accent));
-  outline-offset: 2px;
 }
 .ocTagDot {
   width: 14px;

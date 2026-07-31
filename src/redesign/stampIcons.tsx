@@ -341,6 +341,25 @@ export const OptimismIcon: React.FC<IconProps> = ({ size = 14 }) => (
   </svg>
 );
 
+/**
+ * Optimism (OP Mainnet) BRAND mark, in the real Optimism red (#FF0420) with the
+ * white "op" wordmark. Chain logos are the brand-color exception to the
+ * monochrome icon rule (design-sop §7.5): the recognizable red disc reads as
+ * Optimism on ANY surface, so this replaces the unrecognizable monochrome dot
+ * next to the chain label. The white letterforms are drawn on top of the red
+ * disc (not knocked out), so it paints reliably at the small chain size.
+ */
+export const OptimismMark: React.FC<IconProps> = ({ size = 14 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+    <circle cx="12" cy="12" r="11" fill="#FF0420" />
+    {/* "o" */}
+    <circle cx="8.6" cy="12.4" r="2.5" fill="none" stroke="#fff" strokeWidth="1.7" />
+    {/* "p": bowl + descender stem */}
+    <circle cx="15" cy="11.9" r="2.4" fill="none" stroke="#fff" strokeWidth="1.7" />
+    <path d="M12.6 12.1v4.4" stroke="#fff" strokeWidth="1.7" strokeLinecap="round" />
+  </svg>
+);
+
 /* ---- category icons (the real BASE_PLATFORM_CATEGORIES glyphs, currentColor) ---- */
 
 const catSvg = (children: React.ReactNode, size: number) => (
