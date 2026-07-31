@@ -2,13 +2,14 @@ import type { Meta, StoryObj } from "@storybook/react";
 import React from "react";
 import { StampsWindow } from "./StampsWindow";
 import { PassportShell } from "./PassportShell";
-import { ThemePair, SAMPLE_ACCOUNT, SAMPLE_MEDALLION_STAMPS, SAMPLE_MEDALLION_STAMPS_PAGED } from "./storyFrame";
+import { ThemePair, SAMPLE_ACCOUNT, SAMPLE_MEDALLION_STAMPS } from "./storyFrame";
 
 /**
- * StampsWindow - stamps as glass medallion plaques, grouped by category and
- * paginated (never scrolled), composed inside the shell so the overlay rules
- * (nothing outside the shell, no scrollbar, badges read as medallions) are
- * visible. Both themes, no network.
+ * StampsWindow - the real Human Passport catalog as glass medallion plaques,
+ * navigated BY CATEGORY (a segmented control of the real Passport categories),
+ * paginated within a category and never scrolled. Composed inside the shell so
+ * the overlay rules (nothing outside the shell, no scrollbar, real SVG icons,
+ * persistent score in the chrome) are visible. Both themes, no network.
  */
 const meta: Meta<typeof StampsWindow> = {
   title: "Redesign/Stamps Window",
@@ -18,41 +19,38 @@ const meta: Meta<typeof StampsWindow> = {
 export default meta;
 type Story = StoryObj<typeof StampsWindow>;
 
+// The shell carries the persistent compact score (top-left) on every window.
 const inShell = (node: React.ReactNode, size?: "full" | "mini" | "pill") => (
   <ThemePair>
-    <PassportShell account={SAMPLE_ACCOUNT} size={size}>
+    <PassportShell account={SAMPLE_ACCOUNT} size={size} score={24} threshold={20} onScoreClick={() => undefined}>
       {node}
     </PassportShell>
   </ThemePair>
 );
 
 export const FullGrid: Story = {
-  name: "Stamps / Full grid",
+  name: "Stamps / Full grid (category nav)",
   render: () =>
     inShell(
-      <StampsWindow
-        stamps={SAMPLE_MEDALLION_STAMPS}
-        pageSize={6}
-        onSelectStamp={() => undefined}
-        onVerify={() => undefined}
-      />
+      <StampsWindow stamps={SAMPLE_MEDALLION_STAMPS} onSelectStamp={() => undefined} onVerify={() => undefined} />
     ),
   parameters: {
     docs: {
       description: {
         story:
-          "The medallion catalog: a mix of verified and unverified stamps, minted and mintable and off-chain. Each stamp is a glass badge with a conic rim, an embossed face, a points chip, and a corner on-chain pip (emerald minted, gold mintable, muted off-chain). Stamps group under tonal category headers. Tapping a badge fires onSelectStamp (the detail drawer is a later slice). A bottom-pinned emerald verify CTA matches the Score window's primary action.",
+          "The real catalog, navigated by category. The segmented control at the top carries the three real Passport categories (Physical Verification, Blockchain Networks and Activities, Web2 Platforms & Services), each with a verified/total count; the active category name shows below it. Each stamp is a glass medallion with its real platform icon (currentColor, so it adapts to both themes), a points chip, a corner on-chain pip (emerald minted, gold mintable, muted off-chain), and a compact expiry chip. The persistent compact score sits in the shell chrome, top-left.",
       },
     },
   },
 };
 
 export const Paginated: Story = {
-  name: "Stamps / Paginated (two pages)",
+  name: "Stamps / Within-category pagination",
   render: () =>
     inShell(
       <StampsWindow
-        stamps={SAMPLE_MEDALLION_STAMPS_PAGED}
+        stamps={SAMPLE_MEDALLION_STAMPS}
+        initialCategory="Blockchain Networks and Activities"
         onSelectStamp={() => undefined}
         onVerify={() => undefined}
       />
@@ -61,7 +59,28 @@ export const Paginated: Story = {
     docs: {
       description: {
         story:
-          "Ten stamps spill past one page, so the window paginates with dots and arrows. There is no scrollbar (an absolute SOP rule): overflow is split across pages, never scrolled. Each page regroups its own stamps under category headers.",
+          "The Blockchain category holds twelve stamps, so it spills past one page and paginates with dots and arrows WITHIN the category. There is no scrollbar (an absolute SOP rule): overflow is split across pages, never scrolled. Switching category resets to its first page.",
+      },
+    },
+  },
+};
+
+export const Expired: Story = {
+  name: "Stamps / Expiring and expired",
+  render: () =>
+    inShell(
+      <StampsWindow
+        stamps={SAMPLE_MEDALLION_STAMPS}
+        initialCategory="Blockchain Networks and Activities"
+        onSelectStamp={() => undefined}
+        onVerify={() => undefined}
+      />
+    ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "Expiry reads on the grid. Each stamp shows a compact expiry chip: neutral days remaining when healthy, amber when expiring soon, and an expired stamp (here the NFT credential) desaturates and reads Expired. Every stamp expires as a whole; the drawer states the full 'Valid for N days' / 'Expires {date}' / 'Expired' copy.",
       },
     },
   },
@@ -88,7 +107,7 @@ export const Mini: Story = {
     docs: {
       description: {
         story:
-          "The condensed half-size card: smaller medallions, one row per page, category headers dropped to save space. It shares the shell's fixed mini height.",
+          "The condensed half-size card: smaller medallions with their real icons, one flat paged row, category tabs dropped to save space. It shares the shell's fixed mini height and keeps the persistent score.",
       },
     },
   },
@@ -96,11 +115,7 @@ export const Mini: Story = {
 
 export const Pill: Story = {
   name: "Stamps / Pill",
-  render: () =>
-    inShell(
-      <StampsWindow stamps={SAMPLE_MEDALLION_STAMPS} onVerify={() => undefined} size="pill" />,
-      "pill"
-    ),
+  render: () => inShell(<StampsWindow stamps={SAMPLE_MEDALLION_STAMPS} onVerify={() => undefined} size="pill" />, "pill"),
   parameters: {
     docs: {
       description: {

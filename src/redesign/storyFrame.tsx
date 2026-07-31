@@ -1,7 +1,10 @@
 import React from "react";
 import { Widget, PassportWidgetTheme } from "../widgets/Widget";
 import { DarkTheme, LightTheme } from "../utils/themes";
-import type { StampDetail } from "./StampDetailDrawer";
+import type { Stamp } from "./StampsWindow";
+import type { StampComponent, StampDetail } from "./StampDetailDrawer";
+import { STAMP_ICONS } from "./stampIcons";
+import { daysFromNow } from "./expiry";
 
 /**
  * Story-only harness. Renders the redesign components inside the REAL widget
@@ -118,167 +121,410 @@ export const SAMPLE_STAMPS = [
   { id: "onchain", label: "On-chain", points: 3 },
 ];
 
-// Medallion-stamp sample data for the Stamps window. A mix of verified /
-// unverified and minted / mintable / off-chain so every face state is visible.
-// Two categories (three each) so it reads as a full grid on one page. Icons are
-// plain emoji (valid ReactNode) so the stories need no asset pipeline.
-export const SAMPLE_MEDALLION_STAMPS = [
-  { id: "gov-id", name: "Government ID", category: "Identity", points: 6, verified: true, onchain: "minted" as const, icon: "🪪" },
-  { id: "clean-hands", name: "Clean Hands", category: "Identity", points: 5, verified: true, onchain: "mintable" as const, icon: "🤝" },
-  { id: "phone", name: "Phone", category: "Identity", points: 2, verified: false, onchain: "none" as const, icon: "📱" },
-  { id: "github", name: "GitHub", category: "Social", points: 3, verified: true, onchain: "none" as const, icon: "🐙" },
-  { id: "discord", name: "Discord", category: "Social", points: 1, verified: false, onchain: "none" as const, icon: "💬" },
-  { id: "x-social", name: "X", category: "Social", points: 1, verified: false, onchain: "none" as const, icon: "✖️" },
-];
+// Verbatim Passport category names (from usePlatforms.tsx BASE_PLATFORM_CATEGORIES).
+const CAT_PHYSICAL = "Physical Verification";
+const CAT_CHAIN = "Blockchain Networks and Activities";
+const CAT_WEB2 = "Web2 Platforms & Services";
 
-// A larger catalog that spills past one page (>6), so pagination shows two pages
-// with dots + arrows and the "never scrolled" rule is visible.
-export const SAMPLE_MEDALLION_STAMPS_PAGED = [
-  { id: "gov-id", name: "Government ID", category: "Identity", points: 6, verified: true, onchain: "minted" as const, icon: "🪪" },
-  { id: "clean-hands", name: "Clean Hands", category: "Identity", points: 5, verified: true, onchain: "mintable" as const, icon: "🤝" },
-  { id: "phone", name: "Phone", category: "Identity", points: 2, verified: false, onchain: "none" as const, icon: "📱" },
-  { id: "biometric", name: "Biometric", category: "Biometrics", points: 5, verified: true, onchain: "minted" as const, icon: "🫆" },
-  { id: "face-scan", name: "Face scan", category: "Biometrics", points: 4, verified: false, onchain: "none" as const, icon: "🙂" },
-  { id: "github", name: "GitHub", category: "Social", points: 3, verified: true, onchain: "none" as const, icon: "🐙" },
-  { id: "discord", name: "Discord", category: "Social", points: 1, verified: false, onchain: "none" as const, icon: "💬" },
-  { id: "linkedin", name: "LinkedIn", category: "Social", points: 2, verified: false, onchain: "none" as const, icon: "🔗" },
-  { id: "eth-activity", name: "Ethereum activity", category: "On-chain activity", points: 4, verified: true, onchain: "mintable" as const, icon: "⟠" },
-  { id: "gitcoin", name: "Gitcoin", category: "On-chain activity", points: 3, verified: false, onchain: "none" as const, icon: "🌱" },
-];
-
-// Stamp-detail (drawer) sample data, keyed by the medallion stamp id so a Stamps
-// window story can open the drawer for whichever medallion is tapped. Each detail
-// extends its medallion stamp with the components used to score it (verified ones
-// sum to the header total) and a plain description. A spread of states so every
-// action is visible: minted (View on chain), mintable (Mint reward), unverified
-// (Claim), off-chain verified (Verified / done), and a 6-component paginated case.
-export const SAMPLE_STAMP_DETAILS: Record<string, StampDetail> = {
-  // Verified + minted -> View on chain. Three verified components summing to 6.
-  "gov-id": {
-    id: "gov-id",
+/**
+ * The REAL Human Passport stamp catalog for the redesign stories. Names, weights,
+ * categories, and icons all come from passportxyz/passport (platform Providers
+ * config + BASE_PLATFORM_CATEGORIES). `id` is the platform id; `icon` is the real
+ * platform SVG (currentColor). A spread of states so every face + navigation reads:
+ * verified / unverified, minted / mintable / off-chain, valid / expiring-soon /
+ * expired. `expirationDate` is present on verified stamps (a stamp expires as a
+ * whole; default lifetime is 90 days). `isHumanId` flags the SBT stamps.
+ */
+export const SAMPLE_MEDALLION_STAMPS: Stamp[] = [
+  // ---- Physical Verification ----
+  {
+    id: "HumanIdKyc",
     name: "Government ID",
-    category: "Identity",
-    points: 6,
+    category: CAT_PHYSICAL,
+    points: 16,
     verified: true,
     onchain: "minted",
-    icon: "🪪",
-    description: "Proof that a government issued ID checked out, without revealing the document.",
-    components: [
-      { name: "Document authenticity", points: 3, verified: true, expiry: "Renews Mar 2027", icon: "📄" },
-      { name: "Liveness check", points: 2, verified: true, icon: "🙂" },
-      { name: "Name match", points: 1, verified: true, icon: "🔤" },
-    ],
+    icon: STAMP_ICONS.HumanIdKyc,
+    isHumanId: true,
+    expirationDate: daysFromNow(78),
   },
-
-  // Verified + mintable -> Mint reward (gold CTA). This is the Clean Hands SBT.
-  "clean-hands": {
-    id: "clean-hands",
-    name: "Clean Hands",
-    category: "Identity",
-    points: 5,
+  {
+    id: "Biometrics",
+    name: "Biometrics",
+    category: CAT_PHYSICAL,
+    points: 6,
     verified: true,
     onchain: "mintable",
-    icon: "🤝",
-    description: "Proof that your wallet is clear of sanctions and watchlists.",
-    components: [
-      { name: "Sanctions check", points: 3, verified: true, expiry: "Renews Sep 1", icon: "🛡️" },
-      { name: "Watchlist check", points: 2, verified: true, icon: "🔎" },
-    ],
+    icon: STAMP_ICONS.Biometrics,
+    isHumanId: true,
+    expirationDate: daysFromNow(88),
   },
-
-  // Verified + mintable biometric -> Mint reward. Distinct from Clean Hands so the
-  // Mint story and the Clean Hands story show different stamps.
-  biometric: {
-    id: "biometric",
-    name: "Biometric",
-    category: "Biometrics",
-    points: 5,
+  {
+    id: "Civic",
+    name: "Civic",
+    category: CAT_PHYSICAL,
+    points: 8.86,
+    verified: true,
+    onchain: "none",
+    icon: STAMP_ICONS.Civic,
+    expirationDate: daysFromNow(9),
+  },
+  {
+    id: "CleanHands",
+    name: "Proof of Clean Hands",
+    category: CAT_PHYSICAL,
+    points: 3,
     verified: true,
     onchain: "mintable",
-    icon: "🫆",
-    description: "Proof of a unique, live human, checked with your camera.",
-    components: [
-      { name: "Face liveness", points: 3, verified: true, icon: "🙂" },
-      { name: "Uniqueness check", points: 2, verified: true, expiry: "Renews Aug 12", icon: "✨" },
-    ],
+    icon: STAMP_ICONS.CleanHands,
+    isHumanId: true,
+    expirationDate: daysFromNow(83),
   },
-
-  // Unverified -> Claim. Both components still missing (earns 0 until claimed).
-  phone: {
-    id: "phone",
-    name: "Phone",
-    category: "Identity",
-    points: 2,
+  {
+    id: "Coinbase",
+    name: "Coinbase",
+    category: CAT_PHYSICAL,
+    points: 16,
     verified: false,
     onchain: "none",
-    icon: "📱",
-    description: "Verify a phone number you control to add points.",
-    components: [
-      { name: "Phone ownership", points: 2, verified: false, icon: "📱" },
-      { name: "Carrier check", points: 1, verified: false, icon: "📶" },
-    ],
+    icon: STAMP_ICONS.Coinbase,
+  },
+  {
+    id: "HumanIdPhone",
+    name: "Phone Verification",
+    category: CAT_PHYSICAL,
+    points: 1.5,
+    verified: true,
+    onchain: "mintable",
+    icon: STAMP_ICONS.HumanIdPhone,
+    isHumanId: true,
+    expirationDate: daysFromNow(88),
+  },
+  {
+    id: "Binance",
+    name: "Binance",
+    category: CAT_PHYSICAL,
+    points: 16,
+    verified: true,
+    onchain: "none",
+    icon: STAMP_ICONS.Binance,
+    expirationDate: daysFromNow(62),
   },
 
-  // Verified but off-chain with nothing to mint -> the Verified (done) state.
-  github: {
-    id: "github",
+  // ---- Blockchain Networks and Activities ----
+  {
+    id: "Ens",
+    name: "ENS",
+    category: CAT_CHAIN,
+    points: 2,
+    verified: true,
+    onchain: "none",
+    icon: STAMP_ICONS.Ens,
+    expirationDate: daysFromNow(40),
+  },
+  {
+    id: "ETH",
+    name: "Ethereum",
+    category: CAT_CHAIN,
+    points: 2,
+    verified: true,
+    onchain: "none",
+    icon: STAMP_ICONS.ETH,
+    expirationDate: daysFromNow(21),
+  },
+  {
+    id: "Gitcoin",
+    name: "Gitcoin Grants",
+    category: CAT_CHAIN,
+    points: 2.5,
+    verified: false,
+    onchain: "none",
+    icon: STAMP_ICONS.Gitcoin,
+  },
+  {
+    id: "GtcStaking",
+    name: "Identity Staking",
+    category: CAT_CHAIN,
+    points: 2.7,
+    verified: false,
+    onchain: "none",
+    icon: STAMP_ICONS.GtcStaking,
+  },
+  {
+    // A verified stamp whose credential has lapsed: the expired visual state.
+    id: "NFT",
+    name: "NFT",
+    category: CAT_CHAIN,
+    points: 2,
+    verified: true,
+    onchain: "none",
+    icon: STAMP_ICONS.NFT,
+    expirationDate: daysFromNow(-3),
+  },
+  {
+    id: "GuildXYZ",
+    name: "Guild.xyz",
+    category: CAT_CHAIN,
+    points: 1,
+    verified: false,
+    onchain: "none",
+    icon: STAMP_ICONS.GuildXYZ,
+  },
+  {
+    id: "Lens",
+    name: "Lens",
+    category: CAT_CHAIN,
+    points: 1,
+    verified: false,
+    onchain: "none",
+    icon: STAMP_ICONS.Lens,
+  },
+  {
+    id: "Snapshot",
+    name: "Snapshot",
+    category: CAT_CHAIN,
+    points: 1,
+    verified: false,
+    onchain: "none",
+    icon: STAMP_ICONS.Snapshot,
+  },
+  {
+    id: "GnosisSafe",
+    name: "Safe",
+    category: CAT_CHAIN,
+    points: 1,
+    verified: false,
+    onchain: "none",
+    icon: STAMP_ICONS.GnosisSafe,
+  },
+  {
+    id: "Brightid",
+    name: "BrightID",
+    category: CAT_CHAIN,
+    points: 1,
+    verified: false,
+    onchain: "none",
+    icon: STAMP_ICONS.Brightid,
+  },
+  {
+    id: "Idena",
+    name: "Idena",
+    category: CAT_CHAIN,
+    points: 1.5,
+    verified: false,
+    onchain: "none",
+    icon: STAMP_ICONS.Idena,
+  },
+  {
+    id: "ZkSync",
+    name: "zkSync",
+    category: CAT_CHAIN,
+    points: 1,
+    verified: false,
+    onchain: "none",
+    icon: STAMP_ICONS.ZkSync,
+  },
+
+  // ---- Web2 Platforms & Services ----
+  {
+    id: "Discord",
+    name: "Discord",
+    category: CAT_WEB2,
+    points: 0.5,
+    verified: false,
+    onchain: "none",
+    icon: STAMP_ICONS.Discord,
+  },
+  {
+    id: "Github",
     name: "GitHub",
-    category: "Social",
+    category: CAT_WEB2,
     points: 3,
     verified: true,
     onchain: "none",
-    icon: "🐙",
-    description: "Proof of an established GitHub account.",
-    components: [
-      { name: "Account age", points: 2, verified: true, expiry: "Renews Jun 2026", icon: "📆" },
-      { name: "Contribution history", points: 1, verified: true, icon: "📈" },
-    ],
+    icon: STAMP_ICONS.Github,
+    expirationDate: daysFromNow(55),
   },
-
-  // Unverified social -> Claim (single component).
-  discord: {
-    id: "discord",
-    name: "Discord",
-    category: "Social",
+  {
+    id: "Google",
+    name: "Google",
+    category: CAT_WEB2,
     points: 1,
-    verified: false,
-    onchain: "none",
-    icon: "💬",
-    description: "Verify a Discord account to add a point.",
-    components: [{ name: "Account ownership", points: 1, verified: false, icon: "💬" }],
-  },
-
-  // Unverified social -> Claim (single component).
-  "x-social": {
-    id: "x-social",
-    name: "X",
-    category: "Social",
-    points: 1,
-    verified: false,
-    onchain: "none",
-    icon: "✖️",
-    description: "Verify an X account to add a point.",
-    components: [{ name: "Account ownership", points: 1, verified: false, icon: "✖️" }],
-  },
-
-  // Minted with SIX components -> the paginated-components case (View on chain).
-  // Three verified (sum to 5) plus three still-available, across two pages.
-  reputation: {
-    id: "reputation",
-    name: "On-chain reputation",
-    category: "On-chain activity",
-    points: 5,
     verified: true,
-    onchain: "minted",
-    icon: "⟠",
-    description: "Proof of a real, active on-chain history.",
+    onchain: "none",
+    icon: STAMP_ICONS.Google,
+    expirationDate: daysFromNow(12),
+  },
+  {
+    id: "Linkedin",
+    name: "LinkedIn",
+    category: CAT_WEB2,
+    points: 1,
+    verified: false,
+    onchain: "none",
+    icon: STAMP_ICONS.Linkedin,
+  },
+  {
+    id: "X",
+    name: "X",
+    category: CAT_WEB2,
+    points: 2,
+    verified: false,
+    onchain: "none",
+    icon: STAMP_ICONS.X,
+  },
+];
+
+// The full catalog already spills each category past one page (Physical 7,
+// Blockchain 12), so category nav + within-category paging both read from it.
+export const SAMPLE_MEDALLION_STAMPS_PAGED = SAMPLE_MEDALLION_STAMPS;
+
+/**
+ * Per-stamp detail payload: real description + the sub-credential components used
+ * to score it. Single-credential platforms (including every Human ID SBT) list
+ * one component; multi-component platforms (Civic, Ethereum, NFT, Gitcoin,
+ * Identity Staking, GitHub) list several. Verified components sum to the header
+ * total; unverified list what is still available. Values mirror passport's real
+ * providers (e.g. Civic Captcha 0.82 + Uniqueness 5.0 + Liveness 3.04 = 8.86).
+ */
+const DETAIL_META: Record<string, { description: string; components: StampComponent[] }> = {
+  HumanIdKyc: {
+    description:
+      "Complete identity verification using a government issued ID to prove uniqueness while keeping your details private.",
+    components: [{ name: "Government ID Holder", points: 16, verified: true }],
+  },
+  Biometrics: {
+    description: "Proves unique humanity through 3D facial liveness verification and deduplication.",
+    components: [{ name: "Unique Biometric Identity", points: 6, verified: true }],
+  },
+  Civic: {
+    description: "Connect to Civic to verify your identity across CAPTCHA, uniqueness, and liveness checks.",
     components: [
-      { name: "Account age", points: 2, verified: true, expiry: "Renews Jan 2027", icon: "📆" },
-      { name: "Transaction history", points: 2, verified: true, icon: "🔁" },
-      { name: "Token holdings", points: 1, verified: true, icon: "🪙" },
-      { name: "NFT activity", points: 1, verified: false, icon: "🖼️" },
-      { name: "DeFi activity", points: 1, verified: false, icon: "🏦" },
-      { name: "Governance votes", points: 1, verified: false, icon: "🗳️" },
+      { name: "Civic CAPTCHA Pass", points: 0.82, verified: true },
+      { name: "Civic Uniqueness Pass", points: 5.0, verified: true },
+      { name: "Civic Liveness Pass", points: 3.04, verified: true },
     ],
+  },
+  CleanHands: {
+    description:
+      "Awarded after completing identity verification and sanctions validation, strengthening your proof of humanity.",
+    components: [{ name: "Sanctions-Free Identity Verified", points: 3, verified: true }],
+  },
+  Coinbase: {
+    description: "Verify your Coinbase account and onchain ID to link a trusted, verified exchange account.",
+    components: [{ name: "Coinbase KYC Verified", points: 16, verified: false }],
+  },
+  HumanIdPhone: {
+    description: "Confirm ownership of a unique phone number to prove a real human.",
+    components: [{ name: "Verified Phone Number", points: 1.5, verified: true }],
+  },
+  Binance: {
+    description:
+      "Verify KYC with your Binance Account Bound Token, proving you completed identity verification on Binance.",
+    components: [{ name: "Binance Account Bound Token (BABT)", points: 16, verified: true }],
+  },
+  Ens: {
+    description: "Own and configure an ENS domain as your primary name to establish a decentralized identity.",
+    components: [{ name: "ENS Domain Owner", points: 2, verified: true }],
+  },
+  ETH: {
+    description: "Verify your Ethereum mainnet and L2 transaction history for genuine network participation.",
+    components: [
+      { name: "ETH Enthusiast", points: 1, verified: true },
+      { name: "Execute over 100 transactions", points: 0.5, verified: true },
+      { name: "Active on over 50 distinct days", points: 0.5, verified: true },
+    ],
+  },
+  Gitcoin: {
+    description: "Verify your Gitcoin Grants donations to official rounds.",
+    components: [
+      { name: "Bronze Contributor", points: 1, verified: false },
+      { name: "Silver Contributor", points: 1.5, verified: false },
+    ],
+  },
+  GtcStaking: {
+    description: "Stake GTC on yourself or others to boost trust in the ecosystem.",
+    components: [
+      { name: "Bronze Staker", points: 1.2, verified: false },
+      { name: "Community Participant", points: 1.5, verified: false },
+    ],
+  },
+  NFT: {
+    description: "Verify your Ethereum L1 NFT collection and holdings.",
+    components: [
+      { name: "Digital Collector", points: 1, verified: true },
+      { name: "Holds at least 1 NFT (ERC-721)", points: 1, verified: true },
+    ],
+  },
+  GuildXYZ: {
+    description: "Verify membership in your Guild.xyz communities.",
+    components: [{ name: "Guild Member", points: 1, verified: false }],
+  },
+  Lens: {
+    description: "Verify ownership of your Lens Protocol handle.",
+    components: [{ name: "Lens Handle Owner", points: 1, verified: false }],
+  },
+  Snapshot: {
+    description: "Verify your participation in Snapshot governance votes.",
+    components: [{ name: "Snapshot Voter", points: 1, verified: false }],
+  },
+  GnosisSafe: {
+    description: "Verify that you are a signer on a Safe multisig wallet.",
+    components: [{ name: "Safe Signer", points: 1, verified: false }],
+  },
+  Brightid: {
+    description: "Verify your BrightID to prove a unique social identity.",
+    components: [{ name: "BrightID Verified", points: 1, verified: false }],
+  },
+  Idena: {
+    description: "Verify your Idena proof of person validation status.",
+    components: [{ name: "Idena Validated", points: 1.5, verified: false }],
+  },
+  ZkSync: {
+    description: "Verify your zkSync Era transaction history.",
+    components: [{ name: "zkSync Era Activity", points: 1, verified: false }],
+  },
+  Discord: {
+    description: "Verify genuine Discord engagement and Sybil resistance.",
+    components: [{ name: "Discord Engagement Verification", points: 0.5, verified: false }],
+  },
+  Github: {
+    description: "Verify your GitHub activity through a sustained contribution history.",
+    components: [
+      { name: "Regular Contributor", points: 2, verified: true },
+      { name: "Active Developer", points: 1, verified: true },
+    ],
+  },
+  Google: {
+    description: "Connect and verify ownership of your Google account.",
+    components: [{ name: "Verify Google Account Ownership", points: 1, verified: true }],
+  },
+  Linkedin: {
+    description: "Connect and verify ownership of your LinkedIn account.",
+    components: [{ name: "Verify LinkedIn Account Ownership", points: 1, verified: false }],
+  },
+  X: {
+    description: "Verify your X account, including verified status, followers, and account age.",
+    components: [{ name: "Verify X Verified Account", points: 2, verified: false }],
   },
 };
+
+/**
+ * Presentational join: the catalog `Stamp` (icons / weights / category / expiry /
+ * on-chain, from the metadata + score endpoints) merged with its scoring
+ * components, keyed by stamp id. This is the exact shape the drawer takes via props.
+ */
+export const SAMPLE_STAMP_DETAILS: Record<string, StampDetail> = SAMPLE_MEDALLION_STAMPS.reduce(
+  (acc, stamp) => {
+    const meta = DETAIL_META[stamp.id];
+    acc[stamp.id] = {
+      ...stamp,
+      description: meta?.description,
+      components: meta?.components ?? [
+        { name: stamp.name, points: stamp.points, verified: stamp.verified },
+      ],
+    };
+    return acc;
+  },
+  {} as Record<string, StampDetail>
+);

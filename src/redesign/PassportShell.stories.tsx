@@ -453,3 +453,25 @@ export const SizeComparison: Story = {
     },
   },
 };
+
+export const PersistentScore: Story = {
+  name: "Shell / Persistent score in chrome",
+  render: () => (
+    <ThemePair>
+      <PassportShell account={SAMPLE_ACCOUNT} score={17} threshold={20} onScoreClick={() => undefined}>
+        <ScoreWindow state="below" score={17} threshold={20} addVerificationsCta={{}} linkIdentityCta={{}} />
+      </PassportShell>
+      <PassportShell account={SAMPLE_ACCOUNT} score={24} threshold={20} onScoreClick={() => undefined}>
+        <ScoreWindow state="verified" score={24} threshold={20} onContinue={() => undefined} />
+      </PassportShell>
+    </ThemePair>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "The compact score lives in the shell chrome, top-left, so it is visible on every window. It reuses the Score window color logic: amber below the threshold (left, 17/20), emerald at or above it (right, 24/20). Tapping it opens the Score window / drilldown. The full big-ring Score window still exists; this is the persistent mini indicator.",
+      },
+    },
+  },
+};
