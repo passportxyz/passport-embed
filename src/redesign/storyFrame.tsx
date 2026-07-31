@@ -1,6 +1,7 @@
 import React from "react";
 import { Widget, PassportWidgetTheme } from "../widgets/Widget";
 import { DarkTheme, LightTheme } from "../utils/themes";
+import type { StampDetail } from "./StampDetailDrawer";
 
 /**
  * Story-only harness. Renders the redesign components inside the REAL widget
@@ -144,3 +145,140 @@ export const SAMPLE_MEDALLION_STAMPS_PAGED = [
   { id: "eth-activity", name: "Ethereum activity", category: "On-chain activity", points: 4, verified: true, onchain: "mintable" as const, icon: "⟠" },
   { id: "gitcoin", name: "Gitcoin", category: "On-chain activity", points: 3, verified: false, onchain: "none" as const, icon: "🌱" },
 ];
+
+// Stamp-detail (drawer) sample data, keyed by the medallion stamp id so a Stamps
+// window story can open the drawer for whichever medallion is tapped. Each detail
+// extends its medallion stamp with the components used to score it (verified ones
+// sum to the header total) and a plain description. A spread of states so every
+// action is visible: minted (View on chain), mintable (Mint reward), unverified
+// (Claim), off-chain verified (Verified / done), and a 6-component paginated case.
+export const SAMPLE_STAMP_DETAILS: Record<string, StampDetail> = {
+  // Verified + minted -> View on chain. Three verified components summing to 6.
+  "gov-id": {
+    id: "gov-id",
+    name: "Government ID",
+    category: "Identity",
+    points: 6,
+    verified: true,
+    onchain: "minted",
+    icon: "🪪",
+    description: "Proof that a government issued ID checked out, without revealing the document.",
+    components: [
+      { name: "Document authenticity", points: 3, verified: true, expiry: "Renews Mar 2027", icon: "📄" },
+      { name: "Liveness check", points: 2, verified: true, icon: "🙂" },
+      { name: "Name match", points: 1, verified: true, icon: "🔤" },
+    ],
+  },
+
+  // Verified + mintable -> Mint reward (gold CTA). This is the Clean Hands SBT.
+  "clean-hands": {
+    id: "clean-hands",
+    name: "Clean Hands",
+    category: "Identity",
+    points: 5,
+    verified: true,
+    onchain: "mintable",
+    icon: "🤝",
+    description: "Proof that your wallet is clear of sanctions and watchlists.",
+    components: [
+      { name: "Sanctions check", points: 3, verified: true, expiry: "Renews Sep 1", icon: "🛡️" },
+      { name: "Watchlist check", points: 2, verified: true, icon: "🔎" },
+    ],
+  },
+
+  // Verified + mintable biometric -> Mint reward. Distinct from Clean Hands so the
+  // Mint story and the Clean Hands story show different stamps.
+  biometric: {
+    id: "biometric",
+    name: "Biometric",
+    category: "Biometrics",
+    points: 5,
+    verified: true,
+    onchain: "mintable",
+    icon: "🫆",
+    description: "Proof of a unique, live human, checked with your camera.",
+    components: [
+      { name: "Face liveness", points: 3, verified: true, icon: "🙂" },
+      { name: "Uniqueness check", points: 2, verified: true, expiry: "Renews Aug 12", icon: "✨" },
+    ],
+  },
+
+  // Unverified -> Claim. Both components still missing (earns 0 until claimed).
+  phone: {
+    id: "phone",
+    name: "Phone",
+    category: "Identity",
+    points: 2,
+    verified: false,
+    onchain: "none",
+    icon: "📱",
+    description: "Verify a phone number you control to add points.",
+    components: [
+      { name: "Phone ownership", points: 2, verified: false, icon: "📱" },
+      { name: "Carrier check", points: 1, verified: false, icon: "📶" },
+    ],
+  },
+
+  // Verified but off-chain with nothing to mint -> the Verified (done) state.
+  github: {
+    id: "github",
+    name: "GitHub",
+    category: "Social",
+    points: 3,
+    verified: true,
+    onchain: "none",
+    icon: "🐙",
+    description: "Proof of an established GitHub account.",
+    components: [
+      { name: "Account age", points: 2, verified: true, expiry: "Renews Jun 2026", icon: "📆" },
+      { name: "Contribution history", points: 1, verified: true, icon: "📈" },
+    ],
+  },
+
+  // Unverified social -> Claim (single component).
+  discord: {
+    id: "discord",
+    name: "Discord",
+    category: "Social",
+    points: 1,
+    verified: false,
+    onchain: "none",
+    icon: "💬",
+    description: "Verify a Discord account to add a point.",
+    components: [{ name: "Account ownership", points: 1, verified: false, icon: "💬" }],
+  },
+
+  // Unverified social -> Claim (single component).
+  "x-social": {
+    id: "x-social",
+    name: "X",
+    category: "Social",
+    points: 1,
+    verified: false,
+    onchain: "none",
+    icon: "✖️",
+    description: "Verify an X account to add a point.",
+    components: [{ name: "Account ownership", points: 1, verified: false, icon: "✖️" }],
+  },
+
+  // Minted with SIX components -> the paginated-components case (View on chain).
+  // Three verified (sum to 5) plus three still-available, across two pages.
+  reputation: {
+    id: "reputation",
+    name: "On-chain reputation",
+    category: "On-chain activity",
+    points: 5,
+    verified: true,
+    onchain: "minted",
+    icon: "⟠",
+    description: "Proof of a real, active on-chain history.",
+    components: [
+      { name: "Account age", points: 2, verified: true, expiry: "Renews Jan 2027", icon: "📆" },
+      { name: "Transaction history", points: 2, verified: true, icon: "🔁" },
+      { name: "Token holdings", points: 1, verified: true, icon: "🪙" },
+      { name: "NFT activity", points: 1, verified: false, icon: "🖼️" },
+      { name: "DeFi activity", points: 1, verified: false, icon: "🏦" },
+      { name: "Governance votes", points: 1, verified: false, icon: "🗳️" },
+    ],
+  },
+};
