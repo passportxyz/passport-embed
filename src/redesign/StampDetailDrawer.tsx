@@ -10,12 +10,23 @@ import {
   LinkIcon,
   PlusIcon,
   RetryIcon,
+  ShieldIcon,
 } from "./icons";
 import { OptimismMark } from "./stampIcons";
 import { deriveTints } from "./deriveTints";
 import { formatExpiry } from "./expiry";
 import { useAccentRgb } from "./hooks";
 import type { ShellSize } from "./PassportShell";
+
+/**
+ * Canonical human.tech docs links (not per-credential data, so they live here as
+ * constants rather than on the credential prop):
+ *  - the VOLE-based ZK trust badge opens the architecture doc for the proof system;
+ *  - the Clean Hands "Disclosure conditions" link opens the Clean Hands doc (the
+ *    rule-based disclosure gate), NOT an invented Etherscan link.
+ */
+const VOLE_ZK_DOCS_URL = "https://docs.id.human.tech/architecture/vole-based-zk";
+const CLEAN_HANDS_DOCS_URL = "https://docs.id.human.tech/architecture/clean-hands";
 
 /**
  * One sub-credential that contributes to a stamp's score. Each is a row in the
@@ -379,8 +390,14 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
   const initialSection = (): Section | null =>
     isMulti ? "breakdown" : oc ? "onchain" : null;
   const [openSection, setOpenSection] = useState<Section | null>(initialSection);
+  // The onchain "Links and details" disclosure is COLLAPSED by default so the
+  // dense onchain block never overflows the fixed drawer height (this reclaimed
+  // space is what keeps the revoked Mint / Renew CTA fully visible, §9). Reset it
+  // whenever the drawer switches to another stamp.
+  const [linksOpen, setLinksOpen] = useState(false);
   useEffect(() => {
     setOpenSection(isMulti ? "breakdown" : oc ? "onchain" : null);
+    setLinksOpen(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stamp.id, isMulti, defaultOnchainOpen]);
   const breakdownOpen = openSection === "breakdown";
@@ -616,73 +633,100 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
             </button>
             {onchainOpen ? (
               <div className={styles.ocBody}>
-                {/* One aligned column of label:value rows. Consistent Key on the
-                    left, value on the right, so the block reads as an organised
-                    record, not scattered icons. */}
-                <dl className={styles.ocGrid}>
-                  {/* Network, led by the REAL Optimism mark in brand red (the chain
-                      logo is the brand-color exception to monochrome, §7.5). Both
-                      the SBT and the Sign Protocol attestation live on Optimism. */}
-                  <div className={styles.ocItem}>
-                    <dt className={styles.ocKey}>Network</dt>
-                    <dd className={styles.ocVal}>
-                      <span className={styles.ocChain} aria-hidden="true">
-                        <OptimismMark size={14} />
-                      </span>
-                      {oc.chain}
-                    </dd>
-                  </div>
-                  {/* Protocol: what KIND of on-chain record this is. Stated once
-                      here, not duplicated by the header's "Minted". */}
-                  <div className={styles.ocItem}>
-                    <dt className={styles.ocKey}>Protocol</dt>
-                    <dd className={styles.ocVal}>{oc.protocol === "sbt" ? "Onchain SBT" : "Sign Protocol"}</dd>
-                  </div>
-                  {oc.issued ? (
-                    <div className={styles.ocItem}>
-                      <dt className={styles.ocKey}>Issued</dt>
-                      <dd className={styles.ocVal}>{oc.issued}</dd>
-                    </div>
-                  ) : null}
-                  {oc.expires ? (
-                    <div className={styles.ocItem}>
-                      <dt className={styles.ocKey}>Expires</dt>
-                      <dd className={styles.ocVal}>{oc.expires}</dd>
-                    </div>
-                  ) : null}
-                  {/* Verified issuer: a named on-chain identity (human.tech) with a
-                      small check + a view link, never a raw hex address. */}
-                  <div className={styles.ocItem}>
-                    <dt className={styles.ocKey}>Issuer</dt>
-                    <dd className={styles.ocVal}>
-                      {oc.issuerUrl ? (
-                        <a className={styles.ocIssuer} href={oc.issuerUrl} target="_blank" rel="noreferrer noopener">
-                          <span className={styles.ocVerifiedMark} aria-hidden="true">
-                            <CheckIcon size={9} strokeWidth={2.8} />
-                          </span>
-                          {oc.issuer}
-                        </a>
-                      ) : (
-                        <span className={styles.ocIssuer}>
-                          <span className={styles.ocVerifiedMark} aria-hidden="true">
-                            <CheckIcon size={9} strokeWidth={2.8} />
-                          </span>
-                          {oc.issuer}
-                        </span>
-                      )}
-                    </dd>
-                  </div>
-                  {/* A healthy credential is not labelled "Valid" here (the header
-                      pill owns the state, no repeat). Revocation is the exception,
-                      and it is stated once by the revoke band below (which leads
-                      with "Revoked on {date}"), so there is no separate Status row. */}
-                </dl>
+                {/* (a) TRUST BADGE AT TOP: the VOLE-based ZK provenance, its own
+                    badge, linked to the architecture doc (new tab). It leads the
+                    block so the proof system reads first, above the record. */}
+                {oc.zkProof && !oc.revoked ? (
+                  <a
+                    className={styles.ocTrust}
+                    href={VOLE_ZK_DOCS_URL}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    aria-label="Proven with VOLE-based ZK. Read the docs (opens in a new tab)."
+                  >
+                    <span className={styles.ocTrustDot} aria-hidden="true">
+                      <CheckIcon size={9} strokeWidth={2.8} />
+                    </span>
+                    Proven with VOLE-based ZK
+                    <ExternalLinkIcon className={styles.ocTrustExt} size={11} strokeWidth={1.9} />
+                  </a>
+                ) : null}
 
-                {/* Clean Hands privacy note (default valid state). Identity held
-                    encrypted; disclosure is rule-based, gated by pre-committed
-                    on-chain conditions. Steps aside once revoked. */}
+                {/* (b) CREDENTIAL RECORD PANEL: the aligned label:value grid,
+                    contained as one subtle surface. Consistent Key on the left,
+                    value on the right, so it reads as an organised record. Led by
+                    the REAL Optimism mark in brand red (the chain-logo brand-color
+                    exception, §7.5). Both the SBT and the Sign Protocol attestation
+                    live on Optimism. The stamp STATE (Minted / Valid) is NOT
+                    restated here; the header pill owns it. */}
+                <div className={styles.ocPanel}>
+                  <dl className={styles.ocGrid}>
+                    <div className={styles.ocItem}>
+                      <dt className={styles.ocKey}>Network</dt>
+                      <dd className={styles.ocVal}>
+                        <span className={styles.ocChain} aria-hidden="true">
+                          <OptimismMark size={14} />
+                        </span>
+                        {oc.chain}
+                      </dd>
+                    </div>
+                    <div className={styles.ocItem}>
+                      <dt className={styles.ocKey}>Protocol</dt>
+                      <dd className={styles.ocVal}>{oc.protocol === "sbt" ? "Onchain SBT" : "Sign Protocol"}</dd>
+                    </div>
+                    {oc.issued ? (
+                      <div className={styles.ocItem}>
+                        <dt className={styles.ocKey}>Issued</dt>
+                        <dd className={styles.ocVal}>{oc.issued}</dd>
+                      </div>
+                    ) : null}
+                    {oc.expires ? (
+                      <div className={styles.ocItem}>
+                        <dt className={styles.ocKey}>Expires</dt>
+                        <dd className={styles.ocVal}>{oc.expires}</dd>
+                      </div>
+                    ) : null}
+                    {/* Verified issuer: a named on-chain identity (human.tech) with a
+                        small check + a view link, never a raw hex address. */}
+                    <div className={styles.ocItem}>
+                      <dt className={styles.ocKey}>Issuer</dt>
+                      <dd className={styles.ocVal}>
+                        {oc.issuerUrl ? (
+                          <a className={styles.ocIssuer} href={oc.issuerUrl} target="_blank" rel="noreferrer noopener">
+                            <span className={styles.ocVerifiedMark} aria-hidden="true">
+                              <CheckIcon size={9} strokeWidth={2.8} />
+                            </span>
+                            {oc.issuer}
+                          </a>
+                        ) : (
+                          <span className={styles.ocIssuer}>
+                            <span className={styles.ocVerifiedMark} aria-hidden="true">
+                              <CheckIcon size={9} strokeWidth={2.8} />
+                            </span>
+                            {oc.issuer}
+                          </span>
+                        )}
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+
+                {/* (c) CLEAN HANDS PRIVACY CALLOUT: a distinct bordered box with a
+                    shield, so the encryption + rule-based disclosure point stands
+                    apart as its own element (not an inline line). Honest framing:
+                    identity is ENCRYPTED to the Human Network and disclosure is
+                    rule-based, gated by pre-committed on-chain conditions. Never
+                    "nothing is stored"; never a nullifier or any personal field.
+                    Steps aside once revoked. */}
                 {oc.protocol === "sign" && !oc.revoked ? (
-                  <p className={styles.ocLine}>Identity encrypted to the Human Network.</p>
+                  <div className={styles.ocCallout}>
+                    <span className={styles.ocCalloutIcon} aria-hidden="true">
+                      <ShieldIcon size={14} strokeWidth={1.8} />
+                    </span>
+                    <p className={styles.ocCalloutText}>
+                      Identity encrypted to the Human Network. Disclosure is rule-based, gated on chain.
+                    </p>
+                  </div>
                 ) : null}
 
                 {/* Revocation detail (only when revoked): when + why + a link to the
@@ -691,48 +735,67 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
                   <div className={styles.ocRevoke}>
                     {oc.revokedAt ? <p className={styles.ocLine}>Revoked on {oc.revokedAt}.</p> : null}
                     {oc.revokeReason ? <p className={styles.ocLine}>Reason. {oc.revokeReason}</p> : null}
-                    {oc.revokeTxUrl ? (
-                      <a className={styles.ocView} href={oc.revokeTxUrl} target="_blank" rel="noreferrer noopener">
-                        <ExternalLinkIcon size={13} strokeWidth={1.9} />
-                        View revoke transaction
-                      </a>
-                    ) : null}
                   </div>
                 ) : null}
 
-                {/* All view actions GROUPED in one place: labeled text links, not
-                    scattered icon-only buttons with tooltips. Each names itself, so
-                    no tooltip is needed. */}
-                <div className={styles.ocActions}>
-                  {oc.explorerUrl ? (
-                    <a className={styles.ocView} href={oc.explorerUrl} target="_blank" rel="noreferrer noopener">
-                      <LinkIcon size={13} strokeWidth={1.9} />
-                      {oc.protocol === "sign" ? "View on Sign Protocol" : "View on chain"}
-                    </a>
-                  ) : null}
-                  {oc.txUrl ? (
-                    <a className={styles.ocView} href={oc.txUrl} target="_blank" rel="noreferrer noopener">
-                      <ExternalLinkIcon size={13} strokeWidth={1.9} />
-                      View transaction
-                    </a>
-                  ) : null}
-                  {oc.protocol === "sign" && !oc.revoked && oc.disclosureUrl ? (
-                    <a className={styles.ocView} href={oc.disclosureUrl} target="_blank" rel="noreferrer noopener">
-                      <LinkIcon size={13} strokeWidth={1.9} />
-                      Disclosure conditions
-                    </a>
-                  ) : null}
-                </div>
-
-                {/* Trust tag: reads in words, no tooltip (the provenance detail is
-                    not essential to the glance). */}
-                {oc.zkProof && !oc.revoked ? (
-                  <span className={styles.ocTag}>
-                    <span className={styles.ocTagDot} aria-hidden="true">
-                      <CheckIcon size={9} strokeWidth={2.8} />
-                    </span>
-                    Proven with VOLE-based ZK
-                  </span>
+                {/* (d) LINKS AND DETAILS: a collapsible disclosure, COLLAPSED by
+                    default, holding the view links (View on chain / View
+                    transaction / Disclosure conditions). Each names itself; the
+                    collapsed default reclaims the height that keeps the revoked CTA
+                    fully visible. "Disclosure conditions" opens the Clean Hands doc
+                    (the rule-based disclosure gate), never an invented Etherscan
+                    link. */}
+                {oc.explorerUrl || oc.txUrl || oc.revokeTxUrl || (oc.protocol === "sign" && !oc.revoked) ? (
+                  <div className={styles.ocLinks}>
+                    <button
+                      type="button"
+                      className={styles.ocLinksHead}
+                      onClick={() => setLinksOpen((v) => !v)}
+                      aria-expanded={linksOpen}
+                    >
+                      <span className={styles.ocLinksLabel}>Links and details</span>
+                      <CaretDownIcon
+                        className={linksOpen ? styles.sectionChevOpen : styles.sectionChev}
+                        size={12}
+                      />
+                    </button>
+                    {linksOpen ? (
+                      <div className={styles.ocLinksBody}>
+                        {oc.explorerUrl ? (
+                          <a className={styles.ocView} href={oc.explorerUrl} target="_blank" rel="noreferrer noopener">
+                            <LinkIcon size={13} strokeWidth={1.9} />
+                            {oc.protocol === "sign" ? "View on Sign Protocol" : "View on chain"}
+                          </a>
+                        ) : null}
+                        {oc.txUrl ? (
+                          <a className={styles.ocView} href={oc.txUrl} target="_blank" rel="noreferrer noopener">
+                            <ExternalLinkIcon size={13} strokeWidth={1.9} />
+                            View transaction
+                          </a>
+                        ) : null}
+                        {oc.protocol === "sign" && !oc.revoked ? (
+                          <a
+                            className={styles.ocView}
+                            href={CLEAN_HANDS_DOCS_URL}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                          >
+                            <ExternalLinkIcon size={13} strokeWidth={1.9} />
+                            Disclosure conditions
+                          </a>
+                        ) : null}
+                        {/* The revoke transaction link lives here (revoked case), so
+                            the revoke band stays compact and the CTA is never
+                            clipped (§9). */}
+                        {oc.revokeTxUrl ? (
+                          <a className={styles.ocView} href={oc.revokeTxUrl} target="_blank" rel="noreferrer noopener">
+                            <ExternalLinkIcon size={13} strokeWidth={1.9} />
+                            View revoke transaction
+                          </a>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
                 ) : null}
               </div>
             ) : null}

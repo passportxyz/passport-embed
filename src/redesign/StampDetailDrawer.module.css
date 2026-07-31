@@ -253,7 +253,8 @@
   background: rgba(var(--on-surface), 0.2);
   color: rgb(var(--on-surface));
 }
-/* Minted: solid emerald tint + a filled chain dot. */
+/* Minted: solid emerald tint + a filled chain dot. Emerald is reserved for the
+ * verified + minted "done" states only. */
 .statusPill[data-state="minted"] {
   background: rgba(var(--accent), 0.16);
 }
@@ -261,29 +262,38 @@
   background: rgb(var(--accent));
   color: rgb(var(--on-accent));
 }
-/* Mintable: emerald outline invite, never gold. Lighter fill + ring with an
- * outlined chain dot. */
+/* Mintable: a SOLID SKY invitation, never emerald (so it never reads as an
+ * already-minted green stamp) and never gold. Solid sky + dark on-color clears
+ * >=4.5:1 in both themes. Its chain dot sits on the sky fill. */
 .statusPill[data-state="mintable"] {
-  background: rgba(var(--accent), 0.1);
-  box-shadow: inset 0 0 0 1px rgba(var(--accent), 0.4);
+  color: rgb(var(--on-pending));
+  background: rgb(var(--pending));
 }
 .statusPill[data-state="mintable"] .statusDot {
-  background: rgba(var(--accent), 0.25);
-  color: rgb(var(--accent));
+  background: rgba(var(--on-pending), 0.16);
+  color: rgb(var(--on-pending));
 }
 /* Verified off-chain: a calm emerald tint, no chain dot. */
 .statusPill[data-state="verified"] {
   color: rgb(var(--accent));
   background: rgba(var(--accent), 0.1);
 }
-/* Expiring soon: the ONLY amber in the drawer header pill. */
+/* Expiring soon: a SOLID cooler orange (--expiring), distinct from pending sky
+ * and shifted off the greenish-gold amber. Dark on-color clears >=4.5:1 both
+ * themes. */
 .statusPill[data-state="soon"] {
-  color: rgb(var(--warn));
-  background: rgba(var(--warn), 0.16);
+  color: rgb(var(--on-expiring));
+  background: rgb(var(--expiring));
 }
-/* Expired / not verified: neutral, reads inactive. */
-.statusPill[data-state="expired"],
+/* Not verified yet (pending): a SOLID SKY invitation, matching the mintable
+ * invitation language (the next step is to claim / verify). */
 .statusPill[data-state="none"] {
+  color: rgb(var(--on-pending));
+  background: rgb(var(--pending));
+}
+/* Expired: de-emphasized neutral grey, reads inactive. Uses on-surface so it is
+ * legible in both themes. */
+.statusPill[data-state="expired"] {
   color: rgba(var(--on-surface), 0.72);
   background: rgba(var(--on-surface), 0.08);
 }
@@ -322,8 +332,8 @@
   outline-offset: 2px;
 }
 .timer[data-state="soon"] {
-  color: rgb(var(--warn));
-  background: rgba(var(--warn), 0.15);
+  color: rgb(var(--expiring));
+  background: rgba(var(--expiring), 0.15);
 }
 .timer[data-state="expired"] {
   color: rgba(var(--on-surface), 0.5);
@@ -526,7 +536,7 @@
  * reveals its rows. Structure is tone + space, not hard lines (§ no-hard-lines). */
 .section {
   flex: none;
-  margin-top: var(--space-2-c6dbf459);
+  margin-top: var(--space-1-c6dbf459);
 }
 .sectionHead {
   appearance: none;
@@ -573,10 +583,10 @@
   color: rgb(var(--accent));
 }
 .ocBody {
-  padding: var(--space-1-c6dbf459) 2px 0;
+  padding: 2px 2px 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 
 /* Protocol + chain line, led by the chain logo (never the word alone), with the
@@ -632,7 +642,7 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 .ocItem {
   display: flex;
@@ -716,16 +726,139 @@ a.ocIssuer:focus-visible {
   border-radius: var(--radius-sm-c6dbf459);
 }
 
+/* ---- onchain body, canonical panel layout (design-sop §7.5, no crowding) ---- */
+/* (a) Trust badge, moved to the TOP of the onchain body: a linked pill that opens
+ * the VOLE-based ZK docs in a new tab. Emerald reads as a proven / trust signal. */
+.ocTrust {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 2px;
+  padding: 3px 9px 3px 4px;
+  border-radius: var(--radius-pill-c6dbf459);
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  color: rgb(var(--accent));
+  background: rgba(var(--accent), 0.12);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.ocTrust:hover {
+  background: rgba(var(--accent), 0.18);
+}
+.ocTrust:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+.ocTrustDot {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgb(var(--on-accent));
+  background: rgb(var(--accent));
+}
+.ocTrustExt {
+  flex: none;
+  opacity: 0.8;
+}
+
+/* (b) Credential record panel: the label:value grid contained as ONE subtle
+ * surface, so the record reads as an organised block, not loose lines. */
+.ocPanel {
+  margin: 0;
+  padding: 3px var(--space-2-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+  background: rgba(var(--on-surface), 0.04);
+  box-shadow: inset 0 0 0 1px rgba(var(--on-surface), 0.06);
+}
+
+/* (c) Clean Hands privacy callout: a distinct tinted, bordered box with a shield,
+ * so the encryption + rule-based disclosure point stands apart as its own element
+ * rather than an inline line (design-sop §7.5). */
+.ocCallout {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2-c6dbf459);
+  margin-top: var(--space-1-c6dbf459);
+  padding: var(--space-1-c6dbf459) var(--space-2-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+  background: rgba(var(--accent), 0.08);
+  box-shadow: inset 0 0 0 1px rgba(var(--accent), 0.22);
+}
+.ocCalloutIcon {
+  flex: none;
+  margin-top: 1px;
+  display: inline-flex;
+  color: rgb(var(--accent));
+}
+.ocCalloutText {
+  margin: 0;
+  font-size: var(--font-size-xs-c6dbf459);
+  line-height: 1.4;
+  color: rgba(var(--on-surface), 0.82);
+}
+
+/* (d) Links and details: a collapsible disclosure, COLLAPSED by default, that
+ * holds the view links so the record stays uncluttered and the fixed drawer
+ * height is reclaimed (so the revoked Mint / Renew CTA is never clipped, §9). */
+.ocLinks {
+  margin-top: var(--space-1-c6dbf459);
+}
+.ocLinksHead {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-1-c6dbf459) 2px;
+  background: transparent;
+  color: rgba(var(--on-surface), 0.72);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+}
+.ocLinksHead:hover {
+  color: rgb(var(--on-surface));
+}
+.ocLinksHead:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm-c6dbf459);
+}
+.ocLinksLabel {
+  flex: 1;
+  text-align: left;
+  letter-spacing: 0.02em;
+}
+.ocLinksBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1-c6dbf459);
+  padding: 2px 2px 0;
+}
+.ocLinksBody .ocView {
+  margin-top: 0;
+}
+
 /* Revocation detail (only when revoked): when / why / a link to the revoke tx.
  * A faint tonal band groups it, no hard line. */
 .ocRevoke {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   margin-top: var(--space-1-c6dbf459);
-  padding: 6px var(--space-2-c6dbf459);
+  padding: var(--space-1-c6dbf459) var(--space-2-c6dbf459);
   border-radius: var(--radius-md-c6dbf459);
-  background: rgba(var(--warn), 0.1);
+  /* Revocation reads as an error state (red), distinct from the amber expiring
+   * and the emerald healthy states. */
+  background: rgba(var(--danger), 0.1);
 }
 .ocRevoke .ocLine {
   color: rgba(var(--on-surface), 0.78);
@@ -815,7 +948,7 @@ a.ocIssuer:focus-visible {
   display: flex;
   flex-direction: column;
   gap: var(--space-2-c6dbf459);
-  padding: var(--space-1-c6dbf459) 0 var(--space-2-c6dbf459);
+  padding: 0 0 var(--space-1-c6dbf459);
 }
 /* Two actions (primary + renew) share ONE row so the drawer keeps its single
  * action-row height whether or not renew is present (no vertical jump, no clip). */
