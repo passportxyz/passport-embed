@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   computePosition,
   flip,
@@ -44,6 +45,21 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, placement = "top", ch
           left: `${x}px`,
           top: `${y}px`,
         });
+
+        // The floating layer is portaled to document.body, which escapes the
+        // themed widget shell, so theme tokens like --surface / --on-surface do
+        // not resolve on it (they are defined only inside the widget). Copy the
+        // resolved values from the live trigger (which sits inside the shell)
+        // onto the portaled layer, so the chip themes correctly in both light and
+        // dark and a skin can build an inverse chip via --on-surface. This also
+        // fixes the shipped widget's tooltip theming at the portal.
+        if (triggerRef.current) {
+          const cs = getComputedStyle(triggerRef.current);
+          for (const v of ["--surface", "--on-surface", "--border", "--accent"]) {
+            const val = cs.getPropertyValue(v);
+            if (val) tooltipRef.current.style.setProperty(v, val);
+          }
+        }
 
         // Position the arrow
         if (arrowRef.current && middlewareData.arrow) {
@@ -100,23 +116,32 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, placement = "top", ch
         {children}
       </div>
 
-      {/* Portal the tooltip to body to avoid transform/position issues */}
-      {isVisible && (
-        <div
-          ref={tooltipRef}
-          className={`${styles.tooltip} ${className}`}
-          role="tooltip"
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "max-content",
-          }}
-        >
-          <div className={styles.content}>{content}</div>
-          <div ref={arrowRef} className={styles.arrow} />
-        </div>
-      )}
+      {/* Portal the floating layer to document.body so it escapes any transformed,
+          blurred, or clipped ancestor (the shell chrome, glass surfaces, the
+          drawer). Anchored to the live trigger node via floating-ui, so a
+          position:fixed layer is never trapped in a containing block, never
+          occluded by higher-z chrome, and edge-flips / shifts against the
+          VIEWPORT so it is never clipped (design-sop overlay layering). SSR-safe:
+          only portals once document exists. */}
+      {isVisible &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            ref={tooltipRef}
+            className={`${styles.tooltip} ${className}`}
+            role="tooltip"
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "max-content",
+            }}
+          >
+            <div className={styles.content}>{content}</div>
+            <div ref={arrowRef} className={styles.arrow} />
+          </div>,
+          document.body
+        )}
     </>
   );
 };

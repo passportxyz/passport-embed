@@ -1,0 +1,33 @@
+/*
+ * Shared "Secured by human.tech" lockup. Consistent icon, font, size, position,
+ * and margin so it renders identically in every shell state (§ harmonized
+ * footer). No hard lines: separation from content is spacing only.
+ */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: var(--space-4-c6dbf459);
+  font-size: var(--font-size-xs-c6dbf459);
+  line-height: var(--line-tight-c6dbf459);
+  color: rgba(var(--on-surface), 0.7);
+}
+
+/* Compact form for the single-row pill: smaller mark + text, tight top margin so
+ * the whole widget still reads as one short pill (§ pill footer). */
+.compact {
+  gap: 4px;
+  margin-top: var(--space-2-c6dbf459);
+  font-size: calc(var(--font-size-xs-c6dbf459) * 0.9);
+}
+
+.mark {
+  display: block;
+  opacity: 0.75;
+}
+
+.text {
+  font-weight: var(--weight-medium-c6dbf459);
+  letter-spacing: 0.01em;
+}

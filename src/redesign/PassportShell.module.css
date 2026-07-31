@@ -1,0 +1,872 @@
+/*
+ * PassportShell - the rounded binding. Everything lives INSIDE these bounds.
+ * All color/size/motion comes from the widget's shared tokens (§1); no magic
+ * numbers, no theme-specific literals (§2). No backdrop-filter/transform on any
+ * ancestor of a tooltip trigger, so the portal-style Tooltip (position:fixed)
+ * is never trapped in a containing block and never clips (§4 overlay layering).
+ */
+
+.shell {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4-c6dbf459);
+  border-radius: var(--widget-radius-c6dbf459);
+  background: rgb(var(--surface));
+  /* No hard line: the shell reads as its own lifted surface via layered shadow +
+   * the wash, not a 1px outline. The edge tokens add a hairline light inner rim
+   * and a soft ambient outer glow so a near-black widget separates from a DARK
+   * host (§no-hard-lines); --shadow-md carries the depth on a light host. */
+  box-shadow:
+    var(--rd-edge-rim),
+    var(--rd-edge-glow),
+    var(--shadow-md-c6dbf459);
+  color: rgb(var(--on-surface));
+  font-family: var(--font-family-body-c6dbf459);
+  /* content + overlays escape; only the decorative .fx is clipped */
+  overflow: visible;
+}
+
+/* Decorative living-material wash: a subtle emerald paper-shader field. Its color
+ * is the integrator-configurable --rd-wash token (defaults to the accent). A
+ * SIBLING layer (not an ancestor of any trigger), clipped to the rounded bounds.
+ * A lightweight animated gradient drift stands in for a full canvas paper-shader.
+ * Legibility first: kept low-alpha and behind all content. */
+.fx {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  /* Alphas raised so the soft emerald wash actually reads on the brand dark
+   * surface (#101815), while staying subtle on the light (white) surface. */
+  background:
+    radial-gradient(120% 80% at 85% -10%, rgba(var(--rd-wash), 0.24), transparent 60%),
+    radial-gradient(95% 75% at -12% 112%, rgba(var(--rd-wash), 0.16), transparent 55%),
+    radial-gradient(70% 60% at 50% 40%, rgba(var(--rd-wash), 0.07), transparent 70%);
+  background-size: 160% 160%, 170% 170%, 200% 200%;
+  animation: washDrift 18s ease-in-out infinite alternate;
+}
+@keyframes washDrift {
+  0% {
+    background-position: 0% 0%, 100% 100%, 50% 50%;
+  }
+  100% {
+    background-position: 12% 8%, 88% 92%, 46% 54%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fx {
+    animation: none;
+  }
+}
+
+/* ---- size variants: one standard shell WIDTH and HEIGHT across states ------- */
+/* A fixed width per size variant so category switches, pagination, and state
+ * changes never resize the frame (the shell used to shrink-to-fit its content,
+ * so a longer name or a different page jiggled the width). max-width:100% keeps
+ * it responsive: it caps to the host on a narrower surface, but is otherwise
+ * pixel-stable at 300 regardless of what the window renders. */
+.full,
+.mini,
+.pill {
+  width: 300px;
+  max-width: 100%;
+}
+
+/* `full` gives the content region a FIXED height so the default score, account,
+ * and drill-down states share one shell height AND so the window's bottom-pinned
+ * action area lands the primary CTA at the same coordinates in every state. */
+.full .content {
+  /* Tall enough for the busiest state (below-threshold: ring + headline + sub +
+   * to-go + TWO stacked CTAs) with headroom, so nothing clips and the auto gap
+   * has room to push the action area to the bottom in every state. */
+  height: 384px;
+}
+/* mini is a condensed ~half-size card; pill is a single compact row. Both are
+ * fixed-height for the same pin-the-CTA reason. mini is tall enough for the
+ * Stamps window to fill with TWO short rows of medallions plus a pager (rather
+ * than one row with dead space below), while staying clearly smaller than full. */
+.mini .content {
+  height: 216px;
+}
+.pill,
+.mini {
+  padding: var(--space-3-c6dbf459);
+}
+/* The pill carries NO chrome and NO footer: the whole widget is one short row.
+ * The content region is exactly the ring-height row, vertically centered, with
+ * no top margin (there is no chrome above it to clear). */
+.pill .content {
+  height: 44px;
+  margin-top: 0;
+  justify-content: center;
+}
+
+.shell > *:not(.fx) {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- chrome row: app-icon · account · ⓘ ---- */
+/* position:relative so the account dropdown anchors to the chrome row, which
+ * spans the shell's content box - letting the menu pin left:0 / right:0 and
+ * stay inside the shell at ANY widget width. */
+.chrome {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-c6dbf459);
+}
+
+/* The chrome row (and the account dropdown it contains) must outrank the score
+ * content below it, or the ring - a later `.shell > *` at the same z-index -  * paints over the open menu. Higher-specificity + later-in-file than the shared
+ * `.shell > *:not(.fx)` rule, so it wins without !important. */
+.shell > .chrome {
+  z-index: 3;
+}
+
+.gl {
+  display: block;
+}
+
+.appIcon {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: var(--radius-lg-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgb(var(--on-surface));
+  /* Tonal fill, no hard outline. */
+  background: rgba(var(--on-surface), 0.06);
+  cursor: help;
+}
+/* Invisible ≥40px hit target (a11y §8): 34px + 2×4px = 42px. Visual size unchanged. */
+.appIcon::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+}
+.appIcon:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+
+/* ---- persistent mini score (top-left of the chrome) ---- */
+.miniScore {
+  position: relative;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  color: rgb(var(--on-surface));
+}
+/* Invisible >=40px hit target (a11y §8): 32px + 2x5px = 42px. */
+.miniScore::before {
+  content: "";
+  position: absolute;
+  inset: -5px;
+}
+.miniScore:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+  border-radius: var(--radius-pill-c6dbf459);
+}
+.miniScore:hover .miniScoreArc {
+  filter: brightness(1.08);
+}
+.miniScoreSvg {
+  position: absolute;
+  inset: 0;
+  width: 32px;
+  height: 32px;
+  display: block;
+}
+.miniScoreTrack {
+  fill: none;
+  stroke: rgba(var(--on-surface), 0.14);
+  stroke-width: 3;
+}
+.miniScoreArc {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--motion-slow-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.miniScore[data-passing="true"] .miniScoreArc {
+  stroke: rgb(var(--accent));
+}
+.miniScore[data-passing="false"] .miniScoreArc {
+  stroke: rgb(var(--warn));
+}
+.miniScoreNum {
+  position: relative;
+  font-size: 12px;
+  font-weight: var(--weight-bold-c6dbf459);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: rgb(var(--on-surface));
+}
+@media (prefers-reduced-motion: reduce) {
+  .miniScoreArc {
+    transition: none;
+  }
+}
+
+.spacer {
+  flex: 1;
+}
+
+/* ---- account selector ---- */
+/* NOT positioned: the menu anchors to .chrome (the content-box-wide row) so it
+ * spans the shell width instead of the narrow trigger. */
+.acctWrap {
+  min-width: 0;
+  margin-right: auto;
+}
+
+.acct {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  margin: 0;
+  padding: var(--space-1-c6dbf459) var(--space-1-c6dbf459);
+  border-radius: var(--radius-lg-c6dbf459);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: var(--line-tight-c6dbf459);
+  min-width: 0;
+  cursor: pointer;
+  color: inherit;
+  text-align: left;
+  font-family: inherit;
+}
+.acct:hover {
+  background: rgba(var(--on-surface), 0.05);
+}
+.acct:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 1px;
+}
+
+.acctLabel {
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(var(--on-surface), 0.7);
+  transform: scale(0.82);
+  transform-origin: left center;
+}
+
+.acctWho {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  font-size: var(--font-size-md-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  color: rgb(var(--on-surface));
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.acctName {
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.acctOf {
+  font-weight: var(--weight-regular-c6dbf459);
+  color: rgba(var(--on-surface), 0.72);
+}
+
+.acctCaret {
+  flex: none;
+  color: rgba(var(--on-surface), 0.6);
+  transition: transform var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.acctOpen .acctCaret {
+  transform: rotate(180deg);
+}
+
+/* dropdown: TOP z-index, near-opaque backdrop, never clipped and NEVER outside
+ * the shell (§ overlay layering). It spans the shell's content box: pulled left
+ * past the account trigger to the shell content's left edge (the app-icon start
+ * = appIcon width 34px + the chrome gap) and sized to the content width, so its
+ * right edge lands on the content edge instead of overflowing the rounded bound.
+ * Fades (opacity), collapses instantly under reduced-motion below. */
+.menu {
+  position: absolute;
+  box-sizing: border-box;
+  top: calc(100% + var(--space-1-c6dbf459));
+  left: 0;
+  right: 0;
+  z-index: 400;
+  padding: var(--space-1-c6dbf459);
+  border-radius: var(--radius-lg-c6dbf459);
+  /* Elevated, near-opaque glass: lifts off the shell as a distinct layer in BOTH
+   * themes (darkens slightly on white, lightens slightly on near-black), never
+   * black-on-black. High-alpha surface so the content behind never bleeds
+   * through; blur + shadow carry the separation instead of a hard border. */
+  background:
+    linear-gradient(rgba(var(--on-surface), 0.08), rgba(var(--on-surface), 0.08)),
+    rgba(var(--surface), 0.98);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  box-shadow:
+    var(--shadow-md-c6dbf459),
+    inset 0 0 0 1px rgba(var(--on-surface), 0.06);
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+  transform-origin: top left;
+  pointer-events: none;
+  transition:
+    opacity var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459),
+    transform var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.acctOpen .menu {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+/* Small uppercase zone label. */
+.zoneHead {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(var(--on-surface), 0.6);
+  padding: var(--space-1-c6dbf459) var(--space-2-c6dbf459);
+}
+
+/* Zones are separated by SPACE and a faint tonal band, never a hard line. */
+.zoneMid {
+  margin-top: var(--space-1-c6dbf459);
+  padding-top: var(--space-1-c6dbf459);
+}
+.zoneBottom {
+  margin-top: var(--space-1-c6dbf459);
+  padding-top: var(--space-1-c6dbf459);
+}
+
+/* (a) top: the WaaP account behind the passport. */
+.zoneTop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-c6dbf459);
+  padding: var(--space-2-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+  background: rgba(var(--on-surface), 0.05);
+}
+.waapMark {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: var(--radius-md-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgb(var(--on-accent));
+  background: linear-gradient(135deg, rgb(var(--accent)), rgba(var(--accent), 0.55));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.waapMeta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+.waapName {
+  font-size: var(--font-size-md-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  color: rgb(var(--on-surface));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.waapLine {
+  font-size: var(--font-size-xs-c6dbf459);
+  color: rgba(var(--on-surface), 0.75);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Address line holds the truncating address plus the hover-to-copy control. */
+.waapAddrRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.waapAddr {
+  font-size: var(--font-size-xs-c6dbf459);
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  color: rgba(var(--on-surface), 0.7);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+/* ---- hover-to-copy control (account address + linked wallet rows) ---- */
+/* Hidden until the row is hovered or the button is focused (keyboard-reachable),
+ * but always laid out so revealing it never shifts the row. On copy it swaps to
+ * a check + "Copied" and stays visible for the ~1.5s confirmation window. */
+.copyBtn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: var(--radius-sm-c6dbf459);
+  background: transparent;
+  color: rgba(var(--on-surface), 0.6);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  line-height: var(--line-tight-c6dbf459);
+  opacity: 0;
+  transition:
+    opacity var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    color var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.zoneTop:hover .copyBtn,
+.walletRow:hover .copyBtn,
+.copyBtn:focus-visible {
+  opacity: 1;
+}
+.copyBtn:hover {
+  background: rgba(var(--accent), 0.12);
+  color: rgb(var(--on-surface));
+}
+.copyBtn:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: -2px;
+}
+/* Confirmed state: stays visible (even without hover) while "Copied" shows. */
+.copyBtnDone,
+.copyBtnDone:hover {
+  opacity: 1;
+  color: rgb(var(--accent));
+  background: rgba(var(--accent), 0.12);
+}
+.copyGlyph {
+  display: inline-flex;
+}
+.copyText {
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .copyBtn {
+    transition: none;
+  }
+}
+
+/* (b) middle: linked wallet rows + link-additional CTA. */
+.walletRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-c6dbf459);
+  padding: var(--space-1-c6dbf459) var(--space-2-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+}
+.walletIcon {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: var(--radius-sm-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgba(var(--on-surface), 0.8);
+  background: rgba(var(--on-surface), 0.06);
+}
+.walletMeta {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 1px;
+}
+.walletName {
+  font-size: var(--font-size-sm-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  color: rgb(var(--on-surface));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.walletReason {
+  font-size: var(--font-size-xs-c6dbf459);
+  color: rgba(var(--on-surface), 0.6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.walletKind {
+  flex: none;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(var(--on-surface), 0.66);
+}
+
+/* A wallet in cooldown / pending: dimmed row + an amber status pill with a short
+ * plain reason line. It reads as "not usable yet", never a hard failure. */
+.walletRowMuted .walletName {
+  color: rgba(var(--on-surface), 0.72);
+}
+.walletRowMuted .walletIcon {
+  opacity: 0.7;
+}
+.walletStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  padding: 2px 7px;
+  border-radius: var(--radius-pill-c6dbf459);
+  color: rgb(var(--warn));
+  background: rgba(var(--warn), 0.15);
+}
+
+/* Unlink control: hidden until the row is hovered or the button is focused, but
+ * always present in the layout (no shift) and keyboard-reachable. */
+.unlinkBtn {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-sm-c6dbf459);
+  color: rgba(var(--on-surface), 0.6);
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    color var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.walletRow:hover .unlinkBtn,
+.unlinkBtn:focus-visible {
+  opacity: 1;
+}
+.unlinkBtn:hover {
+  background: rgba(var(--danger), 0.14);
+  color: rgb(var(--danger));
+}
+.unlinkBtn:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: -2px;
+}
+
+/* Pagination for >3 linked wallets: dots + arrows, NEVER a scrollbar (§ never
+ * scroll). */
+.walletPager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2-c6dbf459);
+  padding: var(--space-1-c6dbf459) var(--space-2-c6dbf459) 0;
+}
+.pagerArrow {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-sm-c6dbf459);
+  color: rgba(var(--on-surface), 0.6);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    color var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.pagerArrow:hover:not(:disabled) {
+  background: rgba(var(--on-surface), 0.08);
+  color: rgb(var(--on-surface));
+}
+.pagerArrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.pagerArrow:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: -2px;
+}
+.pagerPrev {
+  transform: rotate(90deg);
+}
+.pagerNext {
+  transform: rotate(-90deg);
+}
+.pagerDots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pagerDot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  flex: none;
+  border: 0;
+  border-radius: var(--radius-pill-c6dbf459);
+  background: rgba(var(--on-surface), 0.25);
+  cursor: pointer;
+  transition: background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.pagerDot:hover {
+  background: rgba(var(--on-surface), 0.4);
+}
+.pagerDotOn {
+  background: rgb(var(--accent));
+}
+.pagerDot:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+.zoneEmpty {
+  padding: var(--space-1-c6dbf459) var(--space-2-c6dbf459);
+  font-size: var(--font-size-sm-c6dbf459);
+  color: rgba(var(--on-surface), 0.62);
+}
+.linkWalletBtn {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  margin-top: var(--space-1-c6dbf459);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-2-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+  cursor: pointer;
+  background: rgba(var(--accent), 0.12);
+  color: rgb(var(--on-surface));
+  font-family: inherit;
+  font-size: var(--font-size-sm-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  transition: background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.linkWalletBtn:hover {
+  background: rgba(var(--accent), 0.2);
+}
+.linkWalletBtn:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: -2px;
+}
+.linkWalletBtn svg {
+  color: rgb(var(--accent));
+}
+
+/* (c) bottom: switch accounts + sign out. */
+.switchGroup {
+  margin-bottom: var(--space-1-c6dbf459);
+}
+.signOut {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-2-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+  cursor: pointer;
+  background: transparent;
+  color: rgba(var(--on-surface), 0.8);
+  font-family: inherit;
+  font-size: var(--font-size-sm-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  transition: background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.signOut:hover {
+  background: rgba(var(--on-surface), 0.07);
+  color: rgb(var(--on-surface));
+}
+.signOut:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: -2px;
+}
+
+.menuItem {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-c6dbf459);
+  padding: var(--space-2-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  font-family: inherit;
+  text-align: left;
+}
+.menuItem:hover {
+  background: rgba(var(--on-surface), 0.07);
+}
+.menuItem:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: -2px;
+}
+.menuItemOn {
+  background: rgba(var(--accent), 0.16);
+}
+.menuItemOn:hover {
+  background: rgba(var(--accent), 0.22);
+}
+
+/* The account avatar carries the WaaP mark (the account behind the passport), so
+ * the switch-accounts rows read as accounts, not an unexplained green box. */
+.menuAvatar {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: var(--radius-md-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgb(var(--on-accent));
+  background: linear-gradient(135deg, rgb(var(--accent)), rgba(var(--accent), 0.55));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.menuName {
+  font-size: var(--font-size-md-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  color: rgb(var(--on-surface));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menuKind {
+  margin-left: auto;
+  flex: none;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(var(--on-surface), 0.72);
+}
+
+/* ---- ⓘ help ---- */
+.info {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgba(var(--on-surface), 0.72);
+  background: rgba(var(--on-surface), 0.05);
+  cursor: help;
+}
+/* Invisible ≥40px hit target (a11y §8): 22px + 2×9px = 40px. Visual size unchanged. */
+.info::before {
+  content: "";
+  position: absolute;
+  inset: -9px;
+}
+.info:hover {
+  color: rgb(var(--on-surface));
+  background: rgba(var(--on-surface), 0.1);
+}
+.info:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+
+/* ---- content window ---- */
+.content {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--space-3-c6dbf459);
+}
+
+/* Footer lives in the shared SecuredByFooter component (§ harmonized footer). */
+
+/* Press micro-interaction (design-sop §7.5 buttons): every button gets a subtle
+ * :active press on top of its existing hover state-layer + focus ring. A short
+ * transform transition keeps it at ~motion-fast; it degrades to none under
+ * reduced-motion below. */
+.appIcon,
+.acct,
+.copyBtn,
+.unlinkBtn,
+.linkWalletBtn,
+.signOut,
+.menuItem,
+.info {
+  transition:
+    background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    color var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    transform var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.appIcon:active,
+.acct:active,
+.copyBtn:active,
+.unlinkBtn:active,
+.linkWalletBtn:active,
+.signOut:active,
+.menuItem:active,
+.info:active {
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu,
+  .acctCaret,
+  .appIcon,
+  .acct,
+  .copyBtn,
+  .unlinkBtn,
+  .linkWalletBtn,
+  .signOut,
+  .menuItem,
+  .info {
+    transition: none;
+  }
+  .appIcon:active,
+  .acct:active,
+  .copyBtn:active,
+  .unlinkBtn:active,
+  .linkWalletBtn:active,
+  .signOut:active,
+  .menuItem:active,
+  .info:active {
+    transform: none;
+  }
+}

@@ -1,0 +1,1096 @@
+/*
+ * StampDetailDrawer - a passport-style slide-in drawer over the Stamps window
+ * (SOP §4). A scrim dims + blurs the grid behind; the drawer is a solid glass
+ * bottom sheet that slides up. Tokens only (§1), legible in both themes (§2/§8),
+ * structure from space + tone not hard lines (§ no-hard-lines), paginate never
+ * scroll (§ windows), all motion degrades under reduced-motion (§4). Everything
+ * lives INSIDE the shell content region: the overlay fills its container and
+ * clips the sliding sheet; nothing escapes the shell.
+ */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- scrim: the ONE translucent layer. Dims + blurs the grid behind. ---- */
+.scrim {
+  appearance: none;
+  border: 0;
+  position: absolute;
+  inset: 0;
+  padding: 0;
+  cursor: pointer;
+  /* Veil toward the surface so the grid recedes in BOTH themes (washes out on a
+   * white surface, darkens on a near-black one), plus a soft blur for depth. */
+  background: rgba(var(--surface), 0.55);
+  -webkit-backdrop-filter: blur(3px) saturate(1.05);
+  backdrop-filter: blur(3px) saturate(1.05);
+  opacity: 0;
+  transition: opacity var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.overlay[data-open="true"] .scrim {
+  opacity: 1;
+}
+
+/* ---- the sheet: a solid glass drawer that slides up from the bottom ---- */
+/* Leaves a strip of dimmed grid visible at the top so it reads as a drawer over
+ * the window, not a full replacement. Absolutely bottom-pinned with a definite
+ * height, so the inner flex column can pin the action area to the bottom. */
+.drawer {
+  position: absolute;
+  top: var(--space-3-c6dbf459);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2-c6dbf459) var(--space-3-c6dbf459) 0;
+  border-radius: var(--radius-lg-c6dbf459) var(--radius-lg-c6dbf459) 0 0;
+  /* Elevated, near-opaque surface: lifts off the scrim as a distinct layer in
+   * both themes (darkens slightly on white, lightens slightly on near-black),
+   * so content stays legible over the blurred grid without stacking translucency.
+   * Blur + shadow carry the separation instead of a hard border. */
+  background:
+    linear-gradient(rgba(var(--on-surface), 0.05), rgba(var(--on-surface), 0.05)),
+    rgba(var(--surface), 0.98);
+  box-shadow:
+    0 -10px 30px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  /* Slide up from below (transform none at rest so a tooltip trigger inside is
+   * never trapped in a transformed containing block). */
+  transform: translateY(102%);
+  opacity: 0;
+  transition:
+    transform var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459),
+    opacity var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.overlay[data-open="true"] .drawer {
+  transform: none;
+  opacity: 1;
+}
+/* First-mount enter: fade + slide even when mounted already open (§ panels fade,
+ * never pop). */
+@starting-style {
+  .overlay[data-open="true"] .drawer {
+    transform: translateY(102%);
+    opacity: 0;
+  }
+  .overlay[data-open="true"] .scrim {
+    opacity: 0;
+  }
+}
+
+/* ---- handle row: drag handle (a close affordance) + back button ---- */
+.handleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-c6dbf459);
+  flex: none;
+}
+.handle {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: var(--space-1-c6dbf459) 0;
+  cursor: pointer;
+  border-radius: var(--radius-md-c6dbf459);
+}
+.handleBar {
+  width: 34px;
+  height: 4px;
+  border-radius: var(--radius-pill-c6dbf459);
+  background: rgba(var(--on-surface), 0.22);
+  transition: background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.handle:hover .handleBar {
+  background: rgba(var(--on-surface), 0.36);
+}
+.handle:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+.back {
+  appearance: none;
+  border: 0;
+  position: relative;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border-radius: var(--radius-sm-c6dbf459);
+  color: rgba(var(--on-surface), 0.66);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    color var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+/* Invisible >=40px hit target (a11y §8): 26px + 2×7px = 40px. */
+.back::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+}
+.back:hover {
+  background: rgba(var(--on-surface), 0.08);
+  color: rgb(var(--on-surface));
+}
+.back:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: -2px;
+}
+/* Balances the back button so the handle stays optically centered. */
+.handleSpacer {
+  width: 26px;
+  flex: none;
+}
+
+/* ---- header: medallion + name + total points + on-chain status pill ---- */
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-c6dbf459);
+  flex: none;
+  margin-top: var(--space-1-c6dbf459);
+}
+.headMeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1-c6dbf459);
+  /* flex:1 + min-width:0 so headMeta takes the width the medallion leaves and its
+   * rows can shrink, so the header sub-row never pushes the timer past the shell
+   * edge (design-sop: nothing spills the shell). */
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.name {
+  margin: 0;
+  font-size: var(--font-size-lg-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  line-height: var(--line-tight-c6dbf459);
+  color: rgb(var(--on-surface));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.headSub {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1-c6dbf459);
+  min-width: 0;
+  /* Never wrap (fixed header height) and never overflow: the state pill can shrink
+   * so the points pill and the timer clock stay INSIDE the header row on a narrow
+   * shell (item 8: timer must not overflow on the right, both themes). */
+  flex-wrap: nowrap;
+}
+
+/* State pill: the ONE carrier of the stamp's state in the header, named in words
+ * (Minted / Mintable / Verified / Expiring in Nd / Expired). Colored by state; a
+ * small glass tooltip explains it. Amber ONLY for the expiring (soon) tone. */
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 9px 2px 6px;
+  border-radius: var(--radius-pill-c6dbf459);
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  cursor: help;
+  color: rgb(var(--on-surface));
+  background: rgba(var(--on-surface), 0.08);
+  transition: filter var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+  /* Yields space first (points + timer are flex:none): the inner label span
+   * ellipsizes so nothing in the header row crosses the drawer edge on a narrow
+   * shell (item 8), both themes. */
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+/* The label is a real element (not a bare text node) so it can ellipsize inside
+ * the inline-flex pill when the header row is tight. */
+.statusPillLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.statusPill:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+.statusPill:active {
+  filter: brightness(0.96);
+}
+.statusDot {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  background: rgba(var(--on-surface), 0.2);
+  color: rgb(var(--on-surface));
+}
+/* Minted: solid emerald tint + a filled chain dot. Emerald is reserved for the
+ * verified + minted "done" states only. */
+.statusPill[data-state="minted"] {
+  background: rgba(var(--accent), 0.16);
+}
+.statusPill[data-state="minted"] .statusDot {
+  background: rgb(var(--accent));
+  color: rgb(var(--on-accent));
+}
+/* Mintable: a SOLID SKY invitation, never emerald (so it never reads as an
+ * already-minted green stamp) and never gold. Solid sky + dark on-color clears
+ * >=4.5:1 in both themes. Its chain dot sits on the sky fill. */
+.statusPill[data-state="mintable"] {
+  color: rgb(var(--on-pending));
+  background: rgb(var(--pending));
+}
+.statusPill[data-state="mintable"] .statusDot {
+  background: rgba(var(--on-pending), 0.16);
+  color: rgb(var(--on-pending));
+}
+/* Verified off-chain: a calm emerald tint, no chain dot. */
+.statusPill[data-state="verified"] {
+  color: rgb(var(--accent));
+  background: rgba(var(--accent), 0.1);
+}
+/* Expiring soon: a SOLID cooler orange (--expiring), distinct from pending sky
+ * and shifted off the greenish-gold amber. Dark on-color clears >=4.5:1 both
+ * themes. */
+.statusPill[data-state="soon"] {
+  color: rgb(var(--on-expiring));
+  background: rgb(var(--expiring));
+}
+/* Not verified yet (pending): a SOLID SKY invitation, matching the mintable
+ * invitation language (the next step is to claim / verify). */
+.statusPill[data-state="none"] {
+  color: rgb(var(--on-pending));
+  background: rgb(var(--pending));
+}
+/* Expired: de-emphasized neutral grey, reads inactive. Uses on-surface so it is
+ * legible in both themes. */
+.statusPill[data-state="expired"] {
+  color: rgba(var(--on-surface), 0.72);
+  background: rgba(var(--on-surface), 0.08);
+}
+
+/* Points, shown once: a first-class "+N points" pill (the medallion drops its
+ * chip, so this is the single points carrier). Emerald tint so it reads as earned. */
+.headPoints {
+  flex: none;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill-c6dbf459);
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-bold-c6dbf459);
+  color: rgb(var(--accent));
+  background: rgba(var(--accent), 0.12);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Timer: a small clock whose tooltip carries the whole-stamp validity / renewal
+ * copy, so that long line no longer crowds the header. Amber ONLY when expiring
+ * soon (the sanctioned small indicator); muted (never amber) once expired. */
+.timer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: var(--radius-pill-c6dbf459);
+  color: rgba(var(--on-surface), 0.62);
+  background: rgba(var(--on-surface), 0.08);
+  cursor: help;
+}
+.timer:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+.timer[data-state="soon"] {
+  color: rgb(var(--expiring));
+  background: rgba(var(--expiring), 0.15);
+}
+.timer[data-state="expired"] {
+  color: rgba(var(--on-surface), 0.5);
+  background: rgba(var(--on-surface), 0.08);
+}
+
+/* Description FILLS SPACE (design-sop §7.5): shown in full when the accordion
+ * below is collapsed (using the freed space), and compressed to one line when a
+ * section is expanded so the open section still fits the fixed drawer height.
+ * Never hidden behind a toggle with the space left blank. */
+.descWrap {
+  margin: var(--space-2-c6dbf459) 0 0;
+  flex: none;
+}
+.desc {
+  margin: 0;
+  font-size: var(--font-size-sm-c6dbf459);
+  line-height: var(--line-normal-c6dbf459);
+  color: rgba(var(--on-surface), 0.72);
+}
+/* Compressed: one line, ellipsized, when a section is expanded below. */
+.descCompressed {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---- sub-credential rows: grow to fill, pushing the pager + action down ---- */
+.list {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1-c6dbf459);
+  margin-top: var(--space-2-c6dbf459);
+  align-content: flex-start;
+  /* Safety only: the page size is tuned so rows always fit, so this never has to
+   * clip. It guarantees a scrollbar can NEVER appear inside the shell (§ never
+   * scroll), even if an integrator overrides componentsPerPage too high. */
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-c6dbf459);
+  padding: var(--space-1-c6dbf459) var(--space-2-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+  /* Tonal band, not a hard line (§ no-hard-lines). */
+  background: rgba(var(--on-surface), 0.05);
+}
+.row[data-verified="false"] {
+  background: rgba(var(--on-surface), 0.03);
+}
+.rowIcon {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: var(--radius-sm-c6dbf459);
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  line-height: 1;
+  color: rgba(var(--on-surface), 0.82);
+  background: rgba(var(--on-surface), 0.07);
+}
+.row[data-verified="false"] .rowIcon {
+  opacity: 0.6;
+}
+.rowMeta {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 1px;
+}
+.rowName {
+  font-size: var(--font-size-sm-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  color: rgb(var(--on-surface));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rowState {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs-c6dbf459);
+  color: rgba(var(--on-surface), 0.62);
+  white-space: nowrap;
+}
+.rowPoints {
+  flex: none;
+  padding: 1px 8px;
+  border-radius: var(--radius-pill-c6dbf459);
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-bold-c6dbf459);
+  font-variant-numeric: tabular-nums;
+  color: rgba(var(--on-surface), 0.7);
+  background: rgba(var(--on-surface), 0.1);
+}
+.row[data-verified="true"] .rowPoints {
+  color: rgb(var(--on-accent));
+  background: rgb(var(--accent));
+}
+
+/* ---- pager: dots + arrows, never a scrollbar (matches the Stamps window) ---- */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2-c6dbf459);
+  padding: var(--space-2-c6dbf459) 0 0;
+  flex: none;
+}
+.pagerArrow {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-sm-c6dbf459);
+  color: rgba(var(--on-surface), 0.6);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    color var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.pagerArrow:hover:not(:disabled) {
+  background: rgba(var(--on-surface), 0.08);
+  color: rgb(var(--on-surface));
+}
+.pagerArrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.pagerArrow:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: -2px;
+}
+.pagerPrev {
+  transform: rotate(90deg);
+}
+.pagerNext {
+  transform: rotate(-90deg);
+}
+.pagerDots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pagerDot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  flex: none;
+  border: 0;
+  border-radius: var(--radius-pill-c6dbf459);
+  background: rgba(var(--on-surface), 0.25);
+  cursor: pointer;
+  transition: background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.pagerDot:hover {
+  background: rgba(var(--on-surface), 0.4);
+}
+.pagerDotOn {
+  background: rgb(var(--accent));
+}
+.pagerDot:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+
+/* The weighted bar: segment LENGTH encodes each component's share; one accent
+ * family (deriveTints), no legend and no number (points ride on the rows above,
+ * the total is stated once in the header). Sits inside the breakdown accordion. */
+.computeBar {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  height: 8px;
+  margin-top: var(--space-2-c6dbf459);
+  border-radius: var(--radius-pill-c6dbf459);
+  overflow: hidden;
+  background: rgba(var(--on-surface), 0.08);
+}
+.computeSeg {
+  height: 100%;
+  min-width: 3px;
+  border-radius: var(--radius-pill-c6dbf459);
+}
+
+/* ---- accordion sections: Score breakdown + Onchain credential ---------------- */
+/* An accordion GROUP (at most one open) so an expanded section always fits the
+ * fixed drawer height. Collapsed each is a single tonal header row; expanded it
+ * reveals its rows. Structure is tone + space, not hard lines (§ no-hard-lines). */
+.section {
+  flex: none;
+  margin-top: var(--space-1-c6dbf459);
+}
+.sectionHead {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px var(--space-2-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+  background: rgba(var(--on-surface), 0.05);
+  color: rgb(var(--on-surface));
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+}
+.sectionHead:hover {
+  background: rgba(var(--on-surface), 0.08);
+}
+.sectionHead:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: -2px;
+}
+.sectionLabel {
+  flex: 1;
+  text-align: left;
+  letter-spacing: 0.02em;
+}
+.sectionChev,
+.sectionChevOpen {
+  flex: none;
+  color: rgba(var(--on-surface), 0.6);
+  transition: transform var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.sectionChevOpen {
+  transform: rotate(180deg);
+}
+.sectionBody {
+  padding: var(--space-1-c6dbf459) 2px 0;
+}
+.ocHeadIcon {
+  display: inline-flex;
+  color: rgb(var(--accent));
+}
+.ocBody {
+  padding: 2px 2px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Protocol + chain line, led by the chain logo (never the word alone), with the
+ * Valid / Revoked status pushed to the right of the same row (keeps the block
+ * compact so it fits the fixed drawer height). */
+.ocProtocol {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  color: rgb(var(--on-surface));
+}
+.ocChain {
+  display: inline-flex;
+  flex: none;
+  color: rgb(var(--on-surface));
+}
+.ocProtocolText {
+  flex: 1 1 auto;
+  min-width: 0;
+  letter-spacing: 0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Status on the protocol row. Valid reads positive (emerald), Revoked reads warn. */
+.ocStatus {
+  flex: none;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+}
+.ocStatus[data-revoked="false"] {
+  color: rgb(var(--accent));
+}
+.ocStatus[data-revoked="true"] {
+  color: rgb(var(--warn));
+}
+
+/* Compact plain line for the Issued / Expires (and the Clean Hands privacy note),
+ * so dates and the encryption line sit on one row without a label column. */
+.ocLine {
+  margin: 0;
+  font-size: var(--font-size-xs-c6dbf459);
+  line-height: 1.35;
+  color: rgba(var(--on-surface), 0.7);
+  font-variant-numeric: tabular-nums;
+}
+/* One readable column: each row is Label ... value, so long values (dates,
+ * "Proof of Clean Hands") never truncate. Compact line-height keeps the six rows
+ * within the space freed by the component list stepping aside (never scrolls). */
+.ocGrid {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.ocItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3-c6dbf459);
+  min-width: 0;
+  line-height: 1.3;
+}
+.ocKey {
+  flex: none;
+  font-size: var(--font-size-xs-c6dbf459);
+  color: rgba(var(--on-surface), 0.55);
+}
+.ocVal {
+  margin: 0;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  color: rgb(var(--on-surface));
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* Not revoked reads positive (emerald); revoked reads as a warn state. */
+.ocVal[data-revoked="false"] {
+  color: rgb(var(--accent));
+}
+.ocVal[data-revoked="true"] {
+  color: rgb(var(--warn));
+}
+/* Verified issuer: a named on-chain identity (human.tech) with a small check,
+ * linking to view the issuer / attester on chain. Never a raw hex address. */
+.ocIssuer {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  color: rgb(var(--on-surface));
+  font-weight: var(--weight-semibold-c6dbf459);
+  text-decoration: none;
+}
+a.ocIssuer:hover {
+  text-decoration: underline;
+}
+a.ocIssuer:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm-c6dbf459);
+}
+.ocVerifiedMark {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgb(var(--on-accent));
+  background: rgb(var(--accent));
+}
+.ocView {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: var(--space-1-c6dbf459);
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  color: rgb(var(--accent));
+  text-decoration: none;
+  cursor: pointer;
+}
+.ocView:hover {
+  text-decoration: underline;
+}
+.ocView:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm-c6dbf459);
+}
+
+/* ---- onchain body, canonical panel layout (design-sop §7.5, no crowding) ---- */
+/* (a) Trust badge, moved to the TOP of the onchain body: a linked pill that opens
+ * the VOLE-based ZK docs in a new tab. Emerald reads as a proven / trust signal. */
+.ocTrust {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 2px;
+  padding: 3px 9px 3px 4px;
+  border-radius: var(--radius-pill-c6dbf459);
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  color: rgb(var(--accent));
+  background: rgba(var(--accent), 0.12);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.ocTrust:hover {
+  background: rgba(var(--accent), 0.18);
+}
+.ocTrust:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+.ocTrustDot {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgb(var(--on-accent));
+  background: rgb(var(--accent));
+}
+.ocTrustExt {
+  flex: none;
+  opacity: 0.8;
+}
+
+/* (b) Credential record panel: the label:value grid contained as ONE subtle
+ * surface, so the record reads as an organised block, not loose lines. */
+.ocPanel {
+  margin: 0;
+  padding: 3px var(--space-2-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+  background: rgba(var(--on-surface), 0.04);
+  box-shadow: inset 0 0 0 1px rgba(var(--on-surface), 0.06);
+}
+
+/* (c) Clean Hands privacy callout: a distinct tinted, bordered box with a shield,
+ * so the encryption + rule-based disclosure point stands apart as its own element
+ * rather than an inline line (design-sop §7.5). */
+.ocCallout {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2-c6dbf459);
+  margin-top: var(--space-1-c6dbf459);
+  padding: var(--space-1-c6dbf459) var(--space-2-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+  background: rgba(var(--accent), 0.08);
+  box-shadow: inset 0 0 0 1px rgba(var(--accent), 0.22);
+}
+.ocCalloutIcon {
+  flex: none;
+  margin-top: 1px;
+  display: inline-flex;
+  color: rgb(var(--accent));
+}
+.ocCalloutText {
+  margin: 0;
+  font-size: var(--font-size-xs-c6dbf459);
+  line-height: 1.4;
+  color: rgba(var(--on-surface), 0.82);
+}
+
+/* (d) Links and details: a collapsible disclosure, COLLAPSED by default, that
+ * holds the view links so the record stays uncluttered and the fixed drawer
+ * height is reclaimed (so the revoked Mint / Renew CTA is never clipped, §9). */
+.ocLinks {
+  margin-top: var(--space-1-c6dbf459);
+}
+.ocLinksHead {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-1-c6dbf459) 2px;
+  background: transparent;
+  color: rgba(var(--on-surface), 0.72);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+}
+.ocLinksHead:hover {
+  color: rgb(var(--on-surface));
+}
+.ocLinksHead:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm-c6dbf459);
+}
+.ocLinksLabel {
+  flex: 1;
+  text-align: left;
+  letter-spacing: 0.02em;
+}
+.ocLinksBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1-c6dbf459);
+  padding: 2px 2px 0;
+}
+.ocLinksBody .ocView {
+  margin-top: 0;
+}
+
+/* Revocation detail (only when revoked): when / why / a link to the revoke tx.
+ * A faint tonal band groups it, no hard line. */
+.ocRevoke {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: var(--space-1-c6dbf459);
+  padding: var(--space-1-c6dbf459) var(--space-2-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+  /* Revocation reads as an error state (red), distinct from the amber expiring
+   * and the emerald healthy states. */
+  background: rgba(var(--danger), 0.1);
+}
+.ocRevoke .ocLine {
+  color: rgba(var(--on-surface), 0.78);
+}
+
+/* Clean Hands privacy line + disclosure-conditions link, on their own lines under
+ * the status row. Rule-based disclosure, gated by on-chain conditions. */
+.ocPrivacy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* All view actions grouped in ONE row: labeled text links (View on chain / View
+ * transaction / Disclosure conditions), never icon-only buttons with tooltips.
+ * Wraps if they do not fit; a small top margin separates it from the record. */
+.ocActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1-c6dbf459) var(--space-3-c6dbf459);
+  margin-top: var(--space-1-c6dbf459);
+}
+.ocActions .ocView {
+  margin-top: 0;
+}
+/* Compact icon link: a distinct, tappable glass-tooltip affordance. A >=40px hit
+ * area (a11y §8) is provided by the invisible ::before, the visual is 26px. */
+.ocIconLink {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm-c6dbf459);
+  color: rgb(var(--accent));
+  background: rgba(var(--accent), 0.1);
+  cursor: pointer;
+  transition: filter var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.ocIconLink::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+}
+.ocIconLink:hover {
+  filter: brightness(1.06);
+  background: rgba(var(--accent), 0.16);
+}
+.ocIconLink:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+/* Static trust tag (no tooltip): reads in words on one line. */
+.ocTag {
+  align-self: flex-start;
+  margin-top: var(--space-1-c6dbf459);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px 2px 5px;
+  border-radius: var(--radius-pill-c6dbf459);
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  color: rgb(var(--accent));
+  background: rgba(var(--accent), 0.1);
+  white-space: nowrap;
+}
+.ocTagDot {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgb(var(--on-accent));
+  background: rgb(var(--accent));
+}
+
+/* ---- action area: bottom-pinned, one primary action + optional renew ---- */
+/* margin-top:auto pins it to the bottom when there is no flex-grow list to do so
+ * (the focused onchain-credential view drops the list); inert otherwise. */
+.actions {
+  flex: none;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2-c6dbf459);
+  padding: 0 0 var(--space-1-c6dbf459);
+}
+/* Two actions (primary + renew) share ONE row so the drawer keeps its single
+ * action-row height whether or not renew is present (no vertical jump, no clip). */
+.actionsRow {
+  flex-direction: row;
+  align-items: stretch;
+}
+.actionsRow > .cta,
+.actionsRow > .doneRow {
+  flex: 1;
+}
+.actionsRow > .ctaRenew {
+  flex: none;
+  width: auto;
+  padding: 0 var(--space-3-c6dbf459);
+}
+
+/* ONE shared button box (matches the Score / Stamps windows). Emerald primary for
+ * every action (Notarize / Claim / View), including mint; the secondary (renew)
+ * is tonal. Only color / weight shifts; no gold anywhere. */
+.cta {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  height: 46px;
+  padding: 0 var(--space-4-c6dbf459);
+  border-radius: var(--radius-lg-c6dbf459);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgb(var(--accent));
+  color: rgb(var(--on-accent));
+  font-family: var(--font-family-body-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  font-size: var(--font-size-md-c6dbf459);
+  box-shadow: var(--shadow-sm-c6dbf459);
+  transition:
+    filter var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459),
+    background var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459),
+    transform var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.cta:hover {
+  filter: brightness(1.08);
+}
+.cta:active {
+  transform: translateY(1px);
+}
+.cta:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+.ctaIcon {
+  display: inline-flex;
+}
+.ctaLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Secondary (renew): tonal, no hard line, quieter than the primary. */
+.ctaSecondary {
+  background: rgba(var(--on-surface), 0.07);
+  color: rgb(var(--on-surface));
+  box-shadow: none;
+}
+.ctaSecondary:hover {
+  filter: none;
+  background: rgba(var(--on-surface), 0.12);
+}
+/* Renew is the compact tonal step beside the primary (see .actionsRow). */
+.ctaRenew {
+  font-size: var(--font-size-sm-c6dbf459);
+}
+
+/* Verified "done" state: a calm confirmation, not a CTA (nothing left to do). It
+ * occupies the same bottom-pinned slot so the layout does not jump between states. */
+.doneRow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2-c6dbf459);
+  height: 46px;
+  border-radius: var(--radius-lg-c6dbf459);
+  background: rgba(var(--accent), 0.12);
+}
+.doneSeal {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgb(var(--on-accent));
+  background: radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.9), rgb(var(--accent)) 80%);
+  box-shadow: var(--shadow-sm-c6dbf459);
+}
+.doneText {
+  font-size: var(--font-size-md-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  color: rgb(var(--on-surface));
+}
+
+/* Press micro-interaction on the drawer's secondary buttons (the primary .cta
+ * already presses via translateY above). Subtle scale at ~motion-fast. */
+.back,
+.sectionHead,
+.pagerArrow,
+.moreBtn {
+  transition:
+    background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    color var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    transform var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.back:active,
+.sectionHead:active,
+.pagerArrow:active:not(:disabled),
+.moreBtn:active {
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .drawer,
+  .handleBar,
+  .cta,
+  .back,
+  .sectionHead,
+  .pagerArrow,
+  .pagerDot,
+  .moreBtn,
+  .sectionChev,
+  .sectionChevOpen {
+    transition: none;
+  }
+  .cta:active,
+  .back:active,
+  .sectionHead:active,
+  .pagerArrow:active,
+  .moreBtn:active {
+    transform: none;
+  }
+}

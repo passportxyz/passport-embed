@@ -1,0 +1,888 @@
+/*
+ * StampsWindow - stamps as glass medallion plaques (SOP §4). Each stamp is a real
+ * badge (conic rim + embossed face + depth + a corner pip), grouped by category
+ * (tonal header, no hard line), paginated and NEVER scrolled. Tokens only (§1),
+ * legible in both themes (§2/§8), motion degrades under reduced-motion (§4).
+ */
+
+.window {
+  display: flex;
+  flex-direction: column;
+  /* Fill the shell's fixed content height so switching tabs never jumps and the
+   * verify CTA bottom-pins at the same y as the other windows' primary CTA. */
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- header: title + a quiet verified count. Tonal, no hard line. ---- */
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2-c6dbf459);
+  width: 100%;
+}
+.title {
+  font-size: var(--font-size-lg-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  color: rgb(var(--on-surface));
+}
+.count {
+  flex: none;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  color: rgba(var(--on-surface), 0.62);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- paged region: grows to fill, pushing the pager + CTA to the bottom. ---- */
+.pages {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3-c6dbf459);
+  margin-top: var(--space-3-c6dbf459);
+  align-content: flex-start;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2-c6dbf459);
+}
+
+/* Category header: tone + space, never a rule (§ no-hard-lines). */
+.catHead {
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(var(--on-surface), 0.55);
+}
+
+/* ---- category selector: the primary nav. One ICON segment per real category. ---- */
+.tabs {
+  display: flex;
+  gap: var(--space-1-c6dbf459);
+  width: 100%;
+  padding: 3px;
+  border-radius: var(--radius-lg-c6dbf459);
+  /* A soft tonal trough holds the segments; the active one lifts out of it. No
+   * hard divider lines between segments (§ no-hard-lines). */
+  background: rgba(var(--on-surface), 0.06);
+}
+.tab {
+  appearance: none;
+  border: 0;
+  /* Equal-width flex slots so the segmented control stays even (the tabs are now
+   * direct children of .tabs, no Tooltip trigger wrapper). */
+  flex: 1 1 0;
+  width: 100%;
+  min-width: 0;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  height: 34px;
+  padding: 0 var(--space-1-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+  background: transparent;
+  color: rgba(var(--on-surface), 0.62);
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    color var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.tab:hover {
+  color: rgb(var(--on-surface));
+}
+.tabOn {
+  background: rgb(var(--surface));
+  color: rgb(var(--on-surface));
+  box-shadow: var(--shadow-sm-c6dbf459);
+}
+.tab:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+/* The Lucide category icon carries the segment (card / globe / person). Accent on
+ * the active tab so the selected category reads at a glance. */
+.tabIcon {
+  display: inline-flex;
+  color: rgba(var(--on-surface), 0.6);
+}
+.tabIcon svg {
+  width: 18px;
+  height: 18px;
+}
+.tab:hover .tabIcon {
+  color: rgb(var(--on-surface));
+}
+.tabOn .tabIcon {
+  color: rgb(var(--accent));
+}
+/* The bottom line: the short category NAME on the active tab (so the selected tab
+ * "shows it"), the verified/total COUNT on inactive tabs. Both are one short line,
+ * so the icon never shifts between states. */
+.tabSub {
+  max-width: 100%;
+  font-size: 11px;
+  font-weight: var(--weight-semibold-c6dbf459);
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+  color: rgba(var(--on-surface), 0.55);
+}
+.tabOn .tabSub {
+  color: rgb(var(--accent));
+}
+
+/* Active-category heading: the verbatim name (single line, ellipsized on the one
+ * very long name) + its verified count. Tonal, no rule. */
+.catBar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2-c6dbf459);
+  width: 100%;
+  margin-top: var(--space-2-c6dbf459);
+}
+.catName {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-md-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  color: rgb(var(--on-surface));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.catGlyph {
+  flex: none;
+  display: inline-flex;
+  color: rgb(var(--accent));
+}
+.catGlyph svg {
+  width: 16px;
+  height: 16px;
+}
+.catNameText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Overall passport progress, plainly labeled (never a bare star + number). */
+.catSummary {
+  flex: none;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  color: rgba(var(--on-surface), 0.62);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Top filter: a subtle inline segmented control on the category bar. Tonal track,
+ * an emerald-tinted active segment; no hard border. Sits on the right of the bar
+ * so it costs no extra height in the fixed shell. */
+/* The filter is the ONLY control on its bar (it replaces the category summary on
+ * full, and the title + count on mini). Auto horizontal margins CENTER the lone
+ * segmented control in its flex row rather than leaving it hard against the left
+ * edge (founder review: the All / Verified / Pending / Expired control reads
+ * centered). Auto-margin is used instead of the parent's justify-content so it
+ * works regardless of how CSS Modules scope selectors. */
+.filter {
+  flex: none;
+  align-self: center;
+  margin-left: auto;
+  margin-right: auto;
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-pill-c6dbf459);
+  background: rgba(var(--on-surface), 0.06);
+}
+.filterSeg {
+  appearance: none;
+  border: 0;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill-c6dbf459);
+  background: transparent;
+  color: rgba(var(--on-surface), 0.6);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: var(--weight-semibold-c6dbf459);
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    color var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    transform var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.filterSeg:hover {
+  color: rgb(var(--on-surface));
+}
+.filterSeg:active {
+  transform: scale(0.96);
+}
+.filterSeg:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+/* Active segment: a raised surface chip. The LABEL is tinted by the segment's
+ * SEMANTIC color so the active lens reads its own state colour (the color system:
+ * verified emerald, pending sky, expired muted grey, all neutral). */
+.filterSegOn {
+  background: rgb(var(--surface));
+  color: rgb(var(--on-surface));
+  box-shadow: var(--shadow-sm-c6dbf459);
+}
+.filterSegOn[data-seg="verified"] {
+  color: rgb(var(--accent));
+}
+.filterSegOn[data-seg="verifiable"] {
+  color: rgb(var(--pending));
+}
+.filterSegOn[data-seg="expired"] {
+  color: rgba(var(--on-surface), 0.55);
+}
+
+/* Press micro-interaction on the category tabs (hover + focus already above). */
+.tab:active {
+  transform: scale(0.97);
+}
+.badge:active {
+  transform: translateY(0) scale(0.97);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: var(--space-2-c6dbf459);
+  row-gap: var(--space-3-c6dbf459);
+}
+
+/* ---- one badge: medallion + name, the whole thing is the tap target ---- */
+.badge {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  /* Fill the grid cell whether the direct parent is the cell or the Tooltip
+   * trigger wrapper (added when a stamp has a description), so the medallion
+   * stays centered under both. */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2-c6dbf459);
+  padding: var(--space-1-c6dbf459) 2px var(--space-1-c6dbf459);
+  border-radius: var(--radius-lg-c6dbf459);
+  color: inherit;
+  font-family: inherit;
+  transition: transform var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.badge:hover {
+  transform: translateY(-1px);
+}
+.badge:hover .medallion {
+  filter: brightness(1.05);
+}
+.badge:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+
+/* ---- the medallion: rim (conic) + embossed face + depth ---- */
+.medallion {
+  --rd-med: 50px;
+  position: relative;
+  width: var(--rd-med);
+  height: var(--rd-med);
+  flex: none;
+  border-radius: var(--radius-pill-c6dbf459);
+  /* rim: a soft metallic ring drawn as a conic gradient behind the face. Neutral
+   * (unearned) by default; emerald when verified. Padding reveals it as the rim. */
+  padding: 2px;
+  background: conic-gradient(
+    from 210deg,
+    rgba(var(--on-surface), 0.05),
+    rgba(var(--on-surface), 0.2),
+    rgba(var(--on-surface), 0.05),
+    rgba(var(--on-surface), 0.16),
+    rgba(var(--on-surface), 0.05)
+  );
+  box-shadow:
+    var(--shadow-sm-c6dbf459),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: filter var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.medallion[data-verified="true"] {
+  background: conic-gradient(
+    from 210deg,
+    rgba(var(--accent), 0.35),
+    rgba(var(--accent), 0.9),
+    rgba(var(--accent), 0.4),
+    rgba(var(--accent), 0.85),
+    rgba(var(--accent), 0.35)
+  );
+}
+
+/* Mintable (verified, not notarized yet): a SKY-BLUE invitation, never emerald.
+ * Emerald is reserved for verified + minted only, so a mintable stamp must not
+ * read as an already-minted green one (founder review). The whole disc shifts to
+ * sky: a sky conic rim + a soft sky invite ring, lifting it above the calm
+ * off-chain medallion without ever looking "done". */
+.medallion[data-verified="true"][data-onchain="mintable"] {
+  background: conic-gradient(
+    from 210deg,
+    rgba(var(--pending), 0.3),
+    rgba(var(--pending), 0.85),
+    rgba(var(--pending), 0.35),
+    rgba(var(--pending), 0.8),
+    rgba(var(--pending), 0.3)
+  );
+  box-shadow:
+    var(--shadow-sm-c6dbf459),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 0 0 1.5px rgba(var(--pending), 0.55);
+}
+/* Mintable face: a calm FLAT sky tint (never the emerald "earned / done" fill),
+ * and never embossed (only a minted stamp is struck). Reads as "available to
+ * mint", an invitation, distinct from the emerald off-chain verified face. */
+.medallion[data-verified="true"][data-onchain="mintable"] .face {
+  background: linear-gradient(160deg, rgba(var(--pending), 0.2), rgba(var(--pending), 0.06));
+}
+/* Points stay on the sky invite disc, so the earned "+N" ribbon reads on sky. */
+.medallion[data-verified="true"][data-onchain="mintable"] .points {
+  background: rgb(var(--pending));
+  color: rgb(var(--on-pending));
+}
+
+/* Minted (notarized on-chain): the "special" state. A stronger emerald ring plus
+ * an outer glow, read together with the static chain-link badge top-right. No
+ * settle animation: the minted mark is self-evident and legible at a glance. */
+.medallion[data-verified="true"][data-onchain="minted"] {
+  box-shadow:
+    var(--shadow-sm-c6dbf459),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 0 1.5px rgba(var(--accent), 0.6),
+    0 0 16px rgba(var(--accent), 0.4);
+}
+
+.face {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* Clip the minted sheen sweep to the disc. */
+  overflow: hidden;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgba(var(--on-surface), 0.85);
+  /* FLAT plate by default: a plain surface fill, no emboss. Only a MINTED stamp
+   * gets the struck-metal treatment below, so minted vs unminted read as clearly
+   * different (founder review: minted = stamped, unminted = flat). */
+  background: rgb(var(--surface));
+  box-shadow: none;
+}
+.medallion[data-verified="true"] .face {
+  color: rgb(var(--on-surface));
+  /* Verified off-chain / pending: a calm FLAT emerald tint, still no emboss. */
+  background: linear-gradient(160deg, rgba(var(--accent), 0.22), rgba(var(--accent), 0.08));
+}
+
+/* Minted = physically STAMPED. Only the minted medallion gets the embossed
+ * struck-metal plate: a top-left highlight + inset depth so it reads as pressed
+ * into the surface, the embossed look the founder liked. Not applied when
+ * expired (an expired stamp stays flat + grey). */
+.medallion:not([data-expired="true"])[data-onchain="minted"][data-verified="true"] .face {
+  background:
+    radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.45), transparent 55%),
+    linear-gradient(160deg, rgba(var(--accent), 0.3), rgba(var(--accent), 0.12));
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.28),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.2);
+}
+/* A clean official sheen sweeps ONCE for a minted stamp (a struck-coin glint that
+ * says "freshly stamped"). It waits ~2.4s after mount so it reads as a gentle,
+ * deliberate settle rather than an instant flash, then sweeps softly once. Only a
+ * MINTED medallion gets it (unstamped medallions are flat, no glint). Degrades to
+ * nothing under reduced motion. */
+.medallion:not([data-expired="true"])[data-onchain="minted"][data-verified="true"] .face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 36%,
+    rgba(255, 255, 255, 0.42) 50%,
+    transparent 64%
+  );
+  transform: translateX(-130%);
+  animation: rdSheen 1.8s var(--ease-standard-c6dbf459) 2.4s 1;
+  pointer-events: none;
+}
+@keyframes rdSheen {
+  to {
+    transform: translateX(130%);
+  }
+}
+/* Available (not verified): a GHOSTED OUTLINE, not a filled disc. Fill = verified
+ * (design-sop state system): the rim drops to a thin neutral ring, the face is a
+ * near-empty recess, and the glyph is muted, so scanning the grid reads lit
+ * (have) vs ghost (do not have) at a glance. */
+.medallion[data-verified="false"] {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px rgba(var(--on-surface), 0.16);
+}
+.medallion[data-verified="false"] .face {
+  background: rgba(var(--on-surface), 0.02);
+  box-shadow: inset 0 0 0 1px rgba(var(--on-surface), 0.05);
+}
+.medallion[data-verified="false"] .glyph {
+  opacity: 0.55;
+}
+
+.glyph {
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  line-height: 1;
+}
+/* Real stamp icons are inline SVGs (currentColor). Size them to the medallion so
+ * they read the same whether the source viewBox is 24, 40, or 48. */
+.glyph svg {
+  width: 22px;
+  height: 22px;
+}
+.medallionSm .glyph svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* Expired stamp: reads as lapsed at a glance, on the grid AND in the drawer
+ * header. The emerald rim drops to a neutral ring, the face desaturates, and a
+ * muted outline replaces any earned glow, so the emphasis drains away and it
+ * reads inactive. Declared AFTER the minted / mintable rules so it always wins. */
+.medallion[data-expired="true"] {
+  background: rgba(var(--on-surface), 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 0 1px rgba(var(--on-surface), 0.2);
+  animation: none;
+}
+.medallion[data-expired="true"] .face {
+  filter: grayscale(1);
+}
+.medallion[data-expired="true"] .glyph {
+  opacity: 0.55;
+}
+
+/* Minted chain-link pip: the single "notarized on chain" mark, emerald. A
+ * surface-colored ring punches it off the medallion (a notch, not a divider). */
+.pip {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgb(var(--on-accent));
+  background: rgb(var(--accent));
+  box-shadow: 0 0 0 2px rgb(var(--surface));
+}
+.medallionSm .pip {
+  width: 15px;
+  height: 15px;
+}
+
+/* Expiring-soon validity ring: a thin amber ARC on the medallion rim, the ONLY
+ * amber on the medallion. Its length is the days left (Medallion sets the
+ * dasharray), so it visibly drains toward expiry. Drawn over the rim, under the
+ * corner tag; rotated so it starts at the top. */
+.ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+  pointer-events: none;
+  overflow: visible;
+}
+.ringArc {
+  fill: none;
+  stroke: rgb(var(--expiring));
+  stroke-width: 5;
+  stroke-linecap: round;
+  transition: stroke-dasharray var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459);
+  /* Animate-FILL on mount: the arc sweeps from empty up to its day-count value
+   * (set inline as the final stroke-dasharray), like a score ring filling. The
+   * keyframe only pins the FROM (empty), so the TO resolves to the inline value.
+   * Reduced motion shows the final arc immediately (rule below). */
+  animation: rdRingFill var(--motion-slow-c6dbf459) var(--ease-standard-c6dbf459) 0.15s 1 both;
+}
+@keyframes rdRingFill {
+  from {
+    stroke-dasharray: 0 100;
+  }
+}
+
+/* Corner tag: the top-right single slot when the state is time-sensitive. "Nd"
+ * (amber) names the days left for an expiring stamp; "Expired" (neutral) marks a
+ * lapsed one. It shares the corner with the minted link-chip (never both), so the
+ * medallion keeps exactly ONE indicator location and no top-left mark. A surface
+ * ring lifts it off the face so it always reads. */
+.cornerTag {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  padding: 1px 5px;
+  border-radius: var(--radius-pill-c6dbf459);
+  font-size: 10px;
+  font-weight: var(--weight-bold-c6dbf459);
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  box-shadow: 0 0 0 2px rgb(var(--surface));
+}
+.cornerTag[data-tone="soon"] {
+  color: rgb(var(--on-expiring));
+  background: rgb(var(--expiring));
+}
+.cornerTag[data-tone="expired"] {
+  color: rgba(var(--on-surface), 0.72);
+  background: rgba(var(--on-surface), 0.16);
+}
+.medallionSm .cornerTag {
+  font-size: 9px;
+  padding: 0 4px;
+  top: -5px;
+  right: -5px;
+}
+
+/* Points chip: overlaps the medallion foot like a badge ribbon. Emerald when
+ * earned (verified), muted when the points are still only available. */
+.points {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1px 7px;
+  border-radius: var(--radius-pill-c6dbf459);
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-bold-c6dbf459);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  background: rgba(var(--on-surface), 0.14);
+  color: rgba(var(--on-surface), 0.72);
+}
+.medallion[data-verified="true"] .points {
+  background: rgb(var(--accent));
+  color: rgb(var(--on-accent));
+  box-shadow: var(--shadow-sm-c6dbf459);
+}
+/* An expired stamp keeps its points visible but drops the earned emerald, so the
+ * whole medallion reads inactive (the corner already says "Expired"). */
+.medallion[data-expired="true"] .points,
+.points[data-expired="true"] {
+  background: rgba(var(--on-surface), 0.14);
+  color: rgba(var(--on-surface), 0.6);
+  box-shadow: none;
+}
+
+.name {
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  line-height: var(--line-tight-c6dbf459);
+  color: rgb(var(--on-surface));
+  text-align: center;
+  max-width: 100%;
+  /* Reserve two lines so every badge row is the SAME height whether a name wraps
+   * or not. This keeps the paged region's height deterministic, so nothing spills
+   * the fixed shell height (§ nothing outside the shell / never scroll). */
+  min-height: calc(2 * var(--font-size-xs-c6dbf459) * var(--line-tight-c6dbf459));
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---- empty / loading center ---- */
+.center {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3-c6dbf459);
+  text-align: center;
+}
+.emptyMark {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgba(var(--on-surface), 0.6);
+  background: rgba(var(--on-surface), 0.06);
+}
+.emptyText {
+  margin: 0;
+  max-width: 220px;
+  font-size: var(--font-size-sm-c6dbf459);
+  line-height: var(--line-normal-c6dbf459);
+  color: rgba(var(--on-surface), 0.72);
+  text-wrap: balance;
+}
+
+.loaderWrap {
+  display: grid;
+  place-items: center;
+}
+.spin {
+  animation: rdSpin 1s linear infinite;
+  transform-origin: center;
+}
+@keyframes rdSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---- pager: dots + arrows, never a scrollbar (matches the shell pager) ---- */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2-c6dbf459);
+  padding: var(--space-2-c6dbf459) 0 0;
+}
+.pagerArrow {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  border-radius: var(--radius-sm-c6dbf459);
+  color: rgba(var(--on-surface), 0.6);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    color var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.pagerArrow:hover:not(:disabled) {
+  background: rgba(var(--on-surface), 0.08);
+  color: rgb(var(--on-surface));
+}
+.pagerArrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.pagerArrow:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: -2px;
+}
+.pagerPrev {
+  transform: rotate(90deg);
+}
+.pagerNext {
+  transform: rotate(-90deg);
+}
+.pagerDots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pagerDot {
+  width: 6px;
+  height: 6px;
+  padding: 0;
+  flex: none;
+  border: 0;
+  border-radius: var(--radius-pill-c6dbf459);
+  background: rgba(var(--on-surface), 0.25);
+  cursor: pointer;
+  transition: background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.pagerDot:hover {
+  background: rgba(var(--on-surface), 0.4);
+}
+.pagerDotOn {
+  background: rgb(var(--accent));
+}
+.pagerDot:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+
+/* ---- verify CTA: same box metric + emerald primary as the Score window ---- */
+.cta {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  height: 46px;
+  margin-top: var(--space-3-c6dbf459);
+  padding: 0 var(--space-4-c6dbf459);
+  border-radius: var(--radius-lg-c6dbf459);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgb(var(--accent));
+  color: rgb(var(--on-accent));
+  font-family: var(--font-family-body-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  font-size: var(--font-size-md-c6dbf459);
+  box-shadow: var(--shadow-sm-c6dbf459);
+  transition:
+    filter var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459),
+    transform var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.cta:hover {
+  filter: brightness(1.08);
+}
+.cta:active {
+  transform: translateY(1px);
+}
+.cta:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+.ctaIcon {
+  display: inline-flex;
+}
+.ctaLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Inline (auto-width) CTA used by the pill row. */
+.ctaInline {
+  width: auto;
+  flex: none;
+  height: 34px;
+  margin-top: 0;
+  padding: 0 var(--space-3-c6dbf459);
+  font-size: var(--font-size-sm-c6dbf459);
+}
+
+/* ---- mini: condensed half card. Smaller medallions, one header, no CTA. Two
+ * short rows fill the space the single row used to leave empty. ---- */
+.miniWin .grid {
+  row-gap: var(--space-2-c6dbf459);
+}
+.medallionSm {
+  --rd-med: 42px;
+}
+.medallionSm .glyph {
+  font-size: 16px;
+}
+.medallionSm .points {
+  bottom: -5px;
+  padding: 0 6px;
+}
+.miniWin .name {
+  -webkit-line-clamp: 1;
+  min-height: calc(var(--font-size-xs-c6dbf459) * var(--line-tight-c6dbf459));
+}
+
+/* ---- pill: one short status row: mini stack + count + one action. ---- */
+.pillWin {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-2-c6dbf459);
+  width: 100%;
+}
+.pillStack {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+}
+/* Overlap the mini medallions into a compact cluster. */
+.pillStack .medallion {
+  margin-right: -12px;
+  box-shadow:
+    var(--shadow-sm-c6dbf459),
+    0 0 0 2px rgb(var(--surface));
+}
+.pillStack .medallion:last-child {
+  margin-right: 0;
+}
+/* The pill has no room for the points ribbon; keep the stack to face + pip. */
+.pillStack .points {
+  display: none;
+}
+.pillText {
+  flex: 1;
+  min-width: 0;
+  font-weight: var(--weight-semibold-c6dbf459);
+  font-size: var(--font-size-sm-c6dbf459);
+  color: rgb(var(--on-surface));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .badge,
+  .medallion,
+  .cta,
+  .pagerArrow,
+  .pagerDot,
+  .tab,
+  .filterSeg,
+  .ringArc {
+    transition: none;
+  }
+  .badge:active,
+  .tab:active,
+  .filterSeg:active,
+  .cta:active {
+    transform: none;
+  }
+  .spin {
+    animation: none;
+  }
+  /* No struck-coin sheen when the user prefers reduced motion. */
+  .medallion[data-onchain="minted"] .face::after {
+    animation: none;
+    display: none;
+  }
+  /* The expiring ring shows its final value immediately, no fill sweep. */
+  .ringArc {
+    animation: none;
+  }
+}
