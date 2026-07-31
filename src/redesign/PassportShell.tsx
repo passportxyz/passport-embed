@@ -99,6 +99,17 @@ export type PassportShellProps = {
   onUnlinkWallet?: (index: number) => void;
   /** Sign out of the account (bottom zone). */
   onSignOut?: () => void;
+  /**
+   * Persistent humanity score shown as a compact ring + number in the header,
+   * visible on EVERY window (Score, Stamps, Detail). Omit to hide it. It reuses
+   * the Score window's color logic: amber below the threshold, emerald at or
+   * above it. Tapping it fires `onScoreClick` (open the Score window / drilldown).
+   */
+  score?: number;
+  /** Passing threshold for the compact score ring (defaults to 20). */
+  threshold?: number;
+  /** Tap the compact score to open the Score window / drilldown. */
+  onScoreClick?: () => void;
   /** ⓘ help tooltip content. */
   infoTooltip?: React.ReactNode;
   /** Render the account menu open on mount (stories / controlled first-paint). */
@@ -400,11 +411,58 @@ const AccountMenu: React.FC<{
   );
 };
 
+const COMPACT_RING_R = 13;
+const COMPACT_RING_C = 2 * Math.PI * COMPACT_RING_R;
+
 /**
- * PassportShell - the persistent binding around every window. App-icon slot ·
- * account menu · ⓘ help · the shared "Secured by human.tech" footer, all INSIDE
- * the rounded bounds. Structure is space and tone, not hard lines. Presentational:
- * props only, no data hooks, fully self-contained + theme-driven.
+ * The persistent mini score: a small ring + number that lives in the shell chrome
+ * so the humanity score is visible on every window. Amber below the threshold,
+ * emerald at or above it (the same semantic as the full ScoreWindow ring). Tap to
+ * open the Score window / drilldown. Kept to a >=40px hit target for a11y.
+ */
+const CompactScore: React.FC<{ score: number; threshold: number; onClick?: () => void }> = ({
+  score,
+  threshold,
+  onClick,
+}) => {
+  const passing = score >= threshold;
+  const fill = threshold > 0 ? Math.max(0, Math.min(1, score / threshold)) : 0;
+  const rounded = Math.round(score);
+  const label = `Humanity score ${rounded} of ${threshold}. ${
+    passing ? "Above the threshold." : "Below the threshold."
+  } Open your score.`;
+  return (
+    <button
+      type="button"
+      className={styles.miniScore}
+      data-passing={passing ? "true" : "false"}
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+    >
+      <svg className={styles.miniScoreSvg} viewBox="0 0 32 32" aria-hidden="true">
+        <circle className={styles.miniScoreTrack} cx="16" cy="16" r={COMPACT_RING_R} />
+        <circle
+          className={styles.miniScoreArc}
+          cx="16"
+          cy="16"
+          r={COMPACT_RING_R}
+          transform="rotate(-90 16 16)"
+          strokeDasharray={COMPACT_RING_C}
+          strokeDashoffset={COMPACT_RING_C * (1 - fill)}
+        />
+      </svg>
+      <span className={styles.miniScoreNum}>{rounded}</span>
+    </button>
+  );
+};
+
+/**
+ * PassportShell - the persistent binding around every window. Compact score ·
+ * app-icon slot · account menu · ⓘ help · the shared "Secured by human.tech"
+ * footer, all INSIDE the rounded bounds. Structure is space and tone, not hard
+ * lines. Presentational: props only, no data hooks, fully self-contained +
+ * theme-driven.
  */
 export const PassportShell: React.FC<PassportShellProps> = ({
   appIcon,
@@ -416,6 +474,9 @@ export const PassportShell: React.FC<PassportShellProps> = ({
   onLinkWallet,
   onUnlinkWallet,
   onSignOut,
+  score,
+  threshold = 20,
+  onScoreClick,
   infoTooltip = DEFAULT_INFO_TIP,
   defaultAccountMenuOpen,
   washRgb,
@@ -463,6 +524,12 @@ export const PassportShell: React.FC<PassportShellProps> = ({
       <div className={styles.fx} aria-hidden="true" />
 
       <div className={styles.chrome}>
+        {/* Persistent mini score (top-left): visible on every window when a score
+            is supplied. The full Score window still carries the big ring. */}
+        {score !== undefined ? (
+          <CompactScore score={score} threshold={threshold} onClick={onScoreClick} />
+        ) : null}
+
         {/* The app-icon slot only appears when the integrator passes appIcon.
             No default tooltip either: the icon is the integrator's brand, so we
             wrap it only when they supply their own appIconTooltip copy. */}
