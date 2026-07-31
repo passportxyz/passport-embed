@@ -669,7 +669,15 @@ export const StampsWindow: React.FC<StampsWindowProps> = ({
         {current + 1} of {pageCount}.
       </p>
 
-      <CategoryTabs groups={categories} active={activeIndex} onSelect={selectCategory} />
+      {/* The category nav only earns its space when there is more than one
+          category to switch between. With a single category (a partner with one
+          stamp group, or a focused demo) a lone tab is just a purposeless box, so
+          it is dropped and the filter/summary bar below becomes the top control,
+          letting the stamps fill the reclaimed space (founder: use the space
+          well, no empty header). */}
+      {categories.length > 1 ? (
+        <CategoryTabs groups={categories} active={activeIndex} onSelect={selectCategory} />
+      ) : null}
 
       {activeGroup ? (
         <div className={styles.catBar}>

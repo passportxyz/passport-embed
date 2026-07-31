@@ -1,60 +1,72 @@
 /*
- * Solid tooltip skin for the redesign.
+ * Tooltip skin for the redesign. The HTDS standard tooltip.
  *
- * Founder review (2026-07-31) supersedes the earlier glass-panel direction in
- * design-sop §7.5: a small SOLID tooltip reads better than a large translucent
- * glass panel. This matches Shield (shield.human.tech), which uses react-tooltip
- * v5 with its DEFAULT look plus tiny per-instance overrides:
- *   - surface `#222` at 0.9 opacity (near-solid dark), white text
- *   - Shield's Header override: font-size 12px, padding 4px 8px
- *   - an 8px arrow that `inherit`s the surface color
- * We land those concrete metrics on THIS widget so the tooltip feels like
- * Shield's: a compact, legible dark chip in BOTH themes, never a big blurred
- * glass panel.
+ * The cross-app standard is the Human Tech Design System tooltip
+ * (@holonym-foundation/ui `src/Tooltip`), NOT any one app. Shield, WaaP and
+ * Passport Embed all render the SAME tooltip; matching Shield was only a proxy
+ * for matching HTDS. This skin reproduces HTDS's `Tooltip.module.css` on this
+ * widget's token system (design-sop §7.5). When passport-embed bundles HTDS at
+ * build time (per the HTDS-consolidation ADR) this skin is retired in favour of
+ * HTDS's `<Tooltip>` directly.
  *
- * Passed as `className` to the shared <Tooltip>, so it overrides the shipped
- * solid-surface skin WITHOUT editing the live Tooltip module (which the shipped
- * PassportScoreWidget still uses). Portaled + edge-flipped by <Tooltip>.
+ * HTDS spec (from its Tooltip.module.css):
+ *   - surface  --color-background-90  (an INVERSE chip: #0a0a0a on a light page,
+ *              #ffffff on a dark page, so the tooltip pops against the content)
+ *   - text     --color-text-0         (always contrasts the surface)
+ *   - size     --font-size-text-xs 12px / line-height 18px / weight book (450)
+ *   - padding  --space-xs --space-sm  = 4px 6px
+ *   - radius   --radi-sm              = 6px
+ *   - arrow    4px, same colour as the surface
+ *   - solid; no backdrop blur.
+ *
+ * Here the inverse chip is expressed with THIS widget's theme tokens: the shared
+ * <Tooltip> copies --surface / --on-surface from the trigger onto the portaled
+ * layer, so `--on-surface` (the page's contrast colour) is the chip surface and
+ * `--surface` is the text. HTDS's inverse chip, theme-following, in the widget's
+ * own brand colours. Passed as `className` to the shared <Tooltip>; the shipped
+ * widget's own tooltip skin (Tooltip.module.css) is unchanged, and the shared
+ * <Tooltip>'s new var-plumbing also fixes the shipped tooltip's portal theming.
  */
 .tip {
-  /* Solid near-black surface, theme-independent (like Shield). A floating chip
-   * does not invert per theme: white text on #1F2127 clears AA (~14:1) on any
-   * host background, light or dark. No translucency, no backdrop blur. */
-  background: rgb(31, 33, 39) !important;
-  color: rgba(255, 255, 255, 0.95) !important;
+  /* Inverse chip (HTDS --color-background-90): the page's CONTRAST colour, so a
+   * dark chip on a light widget and a light chip on a dark widget. Text is the
+   * page surface colour, guaranteeing high contrast in both themes. Solid, no
+   * translucency, no backdrop blur. */
+  background: rgb(var(--on-surface)) !important;
+  color: rgb(var(--surface)) !important;
   border: 0 !important;
-  border-radius: var(--radius-md-c6dbf459) !important;
+  border-radius: var(--radius-md-c6dbf459) !important; /* 6px = HTDS --radi-sm */
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
-  /* One soft drop shadow, no inset scrim: a small solid chip, not a glass panel. */
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28) !important;
-  /* Shield metrics: ~6px/10px padding, 12px text, regular weight, tight leading,
+  /* One whisper of shadow for separation from an arbitrary host page (the
+   * portaled chip floats over unknown content); HTDS is inline so omits it. */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18) !important;
+  /* HTDS metrics: 4px/6px padding, 12px text, book weight, 18px line-height,
    * a ~220px cap so a tooltip stays a glanceable chip, never a paragraph. */
-  padding: 6px 10px !important;
-  font-size: var(--font-size-xs-c6dbf459) !important;
-  font-weight: var(--weight-regular-c6dbf459) !important;
-  line-height: 1.35 !important;
+  padding: var(--space-1-c6dbf459) 6px !important; /* 4px 6px = HTDS --space-xs --space-sm */
+  font-size: var(--font-size-xs-c6dbf459) !important; /* 12px */
+  font-weight: var(--weight-regular-c6dbf459) !important; /* HTDS book ≈ regular */
+  line-height: var(--line-normal-c6dbf459) !important; /* 1.5 → 18px at 12px */
   max-width: 220px !important;
   text-wrap: balance;
 }
 
 /* The arrow is the tooltip's LAST child div (after the .content div). Match the
- * solid surface and drop the shipped 1px border, so it reads as one clean chip
- * edge (Shield's arrow `inherit`s its surface the same way). */
+ * inverse surface and drop the shipped 1px border, so it reads as one clean chip
+ * edge (HTDS's arrow is the same colour as the surface). */
 .tip > div:last-child {
-  background: rgb(31, 33, 39) !important;
+  background: rgb(var(--on-surface)) !important;
   border: 0 !important;
   box-shadow: none !important;
 }
 
-/* Emphasis reads a touch brighter, the quiet tail a touch dimmer, both on the
- * dark chip. */
+/* Emphasis on the inverse chip: the text colour is --surface, so lean on weight
+ * (not a second colour) for stress, and dim the quiet tail. */
 .tip b,
 .tip strong {
-  color: #fff;
-  font-weight: var(--weight-semibold-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
 }
 .tip em {
   font-style: normal;
-  color: rgba(255, 255, 255, 0.7);
+  opacity: 0.72;
 }

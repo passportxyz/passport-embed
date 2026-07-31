@@ -46,6 +46,21 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, placement = "top", ch
           top: `${y}px`,
         });
 
+        // The floating layer is portaled to document.body, which escapes the
+        // themed widget shell, so theme tokens like --surface / --on-surface do
+        // not resolve on it (they are defined only inside the widget). Copy the
+        // resolved values from the live trigger (which sits inside the shell)
+        // onto the portaled layer, so the chip themes correctly in both light and
+        // dark and a skin can build an inverse chip via --on-surface. This also
+        // fixes the shipped widget's tooltip theming at the portal.
+        if (triggerRef.current) {
+          const cs = getComputedStyle(triggerRef.current);
+          for (const v of ["--surface", "--on-surface", "--border", "--accent"]) {
+            const val = cs.getPropertyValue(v);
+            if (val) tooltipRef.current.style.setProperty(v, val);
+          }
+        }
+
         // Position the arrow
         if (arrowRef.current && middlewareData.arrow) {
           const { x: arrowX, y: arrowY } = middlewareData.arrow;
