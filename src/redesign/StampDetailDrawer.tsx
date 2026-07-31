@@ -20,13 +20,14 @@ import type { ShellSize } from "./PassportShell";
 
 /**
  * Canonical human.tech docs links (not per-credential data, so they live here as
- * constants rather than on the credential prop):
- *  - the VOLE-based ZK trust badge opens the architecture doc for the proof system;
- *  - the Clean Hands "Disclosure conditions" link opens the Clean Hands doc (the
- *    rule-based disclosure gate), NOT an invented Etherscan link.
+ * constants rather than on the credential prop). These point at the consolidated
+ * hub (docs.human.tech), not the legacy docs.id host:
+ *  - the VOLE-based ZK trust badge opens the proof-system explainer;
+ *  - the Clean Hands "Disclosure conditions" link opens the disclosure-conditions
+ *    doc (the rule-based disclosure gate), NOT an invented Etherscan link.
  */
-const VOLE_ZK_DOCS_URL = "https://docs.id.human.tech/architecture/vole-based-zk";
-const CLEAN_HANDS_DOCS_URL = "https://docs.id.human.tech/architecture/clean-hands";
+const VOLE_ZK_DOCS_URL = "https://docs.human.tech/vole-based-zk";
+const CLEAN_HANDS_DOCS_URL = "https://docs.human.tech/disclosure-conditions";
 
 /**
  * One sub-credential that contributes to a stamp's score. Each is a row in the
