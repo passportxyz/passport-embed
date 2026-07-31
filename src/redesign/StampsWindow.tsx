@@ -102,15 +102,16 @@ export type StampsWindowProps = {
 const DEFAULT_PAGE_SIZE: Record<ShellSize, number> = { full: 6, mini: 3, pill: 3 };
 
 /**
- * Short, honest tab labels for the real (long) Passport category names. The tab
- * carries the short name + count so the navigation is legible at 300px; the
- * verbatim full name still reads in the category heading below and in every tab's
- * accessible label. Falls back to the first word of any unmapped category.
+ * Short, plain display labels for the real (long) Passport category names. The
+ * category tabs are ICONS (design-sop §7.5), so the label rides on the active
+ * tab and every tab's hover tooltip / accessible name. "Web" (not "web2") is the
+ * user-facing name for the Web2 platforms category. Falls back to the first word
+ * of any unmapped category.
  */
 const SHORT_CATEGORY: Record<string, string> = {
   "Physical Verification": "Physical",
   "Blockchain Networks and Activities": "Blockchain",
-  "Web2 Platforms & Services": "Web2",
+  "Web2 Platforms & Services": "Web",
 };
 const shortCategory = (c: string): string => SHORT_CATEGORY[c] ?? c.split(/\s+/)[0];
 
@@ -140,16 +141,25 @@ const statusPhrase = (s: Stamp): string => {
 const stampLabel = (s: Stamp) =>
   `${s.name}. ${pointsPhrase(s)}. ${statusPhrase(s)}. Open stamp.`;
 
-/** The top filter's three lenses. `all` shows everything; the other two isolate
- *  what is minted on chain / expiring soon in one tap (design-sop top filter). */
-type StampFilter = "all" | "onchain" | "expiring";
+/** The verification filter's lenses. `all` shows everything; the other three
+ *  isolate what is verified, what is verifiable (available to add, to raise the
+ *  score), and what has expired (needs renewal), each in one tap. */
+type StampFilter = "all" | "verified" | "verifiable" | "expired";
 
-/** Minted on chain (a verified, notarized stamp). */
-const isOnchain = (s: Stamp): boolean => s.verified && s.onchain === "minted";
-/** Expiring soon (inside the amber window), not already expired. */
-const isExpiring = (s: Stamp): boolean => formatExpiry(s.expirationDate)?.state === "soon";
+/** Expired (a verified stamp whose credential has lapsed). */
+const isExpired = (s: Stamp): boolean => formatExpiry(s.expirationDate)?.state === "expired";
+/** Verified and still valid (earned, not expired). */
+const isVerified = (s: Stamp): boolean => s.verified && !isExpired(s);
+/** Verifiable: available to add (not yet verified), so the user can raise the score. */
+const isVerifiable = (s: Stamp): boolean => !s.verified;
 const matchesFilter = (s: Stamp, f: StampFilter): boolean =>
-  f === "all" ? true : f === "onchain" ? isOnchain(s) : isExpiring(s);
+  f === "all"
+    ? true
+    : f === "verified"
+      ? isVerified(s)
+      : f === "verifiable"
+        ? isVerifiable(s)
+        : isExpired(s);
 
 /** Split a flat list into fixed-size pages. */
 const paginate = <T,>(items: T[], per: number): T[][] => {
@@ -393,12 +403,14 @@ const Pager: React.FC<{ page: number; pageCount: number; onPage: (p: number) => 
 );
 
 /**
- * Category selector (segmented control): one segment per real Passport category.
- * Each segment is a NAMED tab (short category name) + its verified/total count;
- * the active segment is highlighted. This is the PRIMARY navigation - it switches
- * the whole grid to that category (no blind whole-catalog paging, no ambiguous
- * star + number pill). The verbatim full name rides on the active-category
- * heading below and on every segment's accessible label.
+ * Category selector (segmented control): one segment per real Passport category,
+ * carried by its Lucide category ICON (a card / globe / person for Physical /
+ * Blockchain / Web), not text (design-sop §7.5). Each segment has a glass hover
+ * tooltip naming the category and its verified/total count; the ACTIVE segment
+ * additionally shows the short name (so the selected tab "shows it", which is why
+ * the separate category-name label next to the filter is dropped). Inactive tabs
+ * carry the count on the same line, so switching never shifts the icon. This is
+ * the PRIMARY navigation - it switches the whole grid to that category.
  */
 const CategoryTabs: React.FC<{
   groups: CategoryGroup[];
@@ -406,69 +418,67 @@ const CategoryTabs: React.FC<{
   onSelect: (index: number) => void;
 }> = ({ groups, active, onSelect }) => (
   <div className={styles.tabs} role="tablist" aria-label="Stamp categories">
-    {groups.map((g, i) => (
-      <button
-        type="button"
-        key={g.category}
-        role="tab"
-        aria-selected={i === active}
-        className={`${styles.tab} ${i === active ? styles.tabOn : ""}`}
-        onClick={() => onSelect(i)}
-        title={`${g.category}. ${g.verified} of ${g.stamps.length} verified.`}
-        aria-label={`${g.category}. ${g.verified} of ${g.stamps.length} verified.`}
-      >
-        <span className={styles.tabName}>{shortCategory(g.category)}</span>
-        <span className={styles.tabCount}>
-          {g.verified}/{g.stamps.length}
-        </span>
-      </button>
-    ))}
+    {groups.map((g, i) => {
+      const label = shortCategory(g.category);
+      const tip = `${label}. ${g.verified} of ${g.stamps.length} verified.`;
+      return (
+        <Tooltip key={g.category} content={tip} placement="bottom" className={glass.tip}>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={i === active}
+            className={`${styles.tab} ${i === active ? styles.tabOn : ""}`}
+            onClick={() => onSelect(i)}
+            aria-label={tip}
+          >
+            <span className={styles.tabIcon} aria-hidden="true">
+              {CATEGORY_ICONS[g.category] ?? <StarIcon size={17} strokeWidth={1.7} />}
+            </span>
+            <span className={styles.tabSub}>
+              {i === active ? label : `${g.verified}/${g.stamps.length}`}
+            </span>
+          </button>
+        </Tooltip>
+      );
+    })}
   </div>
 );
 
 /**
- * Top filter (full only): a subtle segmented control that isolates what is minted
- * on chain or expiring soon in one tap. Only the segments that have items render
- * (All is always present), so it never offers an empty lens. Sits on the category
- * bar row, so it costs no extra height in the fixed shell.
+ * Verification filter: a subtle segmented control that surfaces verified /
+ * verifiable / expired stamps in one tap, so a user can find what they can verify
+ * to raise their score, or what has lapsed and needs renewal. Only the segments
+ * that have items render (All is always present), so it never offers an empty
+ * lens. Compact and height-neutral: it rides on an existing row (the category bar
+ * on full, the header row on mini), costing no extra height in the fixed shell.
  */
 const FilterTabs: React.FC<{
   value: StampFilter;
-  onchainCount: number;
-  expiringCount: number;
+  verifiedCount: number;
+  verifiableCount: number;
+  expiredCount: number;
   onSelect: (f: StampFilter) => void;
-}> = ({ value, onchainCount, expiringCount, onSelect }) => (
-  <div className={styles.filter} role="group" aria-label="Filter stamps">
-    <button
-      type="button"
-      className={`${styles.filterSeg} ${value === "all" ? styles.filterSegOn : ""}`}
-      aria-pressed={value === "all"}
-      onClick={() => onSelect("all")}
-    >
-      All
-    </button>
-    {onchainCount > 0 ? (
+}> = ({ value, verifiedCount, verifiableCount, expiredCount, onSelect }) => {
+  const seg = (f: StampFilter, label: string, show: boolean) =>
+    show ? (
       <button
         type="button"
-        className={`${styles.filterSeg} ${value === "onchain" ? styles.filterSegOn : ""}`}
-        aria-pressed={value === "onchain"}
-        onClick={() => onSelect("onchain")}
+        className={`${styles.filterSeg} ${value === f ? styles.filterSegOn : ""}`}
+        aria-pressed={value === f}
+        onClick={() => onSelect(f)}
       >
-        On-chain
+        {label}
       </button>
-    ) : null}
-    {expiringCount > 0 ? (
-      <button
-        type="button"
-        className={`${styles.filterSeg} ${value === "expiring" ? styles.filterSegOn : ""}`}
-        aria-pressed={value === "expiring"}
-        onClick={() => onSelect("expiring")}
-      >
-        Expiring
-      </button>
-    ) : null}
-  </div>
-);
+    ) : null;
+  return (
+    <div className={styles.filter} role="group" aria-label="Filter stamps by verification">
+      {seg("all", "All", true)}
+      {seg("verified", "Verified", verifiedCount > 0)}
+      {seg("verifiable", "Verifiable", verifiableCount > 0)}
+      {seg("expired", "Expired", expiredCount > 0)}
+    </div>
+  );
+};
 
 /**
  * StampsWindow - the medallion catalog, rendered INSIDE PassportShell like the
@@ -524,22 +534,29 @@ export const StampsWindow: React.FC<StampsWindowProps> = ({
   const verifiedCount = useMemo(() => stamps.filter((s) => s.verified).length, [stamps]);
 
   // full navigates a single category; mini flattens the whole list (no tabs) to
-  // keep the half-size card to one short paged row.
+  // keep the half-size card to one short paged row. The verification filter reads
+  // from whichever base set is on screen (the active category on full, the whole
+  // list on mini), so it works on BOTH sizes (item 7).
   const activeGroup = categories[activeIndex];
-  // The filter only earns its space when the active category actually has minted
-  // and / or expiring stamps to isolate; otherwise it stays hidden (subtle, only
-  // if it earns its space). Counts drive which segments render.
-  const onchainCount = useMemo(
-    () => (activeGroup ? activeGroup.stamps.filter(isOnchain).length : 0),
-    [activeGroup]
-  );
-  const expiringCount = useMemo(
-    () => (activeGroup ? activeGroup.stamps.filter(isExpiring).length : 0),
-    [activeGroup]
-  );
-  const showFilter = !compact && (onchainCount > 0 || expiringCount > 0);
-  const effectiveFilter = showFilter ? filter : "all";
   const baseSource = compact ? stamps : activeGroup ? activeGroup.stamps : [];
+  const lensVerified = baseSource.filter(isVerified).length;
+  const lensVerifiable = baseSource.filter(isVerifiable).length;
+  const lensExpired = baseSource.filter(isExpired).length;
+  // The filter earns its space only when more than one lens has items (so
+  // filtering actually narrows something). Present on full AND mini, compact and
+  // height-neutral. Counts drive which segments render.
+  const nonEmptyLenses =
+    (lensVerified > 0 ? 1 : 0) + (lensVerifiable > 0 ? 1 : 0) + (lensExpired > 0 ? 1 : 0);
+  const showFilter = nonEmptyLenses > 1;
+  const currentLensCount =
+    filter === "verified"
+      ? lensVerified
+      : filter === "verifiable"
+        ? lensVerifiable
+        : filter === "expired"
+          ? lensExpired
+          : Number.POSITIVE_INFINITY;
+  const effectiveFilter = showFilter && currentLensCount > 0 ? filter : "all";
   const source = baseSource.filter((s) => matchesFilter(s, effectiveFilter));
   const pages = useMemo(() => paginate(source, per), [source, per]);
   const pageCount = pages.length;
@@ -625,7 +642,9 @@ export const StampsWindow: React.FC<StampsWindowProps> = ({
     );
   }
 
-  // ---- mini: no category tabs. One flat, paged, half-size grid. ----
+  // ---- mini: no category tabs. One flat, paged, half-size grid. The
+  // verification filter rides on the header row (replacing the title + count when
+  // it earns its space), so it costs no extra height (item 7). ----
   if (compact) {
     return (
       <div className={winClass}>
@@ -633,10 +652,22 @@ export const StampsWindow: React.FC<StampsWindowProps> = ({
           {stamps.length} stamps, {verifiedCount} verified. Page {current + 1} of {pageCount}.
         </p>
         <div className={styles.head}>
-          <span className={styles.title}>{headline ?? "Your stamps"}</span>
-          <span className={styles.count}>
-            {verifiedCount}/{stamps.length} verified
-          </span>
+          {showFilter ? (
+            <FilterTabs
+              value={effectiveFilter}
+              verifiedCount={lensVerified}
+              verifiableCount={lensVerifiable}
+              expiredCount={lensExpired}
+              onSelect={setFilter}
+            />
+          ) : (
+            <>
+              <span className={styles.title}>{headline ?? "Your stamps"}</span>
+              <span className={styles.count}>
+                {verifiedCount}/{stamps.length} verified
+              </span>
+            </>
+          )}
         </div>
         <div className={styles.pages}>
           <div className={styles.grid}>
@@ -662,24 +693,16 @@ export const StampsWindow: React.FC<StampsWindowProps> = ({
 
       {activeGroup ? (
         <div className={styles.catBar}>
-          {/* Verbatim category name (single line) led by its glyph. The active
-              category's own count already rides on its highlighted tab, so here
-              we carry the OVERALL passport progress as a plainly labeled summary
-              ("N of M verified"), never a bare star + number. */}
-          <span className={styles.catName} title={activeGroup.category}>
-            <span className={styles.catGlyph} aria-hidden="true">
-              {CATEGORY_ICONS[activeGroup.category] ?? <StarIcon size={16} strokeWidth={1.6} />}
-            </span>
-            <span className={styles.catNameText}>{activeGroup.category}</span>
-          </span>
-          {/* The filter takes the right of the category bar when the category has
-              minted / expiring stamps to isolate; otherwise the plain overall
-              progress summary sits there. Either way the row height is the same. */}
+          {/* The category name is dropped here: the active ICON tab already shows
+              the selected category (and names it on hover), so a repeated label
+              would be redundant (item 6). This bar carries the verification filter
+              when it earns its space, otherwise the overall passport progress. */}
           {showFilter ? (
             <FilterTabs
-              value={filter}
-              onchainCount={onchainCount}
-              expiringCount={expiringCount}
+              value={effectiveFilter}
+              verifiedCount={lensVerified}
+              verifiableCount={lensVerifiable}
+              expiredCount={lensExpired}
               onSelect={setFilter}
             />
           ) : (

@@ -74,7 +74,7 @@
   color: rgba(var(--on-surface), 0.55);
 }
 
-/* ---- category selector: the primary nav. One segment per real category. ---- */
+/* ---- category selector: the primary nav. One ICON segment per real category. ---- */
 .tabs {
   display: flex;
   gap: var(--space-1-c6dbf459);
@@ -85,10 +85,18 @@
    * hard divider lines between segments (§ no-hard-lines). */
   background: rgba(var(--on-surface), 0.06);
 }
+/* Each segment is wrapped in the shared glass Tooltip, whose trigger div is the
+ * direct child here. Make that trigger an equal-width flex slot so the segmented
+ * control stays even (the Tooltip trigger is content-width by default). */
+.tabs > div {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+}
 .tab {
   appearance: none;
   border: 0;
-  flex: 1 1 0;
+  width: 100%;
   min-width: 0;
   display: inline-flex;
   flex-direction: column;
@@ -114,34 +122,42 @@
   color: rgb(var(--on-surface));
   box-shadow: var(--shadow-sm-c6dbf459);
 }
-.tabOn .tabCount {
-  color: rgb(var(--accent));
-}
 .tab:focus-visible {
   outline: 2px solid rgb(var(--accent));
   outline-offset: 2px;
 }
-/* Named tab: short category name on top, its verified/total count beneath, so
- * the segment reads as a labeled category, never a bare glyph or star + number. */
-.tabName {
+/* The Lucide category icon carries the segment (card / globe / person). Accent on
+ * the active tab so the selected category reads at a glance. */
+.tabIcon {
+  display: inline-flex;
+  color: rgba(var(--on-surface), 0.6);
+}
+.tabIcon svg {
+  width: 18px;
+  height: 18px;
+}
+.tab:hover .tabIcon {
+  color: rgb(var(--on-surface));
+}
+.tabOn .tabIcon {
+  color: rgb(var(--accent));
+}
+/* The bottom line: the short category NAME on the active tab (so the selected tab
+ * "shows it"), the verified/total COUNT on inactive tabs. Both are one short line,
+ * so the icon never shifts between states. */
+.tabSub {
   max-width: 100%;
-  font-size: var(--font-size-xs-c6dbf459);
+  font-size: 11px;
   font-weight: var(--weight-semibold-c6dbf459);
   line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-.tabCount {
-  font-size: 11px;
-  font-weight: var(--weight-medium-c6dbf459);
   font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-  white-space: nowrap;
   color: rgba(var(--on-surface), 0.55);
 }
-.tabOn .tabName {
-  color: rgb(var(--on-surface));
+.tabOn .tabSub {
+  color: rgb(var(--accent));
 }
 
 /* Active-category heading: the verbatim name (single line, ellipsized on the one
@@ -200,6 +216,7 @@
   align-self: center;
   display: inline-flex;
   align-items: center;
+  flex-wrap: nowrap;
   gap: 2px;
   padding: 2px;
   border-radius: var(--radius-pill-c6dbf459);
