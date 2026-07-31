@@ -137,12 +137,44 @@ export const LinkIcon: React.FC<IconProps> = (p) => (
   </Svg>
 );
 
-/** Unlink (break the chain) - remove a linked wallet. One capsule half + a slash. */
+/**
+ * Unlink (break the chain) - remove a linked wallet. Lucide `unlink` geometry:
+ * two chain halves pulling apart with the four separation ticks, so it reads as a
+ * deliberate break rather than a slashed link. Pairs with LinkIcon at any size.
+ */
 export const UnlinkIcon: React.FC<IconProps> = (p) => (
   <Svg {...p}>
-    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-    <path d="M4 4l16 16" />
+    <path d="M18.84 12.25l1.72-1.71a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+    <path d="M5.17 11.75l-1.71 1.71a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    <path d="M8 2v2M2 8h2M16 20v2M20 16h2" />
   </Svg>
+);
+
+/**
+ * human.tech mark - the brand "human" flower (a plump quatrefoil), redrawn clean
+ * and monochrome (currentColor) so the "Secured by human.tech" lockup carries the
+ * real brand mark, not a generic shield. Same house language as the WaaP / Shield
+ * marks: one color, legible in both themes, no crop of the full lockup.
+ */
+export const HumanTechMark: React.FC<IconProps> = ({ className, size = 12, title }) => (
+  <svg
+    className={className}
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    role={title ? "img" : "presentation"}
+    aria-hidden={title ? undefined : true}
+    aria-label={title}
+    focusable="false"
+  >
+    {title ? <title>{title}</title> : null}
+    <circle cx="12" cy="7.4" r="3.7" />
+    <circle cx="12" cy="16.6" r="3.7" />
+    <circle cx="7.4" cy="12" r="3.7" />
+    <circle cx="16.6" cy="12" r="3.7" />
+    <circle cx="12" cy="12" r="3.9" />
+  </svg>
 );
 
 /** Small clock (cooldown / pending wallet status). */

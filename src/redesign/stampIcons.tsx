@@ -317,10 +317,11 @@ export const XIcon: React.FC<IconProps> = ({ size = 22 }) =>
 
 /* ---- chain marks ---- */
 
-// Optimism (OP Mainnet) logomark, redrawn monochrome (currentColor). The real
-// brand mark is a red disc carrying a soft "O"; here the disc plus the ring-notch
-// negative space reads as the Optimism mark on any surface without its brand red.
-// Used as the chain glyph on the drawer's onchain-credential block.
+// Optimism (OP Mainnet) chain glyph, redrawn monochrome (currentColor). The brand
+// mark is a red disc carrying a soft "op"; here the disc plus two knocked-out
+// counters (evenodd) reads as the Optimism logomark on any surface without its
+// brand red. Solid circle + counters render reliably at the small chain size (the
+// prior finely detailed letterforms did not paint). Used next to the chain label.
 export const OptimismIcon: React.FC<IconProps> = ({ size = 14 }) => (
   <svg
     width={size}
@@ -333,7 +334,7 @@ export const OptimismIcon: React.FC<IconProps> = ({ size = 14 }) => (
     <path
       fillRule="evenodd"
       clipRule="evenodd"
-      d="M12 1.5C6.201 1.5 1.5 6.201 1.5 12S6.201 22.5 12 22.5 22.5 17.799 22.5 12 17.799 1.5 12 1.5ZM9.05 9.2c-1.62 0-2.77.86-3.06 2.36-.06.3-.09.55-.09.79 0 1.2.83 1.95 2.3 1.95 1.62 0 2.76-.86 3.06-2.36.05-.26.08-.52.08-.78 0-1.22-.82-1.96-2.29-1.96Zm-.72 3.06c-.5 0-.83-.27-.83-.75 0-.13.01-.27.04-.4.16-.78.6-1.11 1.19-1.11.5 0 .83.27.83.76 0 .13-.02.26-.04.39-.15.79-.6 1.11-1.19 1.11Zm5.9-3h-2.06l-.98 4.9h1.03l.33-1.66h1.05c1.32 0 2.19-.61 2.42-1.75.02-.12.04-.24.04-.35 0-.72-.55-1.14-1.6-1.14Zm.52 1.28-.02.16c-.1.47-.43.6-.93.6h-.79l.25-1.24h.83c.44 0 .66.14.66.42v.06Z"
+      d="M12 1.5C6.201 1.5 1.5 6.201 1.5 12S6.201 22.5 12 22.5 22.5 17.799 22.5 12 17.799 1.5 12 1.5ZM8.9 9.4c-1.436 0-2.6 1.164-2.6 2.6s1.164 2.6 2.6 2.6 2.6-1.164 2.6-2.6-1.164-2.6-2.6-2.6Zm6.2 0c-1.436 0-2.6 1.164-2.6 2.6s1.164 2.6 2.6 2.6 2.6-1.164 2.6-2.6-1.164-2.6-2.6-2.6Z"
     />
   </svg>
 );

@@ -12,28 +12,40 @@
  * over 0.9 `--surface` clears AA in both themes.
  */
 .tip {
-  /* override the shipped solid surface + 1px border with glass */
+  /* ONE glass tooltip panel (design-sop §7.5). Override the shipped solid surface
+   * + 1px border. The panel owns its background: a near-opaque on-theme surface
+   * SCRIM (0.95 of --surface) under a translucent blur, so `--on-surface` text
+   * clears AA (>=4.5:1) over ANY host content in BOTH themes, while the edges
+   * still read as glass. A soft on-surface hairline scrim replaces the hard
+   * border; --radius-md corners; --shadow-md elevation. Padding comes from the
+   * base .tooltip (space-3 / space-4). Portaled + edge-flipped by <Tooltip>. */
   background:
-    linear-gradient(rgba(var(--surface), 0.9), rgba(var(--surface), 0.9)),
-    rgba(var(--surface), 0.6) !important;
+    linear-gradient(rgba(var(--surface), 0.95), rgba(var(--surface), 0.95)),
+    rgba(var(--surface), 0.7) !important;
   border: 0 !important;
+  border-radius: var(--radius-md-c6dbf459) !important;
   color: rgb(var(--on-surface)) !important;
-  -webkit-backdrop-filter: blur(14px) saturate(1.3);
-  backdrop-filter: blur(14px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  backdrop-filter: blur(16px) saturate(1.4);
   box-shadow:
-    0 8px 30px rgba(0, 0, 0, 0.22),
-    inset 0 0 0 1px rgba(var(--on-surface), 0.06) !important;
+    var(--shadow-md-c6dbf459),
+    inset 0 0 0 1px rgba(var(--on-surface), 0.08) !important;
+  padding: var(--space-2-c6dbf459) var(--space-3-c6dbf459) !important;
   font-size: var(--font-size-sm-c6dbf459) !important;
   font-weight: var(--weight-medium-c6dbf459);
   line-height: var(--line-normal-c6dbf459) !important;
-  max-width: 240px !important;
+  /* Cap width (~260px) AND length so a tooltip stays a glanceable panel, never a
+   * paragraph. text-wrap:balance keeps short copy from a ragged last line. */
+  max-width: 260px !important;
+  text-wrap: balance;
 }
 
 /* The arrow is the tooltip's LAST child div (after the .content div). Reskin it
  * to match the glass and drop its hard border, without reaching into the other
- * module's hashed class name. */
+ * module's hashed class name. Matches the near-opaque scrim so it reads as one
+ * continuous panel edge, legible on any host surface. */
 .tip > div:last-child {
-  background: rgba(var(--surface), 0.9) !important;
+  background: rgba(var(--surface), 0.95) !important;
   border: 0 !important;
   box-shadow: none !important;
 }
