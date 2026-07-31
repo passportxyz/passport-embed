@@ -125,21 +125,23 @@ export const CopyIcon: React.FC<IconProps> = (p) => (
   </Svg>
 );
 
-/** Chain link (link an identity). Two interlocking links, not a wallet. */
+/**
+ * Chain link (on-chain / link an identity). Two interlocking capsules that read
+ * cleanly at both the small on-chain pip size and the drawer button size. Drawn
+ * as a single cohesive glyph (the old version rendered as three broken strokes).
+ */
 export const LinkIcon: React.FC<IconProps> = (p) => (
   <Svg {...p}>
-    <path d="M9.5 14.5 14.5 9.5" />
-    <path d="M8 12.5 6.7 13.8a3 3 0 0 1-4.2-4.2L5 7" />
-    <path d="M16 11.5 17.3 10.2a3 3 0 0 0-4.2-4.2L11 8" />
+    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
   </Svg>
 );
 
-/** Unlink (break the chain) - remove a linked wallet. */
+/** Unlink (break the chain) - remove a linked wallet. One capsule half + a slash. */
 export const UnlinkIcon: React.FC<IconProps> = (p) => (
   <Svg {...p}>
-    <path d="M8 12.5 6.7 13.8a3 3 0 0 1-4.2-4.2L5 7" />
-    <path d="M16 11.5 17.3 10.2a3 3 0 0 0-4.2-4.2L11 8" />
-    <path d="M3 3l18 18" />
+    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    <path d="M4 4l16 16" />
   </Svg>
 );
 
