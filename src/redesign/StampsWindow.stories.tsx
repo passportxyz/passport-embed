@@ -6,7 +6,8 @@ import { ThemePair, SAMPLE_ACCOUNT, SAMPLE_MEDALLION_STAMPS } from "./storyFrame
 
 // One stamp of each state, all in a single category so they land on one page: a
 // side-by-side read of minted / mintable / unminted / expiring / expired /
-// unverified. Everything is emerald except the small amber "expiring" dot.
+// unverified. Everything is emerald except the small amber "expiring" dot, and
+// every status indicator sits in the one top-right corner.
 const pick = (id: string): Stamp => ({
   ...SAMPLE_MEDALLION_STAMPS.find((s) => s.id === id)!,
   category: "Stamp states",
@@ -54,7 +55,7 @@ export const FullGrid: Story = {
     docs: {
       description: {
         story:
-          "The real catalog, navigated by category. The segmented control at the top carries the three real Passport categories (Physical Verification, Blockchain Networks and Activities, Web2 Platforms & Services), each with a verified/total count; the active category name shows below it. Each medallion is now pared to icon + name + points, and its state is carried by the medallion itself: a calm emerald glass when verified off-chain, an emerald outline when mintable, and an emerald glow + chain-link pip + a subtle settle when minted on chain. Hover or focus any medallion to see a tooltip describing what the stamp does. The persistent compact score sits in the shell chrome, top-left.",
+          "The real catalog, navigated by category. The segmented control at the top carries the three real Passport categories as NAMED tabs (Physical, Blockchain, Web2), each with its own verified/total count; the active category's verbatim name shows below it, beside a plainly labeled overall summary ('N of M verified'). There is no ambiguous star + number pill. Each medallion is pared to icon + name + points, and its state is carried by the medallion itself: a calm emerald glass when verified off-chain, an emerald outline when mintable, and a static emerald glow + chain-link badge when minted on chain. Hover or focus any medallion to see a tooltip that names its status in words (Minted on-chain, Expiring in N days, Expired, Not yet on-chain) and describes what the stamp does. The persistent compact score sits in the shell chrome, top-left.",
       },
     },
   },
@@ -67,7 +68,7 @@ export const States: Story = {
     docs: {
       description: {
         story:
-          "One medallion of each state, side by side. Minted (Government ID) carries the emerald glow, the chain-link pip, and a settle animation. Mintable (Biometrics) shows an emerald outline invite, never gold. An off-chain verified stamp (Binance) is calm emerald glass. An expiring stamp (Civic, nine days) adds a small amber dot, the only amber on the medallion. An expired stamp (NFT) desaturates with a muted outline and reads inactive. An unverified stamp (Coinbase) is recessive. Everything but the expiring dot is emerald.",
+          "One medallion of each state, side by side. Minted (Government ID) carries the emerald glow and a static chain-link badge, top-right, with no animation so it reads at a glance. Mintable (Biometrics) shows an emerald outline invite, never gold. An off-chain verified stamp (Binance) is calm emerald glass. An expiring stamp (Civic, nine days) adds a small amber dot in the same top-right corner, the only amber on the medallion. An expired stamp (NFT) desaturates with a muted outline and reads inactive. An unverified stamp (Coinbase) is recessive. Hover any medallion to read its status in words. Everything but the expiring dot is emerald.",
       },
     },
   },

@@ -91,11 +91,12 @@
   flex: 1 1 0;
   min-width: 0;
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 1px;
   height: 34px;
-  padding: 0 var(--space-2-c6dbf459);
+  padding: 0 var(--space-1-c6dbf459);
   border-radius: var(--radius-md-c6dbf459);
   background: transparent;
   color: rgba(var(--on-surface), 0.62);
@@ -120,19 +121,27 @@
   outline: 2px solid rgb(var(--accent));
   outline-offset: 2px;
 }
-.tabIcon {
-  display: inline-flex;
-  flex: none;
-}
-.tabIcon svg {
-  width: 18px;
-  height: 18px;
-}
-.tabCount {
+/* Named tab: short category name on top, its verified/total count beneath, so
+ * the segment reads as a labeled category, never a bare glyph or star + number. */
+.tabName {
+  max-width: 100%;
   font-size: var(--font-size-xs-c6dbf459);
   font-weight: var(--weight-semibold-c6dbf459);
-  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.tabCount {
+  font-size: 11px;
+  font-weight: var(--weight-medium-c6dbf459);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  white-space: nowrap;
+  color: rgba(var(--on-surface), 0.55);
+}
+.tabOn .tabName {
+  color: rgb(var(--on-surface));
 }
 
 /* Active-category heading: the verbatim name (single line, ellipsized on the one
@@ -148,12 +157,39 @@
 .catName {
   flex: 1 1 auto;
   min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: var(--font-size-md-c6dbf459);
   font-weight: var(--weight-semibold-c6dbf459);
   color: rgb(var(--on-surface));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.catGlyph {
+  flex: none;
+  display: inline-flex;
+  color: rgb(var(--accent));
+}
+.catGlyph svg {
+  width: 16px;
+  height: 16px;
+}
+.catNameText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Overall passport progress, plainly labeled (never a bare star + number). */
+.catSummary {
+  flex: none;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  color: rgba(var(--on-surface), 0.62);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .grid {
@@ -239,27 +275,14 @@
 }
 
 /* Minted (notarized on-chain): the "special" state. A stronger emerald ring plus
- * an outer glow, and a subtle settle-in on mount (below). */
+ * an outer glow, read together with the static chain-link badge top-right. No
+ * settle animation: the minted mark is self-evident and legible at a glance. */
 .medallion[data-verified="true"][data-onchain="minted"] {
   box-shadow:
     var(--shadow-sm-c6dbf459),
     inset 0 1px 0 rgba(255, 255, 255, 0.3),
     0 0 0 1.5px rgba(var(--accent), 0.6),
     0 0 16px rgba(var(--accent), 0.4);
-}
-.medallionMinted {
-  animation: rdMintSettle var(--motion-slow-c6dbf459) var(--ease-standard-c6dbf459) both;
-}
-@keyframes rdMintSettle {
-  0% {
-    transform: scale(0.92);
-  }
-  55% {
-    transform: scale(1.04);
-  }
-  100% {
-    transform: scale(1);
-  }
 }
 
 .face {
@@ -344,12 +367,14 @@
   height: 15px;
 }
 
-/* Expiring-soon dot: the ONLY amber on the medallion, a small corner indicator
- * (mirrors the pip corner). No text; the drawer's timer tooltip states the days. */
+/* Expiring-soon dot: the ONLY amber on the medallion, a small indicator in the
+ * SAME top-right corner as the minted badge (they never render together, so the
+ * corner holds exactly one indicator and there is no top-left mark). No text; the
+ * medallion tooltip and the drawer timer name the days. */
 .expiringDot {
   position: absolute;
   top: -3px;
-  left: -3px;
+  right: -3px;
   width: 10px;
   height: 10px;
   border-radius: var(--radius-pill-c6dbf459);
@@ -628,8 +653,7 @@
   .pagerDot {
     transition: none;
   }
-  .spin,
-  .medallionMinted {
+  .spin {
     animation: none;
   }
 }

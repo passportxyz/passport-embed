@@ -101,20 +101,44 @@ export type StampsWindowProps = {
 // fixed shell height; mini keeps one short row.
 const DEFAULT_PAGE_SIZE: Record<ShellSize, number> = { full: 6, mini: 3, pill: 3 };
 
-const ONCHAIN_LABEL: Record<StampOnchain, string> = {
-  minted: "Minted on chain",
-  mintable: "Can be minted on chain",
-  none: "Off chain",
+/**
+ * Short, honest tab labels for the real (long) Passport category names. The tab
+ * carries the short name + count so the navigation is legible at 300px; the
+ * verbatim full name still reads in the category heading below and in every tab's
+ * accessible label. Falls back to the first word of any unmapped category.
+ */
+const SHORT_CATEGORY: Record<string, string> = {
+  "Physical Verification": "Physical",
+  "Blockchain Networks and Activities": "Blockchain",
+  "Web2 Platforms & Services": "Web2",
 };
+const shortCategory = (c: string): string => SHORT_CATEGORY[c] ?? c.split(/\s+/)[0];
 
 /** Plain-language points phrase for the accessible name (earned vs available). */
 const pointsPhrase = (s: Stamp) =>
   s.verified ? `${s.points} points earned` : `${s.points} points available`;
 
+/**
+ * The stamp's STATUS in plain words, the same phrase shown in the medallion
+ * tooltip and folded into the accessible name so every state reads at a glance
+ * AND is stated in words (design-sop states-are-legible + one-signal-per-meaning).
+ * Precedence puts the time-sensitive states first (expired, then expiring), so a
+ * minted-but-expiring stamp surfaces the actionable "Expiring in N days" while its
+ * corner still carries the minted chain mark. The amber corner dot means exactly
+ * this "expiring" state, and here it is named.
+ */
+const statusPhrase = (s: Stamp): string => {
+  if (!s.verified) return "Not verified yet";
+  const expiry = formatExpiry(s.expirationDate);
+  if (expiry?.state === "expired") return "Expired";
+  if (expiry?.state === "soon") return `Expiring in ${expiry.days} ${expiry.days === 1 ? "day" : "days"}`;
+  if (s.onchain === "minted") return "Minted on-chain";
+  if (s.onchain === "mintable") return "Not yet on-chain";
+  return "Verified";
+};
+
 const stampLabel = (s: Stamp) =>
-  `${s.name}. ${pointsPhrase(s)}. ${s.verified ? "Verified" : "Not verified yet"}. ${
-    ONCHAIN_LABEL[s.onchain]
-  }. Open stamp.`;
+  `${s.name}. ${pointsPhrase(s)}. ${statusPhrase(s)}. Open stamp.`;
 
 /** Split a flat list into fixed-size pages. */
 const paginate = <T,>(items: T[], per: number): T[][] => {
@@ -167,10 +191,13 @@ export type MedallionProps = {
  *  - unverified: recessive, neutral rim.
  *  - verified + off-chain ("none"): calm emerald-glass (unminted).
  *  - verified + mintable: an emerald outline / glow invite (never gold).
- *  - verified + minted: emerald glow + a small chain-link pip + a settle animation.
- *  - expiring soon: a small amber dot in the corner (the ONLY amber here).
+ *  - verified + minted: emerald glow + a static chain-link badge (top-right). No
+ *    animation: the mark is self-evident and reads at a glance, not on a settle.
+ *  - expiring soon: a small amber dot in the SAME top-right corner (the ONLY amber
+ *    here). The tooltip names it "Expiring in N days".
  *  - expired: desaturated with a muted outline; reads inactive.
- * Points ride on the chip; everything else is emerald. One carrier per meaning.
+ * Points ride on the chip; everything else is emerald. One carrier per meaning,
+ * and every status indicator lives in ONE place: the top-right corner.
  *
  * Exported so the stamp detail drawer reuses the exact medallion look for its
  * header. The header passes showPoints/showPip false so on-chain + expiry are not
@@ -186,11 +213,11 @@ export const Medallion: React.FC<MedallionProps> = ({
   const expiry = formatExpiry(stamp.expirationDate);
   const expired = expiry?.state === "expired";
   const soon = expiry?.state === "soon";
-  // Minted is the "special" state: an emerald glow + chain pip + a settle-in.
+  // Minted is the "special" state: a static emerald chain-link badge + glow ring.
   const minted = stamp.verified && stamp.onchain === "minted" && !expired;
   return (
     <span
-      className={`${styles.medallion} ${compact ? styles.medallionSm : ""} ${minted ? styles.medallionMinted : ""}`}
+      className={`${styles.medallion} ${compact ? styles.medallionSm : ""}`}
       data-verified={stamp.verified ? "true" : "false"}
       data-onchain={stamp.onchain}
       data-expired={expired ? "true" : undefined}
@@ -201,49 +228,59 @@ export const Medallion: React.FC<MedallionProps> = ({
           {stamp.icon ?? <StarIcon size={compact ? 15 : 20} strokeWidth={1.6} />}
         </span>
       </span>
-      {/* Minted chain-link pip: the single "notarized on chain" mark. Emerald only;
-          mintable / off-chain carry their state through the medallion treatment. */}
+      {/* Top-right corner = the ONE indicator slot. Minted shows the static
+          chain-link badge (the "notarized on chain" mark). Otherwise an expiring
+          stamp shows the amber dot in the same corner. They never both render, so
+          the corner is never crowded and there is no top-left indicator. */}
       {showPip && minted ? (
         <span className={styles.pip} aria-hidden="true">
           <LinkIcon size={compact ? 8 : 9} strokeWidth={2} />
         </span>
+      ) : showPip && soon && !expired ? (
+        <span className={styles.expiringDot} aria-hidden="true" />
       ) : null}
-      {/* Expiring-soon dot: the ONLY amber on the medallion, and a small indicator
-          only (never the whole face). Suppressed once expired (that reads muted). */}
-      {showPip && soon && !expired ? <span className={styles.expiringDot} aria-hidden="true" /> : null}
       {showPoints ? <span className={styles.points}>+{stamp.points}</span> : null}
     </span>
   );
 };
 
 /**
- * One grid badge: the medallion + name, the whole thing a tap target. When the
- * stamp carries a description it is wrapped in the portal glass Tooltip so hover
- * / focus reveals WHAT the stamp does, readable in both themes and never clipped
- * (the tooltip portals to the body, so it escapes the fixed shell bounds).
+ * One grid badge: the medallion + name, the whole thing a tap target. Wrapped in
+ * the portal glass Tooltip so hover / focus reveals the stamp's STATUS in words
+ * (Minted on-chain / Expiring in N days / Expired / Not yet on-chain / Not
+ * verified yet) plus WHAT the stamp does. The tooltip portals to document.body,
+ * so it escapes the fixed shell bounds, is never occluded by the chrome, and
+ * edge-flips against the viewport (design-sop states-are-legible + overlay
+ * layering). Readable in both themes.
  */
 const StampBadge: React.FC<{
   stamp: Stamp;
   compact?: boolean;
   onSelect?: (id: string) => void;
 }> = ({ stamp, compact, onSelect }) => {
-  const btn = (
-    <button
-      type="button"
-      className={styles.badge}
-      onClick={() => onSelect?.(stamp.id)}
-      aria-label={stampLabel(stamp)}
-    >
-      <Medallion stamp={stamp} compact={compact} />
-      <span className={styles.name}>{stamp.name}</span>
-    </button>
+  const tip = (
+    <>
+      <strong>{statusPhrase(stamp)}</strong>
+      {stamp.description ? (
+        <>
+          <br />
+          {stamp.description}
+        </>
+      ) : null}
+    </>
   );
-  return stamp.description ? (
-    <Tooltip content={stamp.description} placement="top" className={glass.tip}>
-      {btn}
+  return (
+    <Tooltip content={tip} placement="top" className={glass.tip}>
+      <button
+        type="button"
+        className={styles.badge}
+        onClick={() => onSelect?.(stamp.id)}
+        aria-label={stampLabel(stamp)}
+      >
+        <Medallion stamp={stamp} compact={compact} />
+        <span className={styles.name}>{stamp.name}</span>
+      </button>
     </Tooltip>
-  ) : (
-    btn
   );
 };
 
@@ -307,10 +344,11 @@ const Pager: React.FC<{ page: number; pageCount: number; onPage: (p: number) => 
 
 /**
  * Category selector (segmented control): one segment per real Passport category.
- * Each segment carries the category glyph + a verified/total count; the active
- * segment is highlighted. This is the PRIMARY navigation - it switches the whole
- * grid to that category (no blind whole-catalog paging). The full verbatim name
- * rides on the active-category heading below + every segment's accessible label.
+ * Each segment is a NAMED tab (short category name) + its verified/total count;
+ * the active segment is highlighted. This is the PRIMARY navigation - it switches
+ * the whole grid to that category (no blind whole-catalog paging, no ambiguous
+ * star + number pill). The verbatim full name rides on the active-category
+ * heading below and on every segment's accessible label.
  */
 const CategoryTabs: React.FC<{
   groups: CategoryGroup[];
@@ -329,9 +367,7 @@ const CategoryTabs: React.FC<{
         title={`${g.category}. ${g.verified} of ${g.stamps.length} verified.`}
         aria-label={`${g.category}. ${g.verified} of ${g.stamps.length} verified.`}
       >
-        <span className={styles.tabIcon} aria-hidden="true">
-          {CATEGORY_ICONS[g.category] ?? <StarIcon size={18} strokeWidth={1.6} />}
-        </span>
+        <span className={styles.tabName}>{shortCategory(g.category)}</span>
         <span className={styles.tabCount}>
           {g.verified}/{g.stamps.length}
         </span>
@@ -510,13 +546,18 @@ export const StampsWindow: React.FC<StampsWindowProps> = ({
 
       {activeGroup ? (
         <div className={styles.catBar}>
-          {/* Verbatim category name (single line; full name in title + tab a11y
-              labels), plus its verified/total count. */}
+          {/* Verbatim category name (single line) led by its glyph. The active
+              category's own count already rides on its highlighted tab, so here
+              we carry the OVERALL passport progress as a plainly labeled summary
+              ("N of M verified"), never a bare star + number. */}
           <span className={styles.catName} title={activeGroup.category}>
-            {activeGroup.category}
+            <span className={styles.catGlyph} aria-hidden="true">
+              {CATEGORY_ICONS[activeGroup.category] ?? <StarIcon size={16} strokeWidth={1.6} />}
+            </span>
+            <span className={styles.catNameText}>{activeGroup.category}</span>
           </span>
-          <span className={styles.count}>
-            {activeGroup.verified}/{activeGroup.stamps.length}
+          <span className={styles.catSummary}>
+            {verifiedCount} of {stamps.length} verified
           </span>
         </div>
       ) : null}
