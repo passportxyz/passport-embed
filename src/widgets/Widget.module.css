@@ -108,6 +108,22 @@
   --warn: 245, 158, 11; /* #F59E0B amber-500 */
   --on-warn: 10, 10, 10;
 
+  /* Stamp state color system (redesign). Distinct semantic hues so a stamp's
+   * state reads at a glance and never collides with the emerald "earned / minted"
+   * language. Each is a saturated BRAND hue used as a SOLID fill with a fixed dark
+   * on-color, so the indicator clears WCAG-AA (>=4.5:1) in BOTH themes without
+   * depending on the surface flipping white<->near-black.
+   *  - pending  = HTDS brand sky-50 (#009afa): not-yet-verified AND mintable, an
+   *    "invitation" state. Emerald is reserved for verified + minted only, so a
+   *    mintable stamp never reads as an already-minted green one.
+   *  - expiring = HTDS brand orange-40 (#ff990a): expiring soon. A cleaner, cooler
+   *    orange shifted OFF the greenish-gold amber (--warn), and clearly distinct
+   *    from pending sky. --warn stays the score below-threshold color, untouched. */
+  --pending: 0, 154, 250; /* #009afa HTDS sky-50 */
+  --on-pending: 10, 10, 10;
+  --expiring: 255, 153, 10; /* #ff990a HTDS orange-40 */
+  --on-expiring: 10, 10, 10;
+
   /* Paper-shader wash color for the shell field (integrator-configurable via the
    * PassportShell `washRgb` prop, which sets --rd-wash). Defaults to the accent
    * so the living-material wash is on-brand emerald out of the box. */
