@@ -3,7 +3,13 @@ import React, { useState } from "react";
 import { StampDetailDrawer } from "./StampDetailDrawer";
 import { StampsWindow } from "./StampsWindow";
 import { PassportShell } from "./PassportShell";
-import { ThemePair, SAMPLE_ACCOUNT, SAMPLE_MEDALLION_STAMPS, SAMPLE_STAMP_DETAILS } from "./storyFrame";
+import {
+  ThemePair,
+  SAMPLE_ACCOUNT,
+  SAMPLE_MEDALLION_STAMPS,
+  SAMPLE_STAMP_DETAILS,
+  SAMPLE_STAMP_DETAIL_REVOKED,
+} from "./storyFrame";
 
 /**
  * StampDetailDrawer - a passport-style slide-in drawer that opens OVER the Stamps
@@ -126,6 +132,19 @@ export const CleanHands: Story = {
       description: {
         story:
           "Proof of Clean Hands is a SIGN PROTOCOL attestation, not an SBT and not EAS, so its onchain block is labeled 'Sign Protocol attestation' and its link reads 'View on Sign Protocol' (scan.sign.global). Its issued line is privacy accurate: 'Issued {date}. Identity encrypted to the Human Network.', with Expires on its own line beneath. The attestation data is only a scope actionId with nothing to decode, so there is no observer and no signature shown, and the nullifier and user address are never rendered. The verified issuer is human.tech, linking to the attester on chain. The action is the emerald Mint stamp.",
+      },
+    },
+  },
+};
+
+export const RevokedCredential: Story = {
+  name: "Stamp detail / Revoked attestation (Clean Hands)",
+  render: () => drawerOver(SAMPLE_STAMP_DETAIL_REVOKED, { defaultOnchainOpen: true }),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "A revoked Proof of Clean Hands attestation. Revocation is the ONE real per-user observable state change. The SDK exposes no decryption event, so there is no fake 'Decrypted' state. The status reads Revoked, and a tonal band shows when it was revoked, why, and a link to the revoke transaction (the real revokeTimestamp / revokeReason / revokeTransactionHash fields). The default, non-revoked state stays Valid with the identity encrypted to the Human Network.",
       },
     },
   },

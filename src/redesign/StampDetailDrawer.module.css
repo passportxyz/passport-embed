@@ -170,7 +170,7 @@
 .header {
   display: flex;
   align-items: center;
-  gap: var(--space-3-c6dbf459);
+  gap: var(--space-2-c6dbf459);
   flex: none;
   margin-top: var(--space-1-c6dbf459);
 }
@@ -178,6 +178,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1-c6dbf459);
+  /* flex:1 + min-width:0 so headMeta takes the width the medallion leaves and its
+   * rows can shrink, so the header sub-row never pushes the timer past the shell
+   * edge (design-sop: nothing spills the shell). */
+  flex: 1 1 auto;
   min-width: 0;
 }
 .name {
@@ -193,8 +197,12 @@
 .headSub {
   display: flex;
   align-items: center;
-  gap: var(--space-2-c6dbf459);
+  gap: var(--space-1-c6dbf459);
   min-width: 0;
+  /* Never wrap (fixed header height) and never overflow: the state pill can shrink
+   * so the points pill and the timer clock stay INSIDE the header row on a narrow
+   * shell (item 8: timer must not overflow on the right, both themes). */
+  flex-wrap: nowrap;
 }
 
 /* State pill: the ONE carrier of the stamp's state in the header, named in words
@@ -212,6 +220,21 @@
   color: rgb(var(--on-surface));
   background: rgba(var(--on-surface), 0.08);
   transition: filter var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+  /* Yields space first (points + timer are flex:none): the inner label span
+   * ellipsizes so nothing in the header row crosses the drawer edge on a narrow
+   * shell (item 8), both themes. */
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+/* The label is a real element (not a bare text node) so it can ellipsize inside
+ * the inline-flex pill when the header row is tight. */
+.statusPillLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .statusPill:focus-visible {
   outline: 2px solid rgb(var(--accent));
@@ -269,7 +292,7 @@
  * chip, so this is the single points carrier). Emerald tint so it reads as earned. */
 .headPoints {
   flex: none;
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius-pill-c6dbf459);
   font-size: var(--font-size-xs-c6dbf459);
   font-weight: var(--weight-bold-c6dbf459);
@@ -307,8 +330,10 @@
   background: rgba(var(--on-surface), 0.08);
 }
 
-/* Description: clamped to two lines with an inline "more" toggle, so the full
- * text is always reachable and never dead-ends in a truncation. */
+/* Description FILLS SPACE (design-sop §7.5): shown in full when the accordion
+ * below is collapsed (using the freed space), and compressed to one line when a
+ * section is expanded so the open section still fits the fixed drawer height.
+ * Never hidden behind a toggle with the space left blank. */
 .descWrap {
   margin: var(--space-2-c6dbf459) 0 0;
   flex: none;
@@ -318,34 +343,13 @@
   font-size: var(--font-size-sm-c6dbf459);
   line-height: var(--line-normal-c6dbf459);
   color: rgba(var(--on-surface), 0.72);
+}
+/* Compressed: one line, ellipsized, when a section is expanded below. */
+.descCompressed {
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-.descOpen {
-  -webkit-line-clamp: unset;
-  overflow: visible;
-}
-.moreBtn {
-  appearance: none;
-  border: 0;
-  margin-top: 2px;
-  padding: 0;
-  background: transparent;
-  color: rgb(var(--accent));
-  font-family: inherit;
-  font-size: var(--font-size-xs-c6dbf459);
-  font-weight: var(--weight-semibold-c6dbf459);
-  cursor: pointer;
-}
-.moreBtn:hover {
-  text-decoration: underline;
-}
-.moreBtn:focus-visible {
-  outline: 2px solid rgb(var(--accent));
-  outline-offset: 2px;
-  border-radius: var(--radius-sm-c6dbf459);
 }
 
 /* ---- sub-credential rows: grow to fill, pushing the pager + action down ---- */
@@ -355,7 +359,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-1-c6dbf459);
-  margin-top: var(--space-3-c6dbf459);
+  margin-top: var(--space-2-c6dbf459);
   align-content: flex-start;
   /* Safety only: the page size is tuned so rows always fit, so this never has to
    * clip. It guarantees a scrollbar can NEVER appear inside the shell (§ never
@@ -522,7 +526,7 @@
  * reveals its rows. Structure is tone + space, not hard lines (§ no-hard-lines). */
 .section {
   flex: none;
-  margin-top: var(--space-3-c6dbf459);
+  margin-top: var(--space-2-c6dbf459);
 }
 .sectionHead {
   appearance: none;
@@ -562,20 +566,22 @@
   transform: rotate(180deg);
 }
 .sectionBody {
-  padding: var(--space-2-c6dbf459) 2px 0;
+  padding: var(--space-1-c6dbf459) 2px 0;
 }
 .ocHeadIcon {
   display: inline-flex;
   color: rgb(var(--accent));
 }
 .ocBody {
-  padding: var(--space-2-c6dbf459) var(--space-2-c6dbf459) 0;
+  padding: var(--space-1-c6dbf459) 2px 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 3px;
 }
 
-/* Protocol + chain line, led by the chain logo (never the word alone). */
+/* Protocol + chain line, led by the chain logo (never the word alone), with the
+ * Valid / Revoked status pushed to the right of the same row (keeps the block
+ * compact so it fits the fixed drawer height). */
 .ocProtocol {
   display: flex;
   align-items: center;
@@ -590,7 +596,24 @@
   color: rgb(var(--on-surface));
 }
 .ocProtocolText {
+  flex: 1 1 auto;
+  min-width: 0;
   letter-spacing: 0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Status on the protocol row. Valid reads positive (emerald), Revoked reads warn. */
+.ocStatus {
+  flex: none;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+}
+.ocStatus[data-revoked="false"] {
+  color: rgb(var(--accent));
+}
+.ocStatus[data-revoked="true"] {
+  color: rgb(var(--warn));
 }
 
 /* Compact plain line for the Issued / Expires (and the Clean Hands privacy note),
@@ -691,6 +714,99 @@ a.ocIssuer:focus-visible {
   border-radius: var(--radius-sm-c6dbf459);
 }
 
+/* Revocation detail (only when revoked): when / why / a link to the revoke tx.
+ * A faint tonal band groups it, no hard line. */
+.ocRevoke {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: var(--space-1-c6dbf459) var(--space-2-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+  background: rgba(var(--warn), 0.1);
+}
+.ocRevoke .ocLine {
+  color: rgba(var(--on-surface), 0.78);
+}
+
+/* Clean Hands privacy line + disclosure-conditions link, on their own lines under
+ * the status row. Rule-based disclosure, gated by on-chain conditions. */
+.ocPrivacy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Trust tags row: the VOLE-based ZK tag (left) + compact view-affordance icon
+ * links (right), on one compact row so the block fits the fixed drawer height. */
+.ocTags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-1-c6dbf459) var(--space-2-c6dbf459);
+}
+/* The view affordances (transaction / contract) cluster to the right. */
+.ocViewGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1-c6dbf459);
+  margin-left: auto;
+}
+/* Compact icon link: a distinct, tappable glass-tooltip affordance. A >=40px hit
+ * area (a11y §8) is provided by the invisible ::before, the visual is 26px. */
+.ocIconLink {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm-c6dbf459);
+  color: rgb(var(--accent));
+  background: rgba(var(--accent), 0.1);
+  cursor: pointer;
+  transition: filter var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.ocIconLink::before {
+  content: "";
+  position: absolute;
+  inset: -7px;
+}
+.ocIconLink:hover {
+  filter: brightness(1.06);
+  background: rgba(var(--accent), 0.16);
+}
+.ocIconLink:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+.ocTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px 2px 5px;
+  border-radius: var(--radius-pill-c6dbf459);
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  color: rgb(var(--accent));
+  background: rgba(var(--accent), 0.1);
+  cursor: help;
+  white-space: nowrap;
+}
+.ocTag:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+.ocTagDot {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgb(var(--on-accent));
+  background: rgb(var(--accent));
+}
+
 /* ---- action area: bottom-pinned, one primary action + optional renew ---- */
 /* margin-top:auto pins it to the bottom when there is no flex-grow list to do so
  * (the focused onchain-credential view drops the list); inert otherwise. */
@@ -700,7 +816,7 @@ a.ocIssuer:focus-visible {
   display: flex;
   flex-direction: column;
   gap: var(--space-2-c6dbf459);
-  padding: var(--space-2-c6dbf459) 0 var(--space-3-c6dbf459);
+  padding: var(--space-1-c6dbf459) 0 var(--space-2-c6dbf459);
 }
 /* Two actions (primary + renew) share ONE row so the drawer keeps its single
  * action-row height whether or not renew is present (no vertical jump, no clip). */

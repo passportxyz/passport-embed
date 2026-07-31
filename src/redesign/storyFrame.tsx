@@ -532,28 +532,63 @@ export const SAMPLE_MEDALLION_STAMPS_PAGED = SAMPLE_MEDALLION_STAMPS;
 const HUB_V3 = "0x2AA822e264F8cc31A2b9C22f39e5551241e94DfB";
 const CLEAN_HANDS_ATTESTER = "0xB1f50c6C34C72346b1229e5C80587D0D659556Fd";
 const opAddr = (address: string): string => `https://optimistic.etherscan.io/address/${address}`;
+const opTx = (hash: string): string => `https://optimistic.etherscan.io/tx/${hash}`;
 // A representative Sign Protocol attestation id (shape: onchain_evm_10_0x…). It
 // is an on-chain handle, not PII; the nullifier / indexingValue is never shown.
 const CLEAN_HANDS_ATTESTATION_ID = "onchain_evm_10_0x7c9f2a4b8e1d6053";
+// Representative on-chain transaction hashes (mint / attest). On-chain handles,
+// not PII. Distinct from the contract link, so "View transaction" is its own
+// affordance.
+const SBT_TX_HASH = "0x5b1e7a0c9d4f2836a1c7e0b95d3f8241760ac9e2f4b18d05a6e3c72f9018b4d6";
+const CLEAN_HANDS_TX_HASH = "0x8c2f4a6b1e9d0537c4a8f1e2b6d09547310ac8e1f4b27d6053a9e1c72f4b8d90";
 
 type OcSeed = {
   protocol: "sbt" | "sign";
   credential: string;
-  /** View the credential itself. */
+  /** View the credential itself (the contract / attestation). */
   explorerUrl: string;
   /** View the verified issuer / attester on chain. */
   issuerUrl: string;
+  /** View the mint / attest transaction, distinct from the contract link. */
+  txUrl: string;
+  /** Pre-committed on-chain disclosure-conditions gate (Clean Hands only). */
+  disclosureUrl?: string;
 };
 
+// All Human ID credentials are proven with a VOLE-based zero knowledge proof, so
+// each carries the same non-PII provenance line behind the ZK trust tag.
+const ZK_PROVENANCE = "Issued by human.tech and proven with a VOLE-based zero knowledge proof.";
+
 const HUMAN_ID_ONCHAIN: Record<string, OcSeed> = {
-  HumanIdKyc: { protocol: "sbt", credential: "Government ID", explorerUrl: opAddr(HUB_V3), issuerUrl: opAddr(HUB_V3) },
-  Biometrics: { protocol: "sbt", credential: "Biometrics", explorerUrl: opAddr(HUB_V3), issuerUrl: opAddr(HUB_V3) },
-  HumanIdPhone: { protocol: "sbt", credential: "Phone", explorerUrl: opAddr(HUB_V3), issuerUrl: opAddr(HUB_V3) },
+  HumanIdKyc: {
+    protocol: "sbt",
+    credential: "Government ID",
+    explorerUrl: opAddr(HUB_V3),
+    issuerUrl: opAddr(HUB_V3),
+    txUrl: opTx(SBT_TX_HASH),
+  },
+  Biometrics: {
+    protocol: "sbt",
+    credential: "Biometrics",
+    explorerUrl: opAddr(HUB_V3),
+    issuerUrl: opAddr(HUB_V3),
+    txUrl: opTx(SBT_TX_HASH),
+  },
+  HumanIdPhone: {
+    protocol: "sbt",
+    credential: "Phone",
+    explorerUrl: opAddr(HUB_V3),
+    issuerUrl: opAddr(HUB_V3),
+    txUrl: opTx(SBT_TX_HASH),
+  },
   CleanHands: {
     protocol: "sign",
     credential: "Proof of Clean Hands",
     explorerUrl: `https://scan.sign.global/attestation/${CLEAN_HANDS_ATTESTATION_ID}`,
     issuerUrl: opAddr(CLEAN_HANDS_ATTESTER),
+    txUrl: opTx(CLEAN_HANDS_TX_HASH),
+    // The gate that enforces the pre-committed disclosure conditions on chain.
+    disclosureUrl: `${opAddr(CLEAN_HANDS_ATTESTER)}#code`,
   },
 };
 
@@ -580,6 +615,9 @@ const buildOnchain = (stamp: Stamp): StampDetail["onchainCredential"] => {
     issuer: "human.tech",
     issuerUrl: oc.issuerUrl,
     explorerUrl: oc.explorerUrl,
+    txUrl: oc.txUrl,
+    disclosureUrl: oc.disclosureUrl,
+    zkProof: ZK_PROVENANCE,
   };
 };
 
@@ -603,3 +641,24 @@ export const SAMPLE_STAMP_DETAILS: Record<string, StampDetail> = SAMPLE_MEDALLIO
   },
   {} as Record<string, StampDetail>
 );
+
+// A REVOKED Clean Hands attestation. Revocation is the one real per-user observable
+// state change (the SDK exposes no decryption signal, so there is NO "decrypted"
+// state to build). It carries when (revokeTimestamp), why (revokeReason), and a
+// link to the revoke transaction (revokeTransactionHash) - all real attestation
+// fields. The default state stays "Valid" + "encrypted to the Human Network".
+const CLEAN_HANDS_REVOKE_TX = "0x2a7d19f4c8b3605e1a9c4f7d20b83e5619ac0f42d8b73e15069a2c4f7b30e8d1";
+export const SAMPLE_STAMP_DETAIL_REVOKED: StampDetail = (() => {
+  const base = SAMPLE_STAMP_DETAILS.CleanHands;
+  const oc = base.onchainCredential!;
+  return {
+    ...base,
+    onchainCredential: {
+      ...oc,
+      revoked: true,
+      revokedAt: fmtDate(new Date(Date.now() - 3 * ONE_DAY).toISOString()),
+      revokeReason: "Sanctions screening result changed.",
+      revokeTxUrl: opTx(CLEAN_HANDS_REVOKE_TX),
+    },
+  };
+})();
