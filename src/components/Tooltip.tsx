@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   computePosition,
   flip,
@@ -100,23 +101,32 @@ export const Tooltip: React.FC<TooltipProps> = ({ content, placement = "top", ch
         {children}
       </div>
 
-      {/* Portal the tooltip to body to avoid transform/position issues */}
-      {isVisible && (
-        <div
-          ref={tooltipRef}
-          className={`${styles.tooltip} ${className}`}
-          role="tooltip"
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "max-content",
-          }}
-        >
-          <div className={styles.content}>{content}</div>
-          <div ref={arrowRef} className={styles.arrow} />
-        </div>
-      )}
+      {/* Portal the floating layer to document.body so it escapes any transformed,
+          blurred, or clipped ancestor (the shell chrome, glass surfaces, the
+          drawer). Anchored to the live trigger node via floating-ui, so a
+          position:fixed layer is never trapped in a containing block, never
+          occluded by higher-z chrome, and edge-flips / shifts against the
+          VIEWPORT so it is never clipped (design-sop overlay layering). SSR-safe:
+          only portals once document exists. */}
+      {isVisible &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            ref={tooltipRef}
+            className={`${styles.tooltip} ${className}`}
+            role="tooltip"
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "max-content",
+            }}
+          >
+            <div className={styles.content}>{content}</div>
+            <div ref={arrowRef} className={styles.arrow} />
+          </div>,
+          document.body
+        )}
     </>
   );
 };
