@@ -14,6 +14,7 @@ import {
   StarIcon,
 } from "./icons";
 import { deriveTints } from "./deriveTints";
+import { formatExpiry } from "./expiry";
 import { useAccentRgb, useReducedMotion } from "./hooks";
 import type { ShellSize } from "./PassportShell";
 
@@ -271,6 +272,10 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
   const action = deriveAction(stamp, actionState);
   const showRenew = Boolean(onRenew) && stamp.verified && action !== "claim";
 
+  // Every stamp expires as a whole. The header states it in full ("Valid for N
+  // days" / "Expires {date}" / "Expired"); Human ID SBTs add the auto-renew note.
+  const expiry = formatExpiry(stamp.expirationDate);
+
   const compact = size !== "full";
   const medallionPx = compact ? 40 : 46;
 
@@ -349,6 +354,25 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
 
         {stamp.description ? <p className={styles.desc}>{stamp.description}</p> : null}
 
+        {/* Expiry: a stamp expires as a whole. Amber when expiring soon, warn when
+            expired. Human ID SBTs carry the auto-renew note beside it. */}
+        {expiry ? (
+          <div className={styles.expiry} data-state={expiry.state}>
+            <span className={styles.expiryIcon} aria-hidden="true">
+              <ClockIcon size={13} strokeWidth={1.9} />
+            </span>
+            <span className={styles.expiryText}>
+              {expiry.long}
+              {stamp.isHumanId ? (
+                <span className={styles.expiryNote}>
+                  {" "}
+                  Auto renews after 90 days, full reverification after a year.
+                </span>
+              ) : null}
+            </span>
+          </div>
+        ) : null}
+
         {/* Sub-credential rows, paginated (never scrolled). */}
         <div className={styles.list}>
           <p className={styles.srOnly} aria-live="polite">
@@ -394,7 +418,7 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
               <span className={styles.ctaIcon}>
                 <StarIcon size={15} strokeWidth={1.9} />
               </span>
-              <span className={styles.ctaLabel}>{mintLabel ?? "Mint reward"}</span>
+              <span className={styles.ctaLabel}>{mintLabel ?? "Notarize stamp"}</span>
             </button>
           ) : action === "claim" ? (
             <button type="button" className={styles.cta} onClick={onClaim}>

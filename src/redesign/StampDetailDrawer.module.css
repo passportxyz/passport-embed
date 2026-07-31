@@ -264,6 +264,45 @@
   overflow: hidden;
 }
 
+/* ---- expiry line: whole-stamp validity, stated once, plain + dash-free ---- */
+.expiry {
+  margin-top: var(--space-2-c6dbf459);
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: var(--font-size-xs-c6dbf459);
+  line-height: var(--line-tight-c6dbf459);
+  color: rgba(var(--on-surface), 0.7);
+}
+.expiryIcon {
+  display: inline-flex;
+  flex: none;
+  margin-top: 1px;
+  color: rgba(var(--on-surface), 0.55);
+}
+.expiry[data-state="soon"] .expiryIcon,
+.expiry[data-state="soon"] .expiryText {
+  color: rgb(var(--warn));
+}
+.expiry[data-state="expired"] {
+  font-weight: var(--weight-semibold-c6dbf459);
+}
+.expiry[data-state="expired"] .expiryIcon,
+.expiry[data-state="expired"] .expiryText {
+  color: rgb(var(--warn));
+}
+.expiryText {
+  min-width: 0;
+}
+.expiryNote {
+  color: rgba(var(--on-surface), 0.55);
+  font-weight: var(--weight-regular-c6dbf459);
+}
+.expiry[data-state="expired"] .expiryNote {
+  color: rgba(var(--on-surface), 0.55);
+}
+
 /* ---- sub-credential rows: grow to fill, pushing the pager + action down ---- */
 .list {
   flex: 1 1 auto;
