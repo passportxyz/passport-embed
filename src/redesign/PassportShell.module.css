@@ -87,9 +87,11 @@
   height: 384px;
 }
 /* mini is a condensed ~half-size card; pill is a single compact row. Both are
- * fixed-height for the same pin-the-CTA reason. */
+ * fixed-height for the same pin-the-CTA reason. mini is tall enough for the
+ * Stamps window to fill with TWO short rows of medallions plus a pager (rather
+ * than one row with dead space below), while staying clearly smaller than full. */
 .mini .content {
-  height: 192px;
+  height: 216px;
 }
 .pill,
 .mini {

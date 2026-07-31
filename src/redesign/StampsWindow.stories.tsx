@@ -3,6 +3,7 @@ import React from "react";
 import { StampsWindow, type Stamp } from "./StampsWindow";
 import { PassportShell } from "./PassportShell";
 import { ThemePair, SAMPLE_ACCOUNT, SAMPLE_MEDALLION_STAMPS } from "./storyFrame";
+import { daysFromNow } from "./expiry";
 
 // One stamp of each state, all in a single category so they land on one page: a
 // side-by-side read of minted / mintable / unminted / expiring / expired /
@@ -10,17 +11,34 @@ import { ThemePair, SAMPLE_ACCOUNT, SAMPLE_MEDALLION_STAMPS } from "./storyFrame
 // the thin amber arc + "Nd" = expiring; grey + "Expired" = lapsed. Everything is
 // emerald except the expiring arc / day count, and every corner mark sits in the
 // one top-right slot.
-const pick = (id: string): Stamp => ({
+const pick = (id: string, patch: Partial<Stamp> = {}): Stamp => ({
   ...SAMPLE_MEDALLION_STAMPS.find((s) => s.id === id)!,
   category: "Stamp states",
+  ...patch,
 });
 const STATE_STAMPS: Stamp[] = [
-  pick("HumanIdKyc"), // minted (emerald glow + chain pip + settle)
+  pick("HumanIdKyc"), // minted (emerald glow + chain pip + stamped/embossed)
   pick("Biometrics"), // mintable (emerald outline invite)
-  pick("Binance"), // unminted: verified, off-chain, calm
+  pick("Binance"), // unminted: verified, off-chain, flat
   pick("Civic"), // expiring soon (small amber dot)
   pick("NFT"), // expired (desaturated, muted)
   pick("Coinbase"), // unverified (recessive)
+];
+
+// Distinct data per story so each DEMONSTRATES its case (they used to share one
+// dataset and look identical). The Expiring / expired set is verified stamps in
+// one category with soon / lapsed dates, so the amber arcs, the "Expired" state,
+// and the Expired filter are the whole point; the Pagination story keeps the full
+// twelve-stamp Blockchain category so it genuinely spills to a second page.
+const reDate = (id: string, days: number): Stamp =>
+  pick(id, { category: "Blockchain Networks and Activities", verified: true, onchain: "none", expirationDate: daysFromNow(days) });
+const EXPIRING_EXPIRED_STAMPS: Stamp[] = [
+  reDate("ETH", 3), // expiring in 3 days (amber arc, nearly drained)
+  reDate("Ens", 8), // expiring in 8 days
+  reDate("Google", 12), // expiring in 12 days
+  reDate("Binance", -4), // expired 4 days ago
+  reDate("NFT", -11), // expired 11 days ago
+  reDate("Github", -30), // expired 30 days ago
 ];
 
 /**
@@ -57,7 +75,7 @@ export const FullGrid: Story = {
     docs: {
       description: {
         story:
-          "The real catalog, navigated by category. The segmented control at the top carries the three real Passport categories as NAMED tabs (Physical, Blockchain, Web2), each with its own verified/total count; the active category's verbatim name shows below it. When a category has minted or expiring stamps to isolate, a subtle 'All / On-chain / Expiring' filter takes the right of that bar (one tap to narrow the grid); otherwise a plain overall summary sits there. There is no ambiguous star + number pill. Each medallion is pared to icon + name + points, and its state is carried by the medallion itself: a ghosted outline when available, a lit emerald glass when verified off-chain, an emerald outline when mintable, and an emerald glow + corner chain-link chip when minted on chain. Hover or focus any medallion to see a tooltip that names its status in words (Minted on-chain, Expiring in N days, Expired, Not yet on-chain) and describes what the stamp does. The persistent compact score sits in the shell chrome, top-left.",
+          "The real catalog, navigated by category. The segmented control at the top carries the three real Passport categories as labeled ICON tabs (Physical, Blockchain, Web), each icon shown with its short name beneath so it needs no hover tooltip. When a category has stamps to isolate, a subtle 'All / Verified / Pending / Expired' filter takes the right of that bar (one tap to narrow the grid); otherwise a plain overall summary sits there. There is no ambiguous star. Each medallion is pared to icon + name + points, and its state is carried by the medallion itself: a ghosted outline when available, a flat lit emerald glass when verified off-chain, an emerald outline when mintable, and a STAMPED (embossed) emerald plate with a corner chain-link chip when minted on chain. There are no per-medallion tooltips; a stamp's full status and description are one tap away in the detail drawer. The persistent compact score sits in the shell chrome, top-left.",
       },
     },
   },
@@ -70,7 +88,7 @@ export const States: Story = {
     docs: {
       description: {
         story:
-          "One medallion of each state, side by side, in both themes. Fill = verified: a verified medallion lights up (solid emerald tint, full-strength icon) while an available one is a ghosted outline with a muted icon, so scanning the grid reads have vs do not have. The top-right corner is the single on-chain slot: a minted stamp (Government ID) carries a solid emerald link-chip, an off-chain stamp (Binance) carries nothing. Validity shows only when it matters: an expiring stamp (Civic, nine days) draws a thin amber arc on the rim whose length is the days left, plus a small '9d' in the corner, and an expired stamp (NFT) desaturates to grey with a small 'Expired'. Mintable (Biometrics) is an emerald outline invite, never gold. Hover any medallion to read its state in words. Everything but the expiring arc and day count is emerald, and every corner mark sits in the one top-right slot.",
+          "One medallion of each state, side by side, in both themes. Fill = verified: a verified medallion lights up (emerald tint, full-strength icon) while an available one is a ghosted outline with a muted icon, so scanning the grid reads have vs do not have. Minted vs unminted is now obvious: only the minted stamp (Government ID) is STAMPED, an embossed struck-metal plate with a clean sheen sweep on load, while every unminted / pending medallion stays FLAT. The top-right corner is the single on-chain slot: the minted stamp carries a solid emerald link-chip, an off-chain stamp (Binance) carries nothing. Validity shows only when it matters: an expiring stamp (Civic, nine days) draws a thin amber arc on the rim whose length is the days left, plus a small '9d' in the corner, and an expired stamp (NFT) desaturates to grey with a small 'Expired'. Mintable (Biometrics) is an emerald outline invite, never gold. Everything but the expiring arc and day count is emerald, and every corner mark sits in the one top-right slot.",
       },
     },
   },
@@ -100,19 +118,12 @@ export const Paginated: Story = {
 export const Expired: Story = {
   name: "Stamps / Expiring and expired",
   render: () =>
-    inShell(
-      <StampsWindow
-        stamps={SAMPLE_MEDALLION_STAMPS}
-        initialCategory="Blockchain Networks and Activities"
-        onSelectStamp={() => undefined}
-        onVerify={() => undefined}
-      />
-    ),
+    inShell(<StampsWindow stamps={EXPIRING_EXPIRED_STAMPS} onSelectStamp={() => undefined} onVerify={() => undefined} />),
   parameters: {
     docs: {
       description: {
         story:
-          "Validity shows on the grid only when it matters. A stamp expiring soon draws a thin amber arc on the medallion rim (its length is the days left) plus a small 'Nd' day count in the corner, the only amber on the medallion. An expired stamp (here the NFT credential) desaturates to grey with a small 'Expired'. The full validity copy ('Valid for N days' / 'Expires {date}' / 'Expired') and the days-left countdown also read in the drawer header (its state pill and timer). Use the top filter to isolate just the expiring stamps in one tap.",
+          "A set built to show validity states: three stamps expiring soon (in 3, 8, and 12 days) and three already expired. A stamp expiring soon draws a thin amber arc on the medallion rim (its length is the days left) plus a small 'Nd' day count in the corner, the only amber on the medallion. An expired stamp desaturates to grey with a small 'Expired'. The full validity copy reads in the drawer header state pill (Expiring in Nd / Expired), and SBT stamps carry the exact Expires date in the onchain block. Use the Expired filter to isolate the lapsed stamps in one tap.",
       },
     },
   },
@@ -139,7 +150,7 @@ export const Mini: Story = {
     docs: {
       description: {
         story:
-          "The condensed half-size card: smaller medallions with their real icons, one flat paged row, category tabs dropped to save space. It shares the shell's fixed mini height and keeps the persistent score.",
+          "The condensed half-size card: smaller medallions with their real icons in two short rows of three, filling the space the single row used to leave empty (design-sop fill-space). Category tabs are dropped to save width; the verification filter rides on the header row when it earns its space. It shares the shell's fixed mini height and keeps the persistent score.",
       },
     },
   },

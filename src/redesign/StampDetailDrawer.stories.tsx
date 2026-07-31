@@ -79,7 +79,7 @@ export const VerifiedMinted: Story = {
     docs: {
       description: {
         story:
-          "The Government ID SBT: verified and minted on chain. The header medallion drops its own chip and pip, so points and on-chain state are each stated once (the total points text and the emerald Minted pill). A small clock sits beside them; its tooltip carries the whole-stamp validity ('Valid for N days') plus, because this is a Human ID SBT, the auto renew note. The minted state resolves to View on chain, with a quiet Renew beside it.",
+          "The Government ID SBT: verified and minted on chain. The header medallion is STAMPED (an embossed struck-metal plate), and drops its own chip and pip, so points and on-chain state are each stated once (the total points text and the emerald Minted pill). There is no header clock or tooltip: the exact Issued / Expires dates live in the onchain block, so nothing repeats. The minted state resolves to View on chain, with a quiet Renew beside it.",
       },
     },
   },
@@ -92,7 +92,7 @@ export const OnchainCredential: Story = {
     docs: {
       description: {
         story:
-          "The Government ID SBT with its Onchain credential accordion expanded. This block appears only on the Human ID SBT / attestation stamps and shows non-PII metadata only: the protocol and chain led by the Optimism mark (Onchain SBT · Optimism), Issued and Expires on one line, the credential type, the verified issuer as a named on-chain identity (human.tech with a check and a view-on-chain link, never raw hex), revocation status, and a View on chain link to the HubV3 contract on Optimism. It never surfaces the nullifier, the user address, or any personal field, and there is no fake token id. It is one section of an accordion group, so it always fits the fixed drawer height without scrolling.",
+          "The Government ID SBT with its Onchain credential accordion expanded. This block is a CANONICAL label:value record (one aligned column, not scattered icons) showing non-PII metadata only: Network led by the real Optimism mark in brand red, Protocol (Onchain SBT), Issued, Expires, and the verified Issuer as a named on-chain identity (human.tech with a check and a view-on-chain link, never raw hex). The stamp state (Minted) is NOT restated here, and a healthy credential is not labelled 'Valid' (the header pill owns the state, the block owns the details, so nothing repeats). All the view actions are grouped in one row as labeled links, and a 'Proven with VOLE-based ZK' tag sits beneath. It never surfaces the nullifier, the user address, or any personal field, and there is no fake token id. It is one section of an accordion group, so it always fits the fixed drawer height without scrolling.",
       },
     },
   },
@@ -105,7 +105,7 @@ export const MintableReward: Story = {
     docs: {
       description: {
         story:
-          "The Biometrics SBT: verified and mintable on chain. The status pill is an emerald outline (Mintable, never gold) and the bottom-pinned action is the emerald Mint stamp CTA (minting takes the stamp on chain). One primary action, so nothing competes with it. The header stays clean: the validity and Human ID auto renew copy live behind the small clock's tooltip.",
+          "The Biometrics SBT: verified and mintable on chain. Because it is not minted yet, the header medallion stays FLAT (only a minted stamp is embossed). The status pill is an emerald outline (Mintable, never gold) and the bottom-pinned action is the emerald Mint stamp CTA (minting takes the stamp on chain). One primary action, so nothing competes with it. The header stays clean, with no clock or tooltip.",
       },
     },
   },
@@ -131,7 +131,7 @@ export const CleanHands: Story = {
     docs: {
       description: {
         story:
-          "Proof of Clean Hands is a SIGN PROTOCOL attestation, not an SBT and not EAS, so its onchain block is labeled 'Sign Protocol attestation' and its link reads 'View on Sign Protocol' (scan.sign.global). Its issued line is privacy accurate: 'Issued {date}. Identity encrypted to the Human Network.', with Expires on its own line beneath. The attestation data is only a scope actionId with nothing to decode, so there is no observer and no signature shown, and the nullifier and user address are never rendered. The verified issuer is human.tech, linking to the attester on chain. The action is the emerald Mint stamp.",
+          "Proof of Clean Hands is a SIGN PROTOCOL attestation, not an SBT and not EAS, so the canonical record's Protocol row reads 'Sign Protocol' and its grouped view link reads 'View on Sign Protocol' (scan.sign.global). A privacy-accurate line sits beneath the record: 'Identity encrypted to the Human Network.', and a 'Disclosure conditions' link joins the grouped actions. The attestation data is only a scope actionId with nothing to decode, so there is no observer and no signature shown, and the nullifier and user address are never rendered. The verified Issuer is human.tech, linking to the attester on chain. The action is the emerald Mint stamp.",
       },
     },
   },
@@ -170,7 +170,7 @@ export const ExpiredStamp: Story = {
     docs: {
       description: {
         story:
-          "An expired stamp. The header medallion desaturates with a muted outline and the clock reads muted (never amber, since amber is reserved for expiring); its tooltip says the stamp has expired. A quiet Renew action sits beside the primary so the lapsed credential can be refreshed.",
+          "An expired stamp. The header medallion desaturates with a muted outline, and the header state pill reads Expired (no clock, no tooltip). A quiet Renew action sits beside the primary so the lapsed credential can be refreshed.",
       },
     },
   },
