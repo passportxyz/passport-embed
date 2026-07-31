@@ -472,40 +472,15 @@
   outline-offset: 2px;
 }
 
-/* ---- how the score is computed: weighted components summing to the total ---- */
-.compute {
-  flex: none;
-  margin-top: var(--space-3-c6dbf459);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1-c6dbf459);
-}
-.computeHead {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--space-2-c6dbf459);
-}
-.computeLabel {
-  font-size: var(--font-size-xs-c6dbf459);
-  font-weight: var(--weight-medium-c6dbf459);
-  letter-spacing: 0.04em;
-  color: rgba(var(--on-surface), 0.62);
-}
-.computeTotal {
-  flex: none;
-  font-size: var(--font-size-xs-c6dbf459);
-  font-weight: var(--weight-bold-c6dbf459);
-  color: rgb(var(--on-surface));
-  font-variant-numeric: tabular-nums;
-}
 /* The weighted bar: segment LENGTH encodes each component's share; one accent
- * family (deriveTints), no legend (points ride on the rows above). */
+ * family (deriveTints), no legend and no number (points ride on the rows above,
+ * the total is stated once in the header). Sits inside the breakdown accordion. */
 .computeBar {
   display: flex;
   align-items: stretch;
   gap: 2px;
   height: 8px;
+  margin-top: var(--space-2-c6dbf459);
   border-radius: var(--radius-pill-c6dbf459);
   overflow: hidden;
   background: rgba(var(--on-surface), 0.08);
@@ -516,22 +491,22 @@
   border-radius: var(--radius-pill-c6dbf459);
 }
 
-/* ---- onchain credential: a collapsible metadata block (Human ID SBTs only) --- */
-/* Collapsed it is a single tonal row (fits trivially); expanded it shows a compact
- * two-column grid + a View on chain link. Kept small so an open block still fits
- * the fixed drawer height alongside the one SBT component row (never scrolls). */
-.oc {
+/* ---- accordion sections: Score breakdown + Onchain credential ---------------- */
+/* An accordion GROUP (at most one open) so an expanded section always fits the
+ * fixed drawer height. Collapsed each is a single tonal header row; expanded it
+ * reveals its rows. Structure is tone + space, not hard lines (§ no-hard-lines). */
+.section {
   flex: none;
   margin-top: var(--space-3-c6dbf459);
 }
-.ocHead {
+.sectionHead {
   appearance: none;
   border: 0;
   width: 100%;
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 5px var(--space-2-c6dbf459);
+  padding: 6px var(--space-2-c6dbf459);
   border-radius: var(--radius-md-c6dbf459);
   background: rgba(var(--on-surface), 0.05);
   color: rgb(var(--on-surface));
@@ -540,33 +515,67 @@
   font-size: var(--font-size-xs-c6dbf459);
   font-weight: var(--weight-semibold-c6dbf459);
 }
-.ocHead:hover {
+.sectionHead:hover {
   background: rgba(var(--on-surface), 0.08);
 }
-.ocHead:focus-visible {
+.sectionHead:focus-visible {
   outline: 2px solid rgb(var(--accent));
   outline-offset: -2px;
+}
+.sectionLabel {
+  flex: 1;
+  text-align: left;
+  letter-spacing: 0.02em;
+}
+.sectionChev,
+.sectionChevOpen {
+  flex: none;
+  color: rgba(var(--on-surface), 0.6);
+  transition: transform var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.sectionChevOpen {
+  transform: rotate(180deg);
+}
+.sectionBody {
+  padding: var(--space-2-c6dbf459) 2px 0;
 }
 .ocHeadIcon {
   display: inline-flex;
   color: rgb(var(--accent));
 }
-.ocHeadLabel {
-  flex: 1;
-  text-align: left;
-  letter-spacing: 0.02em;
-}
-.ocChev,
-.ocChevOpen {
-  flex: none;
-  color: rgba(var(--on-surface), 0.6);
-  transition: transform var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459);
-}
-.ocChevOpen {
-  transform: rotate(180deg);
-}
 .ocBody {
-  padding: var(--space-1-c6dbf459) var(--space-2-c6dbf459) 0;
+  padding: var(--space-2-c6dbf459) var(--space-2-c6dbf459) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Protocol + chain line, led by the chain logo (never the word alone). */
+.ocProtocol {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  color: rgb(var(--on-surface));
+}
+.ocChain {
+  display: inline-flex;
+  flex: none;
+  color: rgb(var(--on-surface));
+}
+.ocProtocolText {
+  letter-spacing: 0.01em;
+}
+
+/* Compact plain line for the Issued / Expires (and the Clean Hands privacy note),
+ * so dates and the encryption line sit on one row without a label column. */
+.ocLine {
+  margin: 0;
+  font-size: var(--font-size-xs-c6dbf459);
+  line-height: 1.35;
+  color: rgba(var(--on-surface), 0.7);
+  font-variant-numeric: tabular-nums;
 }
 /* One readable column: each row is Label ... value, so long values (dates,
  * "Proof of Clean Hands") never truncate. Compact line-height keeps the six rows
@@ -607,6 +616,35 @@
 }
 .ocVal[data-revoked="true"] {
   color: rgb(var(--warn));
+}
+/* Verified issuer: a named on-chain identity (human.tech) with a small check,
+ * linking to view the issuer / attester on chain. Never a raw hex address. */
+.ocIssuer {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  color: rgb(var(--on-surface));
+  font-weight: var(--weight-semibold-c6dbf459);
+  text-decoration: none;
+}
+a.ocIssuer:hover {
+  text-decoration: underline;
+}
+a.ocIssuer:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm-c6dbf459);
+}
+.ocVerifiedMark {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  color: rgb(var(--on-accent));
+  background: rgb(var(--accent));
 }
 .ocView {
   display: inline-flex;
@@ -751,8 +789,8 @@
   .back,
   .pagerArrow,
   .pagerDot,
-  .ocChev,
-  .ocChevOpen {
+  .sectionChev,
+  .sectionChevOpen {
     transition: none;
   }
 }

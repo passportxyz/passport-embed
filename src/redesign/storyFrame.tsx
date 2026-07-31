@@ -519,18 +519,42 @@ export const SAMPLE_MEDALLION_STAMPS: Stamp[] = MEDALLION_BASE.map((s) => ({
 // Blockchain 12), so category nav + within-category paging both read from it.
 export const SAMPLE_MEDALLION_STAMPS_PAGED = SAMPLE_MEDALLION_STAMPS;
 
-// ---- Onchain credential block, Human ID SBT stamps only (all non-PII). ----
-// The HubV3 SBT contract on Optimism; Proof of Clean Hands points at its Sign
-// Protocol attestation. In production these fields come from the Human ID SDK
-// getters (already fetched in useHumanIDVerification and discarded); here we seed
-// the same non-PII shape. No nullifier / indexingValue, no fake tokenId.
+// ---- Onchain credential block, Human ID SBT / attestation stamps only (all
+// non-PII). ----
+// The three Human ID SBTs (Government ID, Biometrics, Phone) live on the HubV3
+// contract on Optimism. Proof of Clean Hands is a SIGN PROTOCOL attestation (NOT
+// EAS), viewed on scan.sign.global; its attester is a distinct address. In
+// production these fields come from the Human ID SDK getters (already fetched in
+// useHumanIDVerification and discarded); here we seed the same non-PII shape. No
+// nullifier / indexingValue, no user address, no fake tokenId. The issuer renders
+// as the verified identity "human.tech", never a raw hex string, with a
+// view-on-chain link to the contract / attester.
 const HUB_V3 = "0x2AA822e264F8cc31A2b9C22f39e5551241e94DfB";
-const OP_CONTRACT_URL = `https://optimistic.etherscan.io/address/${HUB_V3}`;
-const HUMAN_ID_ONCHAIN: Record<string, { credential: string; explorerUrl: string }> = {
-  HumanIdKyc: { credential: "Government ID", explorerUrl: OP_CONTRACT_URL },
-  Biometrics: { credential: "Biometrics", explorerUrl: OP_CONTRACT_URL },
-  HumanIdPhone: { credential: "Phone", explorerUrl: OP_CONTRACT_URL },
-  CleanHands: { credential: "Proof of Clean Hands", explorerUrl: "https://scan.sign.global/attestation" },
+const CLEAN_HANDS_ATTESTER = "0xB1f50c6C34C72346b1229e5C80587D0D659556Fd";
+const opAddr = (address: string): string => `https://optimistic.etherscan.io/address/${address}`;
+// A representative Sign Protocol attestation id (shape: onchain_evm_10_0x…). It
+// is an on-chain handle, not PII; the nullifier / indexingValue is never shown.
+const CLEAN_HANDS_ATTESTATION_ID = "onchain_evm_10_0x7c9f2a4b8e1d6053";
+
+type OcSeed = {
+  protocol: "sbt" | "sign";
+  credential: string;
+  /** View the credential itself. */
+  explorerUrl: string;
+  /** View the verified issuer / attester on chain. */
+  issuerUrl: string;
+};
+
+const HUMAN_ID_ONCHAIN: Record<string, OcSeed> = {
+  HumanIdKyc: { protocol: "sbt", credential: "Government ID", explorerUrl: opAddr(HUB_V3), issuerUrl: opAddr(HUB_V3) },
+  Biometrics: { protocol: "sbt", credential: "Biometrics", explorerUrl: opAddr(HUB_V3), issuerUrl: opAddr(HUB_V3) },
+  HumanIdPhone: { protocol: "sbt", credential: "Phone", explorerUrl: opAddr(HUB_V3), issuerUrl: opAddr(HUB_V3) },
+  CleanHands: {
+    protocol: "sign",
+    credential: "Proof of Clean Hands",
+    explorerUrl: `https://scan.sign.global/attestation/${CLEAN_HANDS_ATTESTATION_ID}`,
+    issuerUrl: opAddr(CLEAN_HANDS_ATTESTER),
+  },
 };
 
 const ONE_DAY = 86_400_000;
@@ -541,16 +565,20 @@ const buildOnchain = (stamp: Stamp): StampDetail["onchainCredential"] => {
   const oc = HUMAN_ID_ONCHAIN[stamp.id];
   if (!oc) return undefined;
   // Issued is derivable (SBT default lifetime is 90 days), so issued = expiry - 90d.
+  // (Real getters: SBT expiry / attestation validUntil are seconds, attestTimestamp
+  // is ms; convert before formatting. Here the seed dates are already ISO.)
   const issued = stamp.expirationDate
     ? fmtDate(new Date(new Date(stamp.expirationDate).getTime() - 90 * ONE_DAY).toISOString())
     : undefined;
   return {
+    protocol: oc.protocol,
     issued,
     expires: stamp.expirationDate ? fmtDate(stamp.expirationDate) : undefined,
     chain: "Optimism",
     revoked: false,
     credential: oc.credential,
-    issuer: "Human ID",
+    issuer: "human.tech",
+    issuerUrl: oc.issuerUrl,
     explorerUrl: oc.explorerUrl,
   };
 };

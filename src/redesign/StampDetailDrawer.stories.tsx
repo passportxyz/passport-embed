@@ -9,10 +9,11 @@ import { ThemePair, SAMPLE_ACCOUNT, SAMPLE_MEDALLION_STAMPS, SAMPLE_STAMP_DETAIL
  * StampDetailDrawer - a passport-style slide-in drawer that opens OVER the Stamps
  * window (modeled on app.passport.xyz's stamp drawer). A scrim dims and blurs the
  * grid behind; the drawer slides up as a solid glass sheet with a drag handle.
- * Header: real medallion icon + name + total points + on-chain status pill, plus
- * whole-stamp expiry ("Valid for N days" / "Expires {date}" / "Expired"). Then the
- * real sub-credential rows, paginated never scrolled. Then how the score is
- * computed. Then one bottom-pinned state-driven action (Notarize stamp / Claim /
+ * Header: real medallion icon + name + total points (stated once) + on-chain
+ * status pill, plus whole-stamp expiry behind the clock tooltip. Then, for
+ * multi-component stamps, a Score breakdown accordion (all components reachable,
+ * never clipped or scrolled); for SBT / attestation stamps, an Onchain credential
+ * accordion. Then one bottom-pinned state-driven action (Notarize stamp / Claim /
  * View on chain / Verified). Both themes, no network, everything inside the shell.
  */
 const meta: Meta<typeof StampDetailDrawer> = {
@@ -85,7 +86,7 @@ export const OnchainCredential: Story = {
     docs: {
       description: {
         story:
-          "The Government ID SBT with its Onchain credential block expanded. This block appears only on the four Human ID SBT stamps (Government ID, Biometrics, Phone, Proof of Clean Hands) and shows non-PII metadata only: issued date, expiry, chain (Optimism), revocation status, credential type, issuer (Human ID), and a View on chain link (the HubV3 contract on Optimism for the SBTs, the Sign Protocol attestation for Proof of Clean Hands). It never surfaces the nullifier or any personal field, and there is no fake token id. The block is collapsible so it always fits the fixed drawer height without scrolling.",
+          "The Government ID SBT with its Onchain credential accordion expanded. This block appears only on the Human ID SBT / attestation stamps and shows non-PII metadata only: the protocol and chain led by the Optimism mark (Onchain SBT · Optimism), Issued and Expires on one line, the credential type, the verified issuer as a named on-chain identity (human.tech with a check and a view-on-chain link, never raw hex), revocation status, and a View on chain link to the HubV3 contract on Optimism. It never surfaces the nullifier, the user address, or any personal field, and there is no fake token id. It is one section of an accordion group, so it always fits the fixed drawer height without scrolling.",
       },
     },
   },
@@ -111,33 +112,33 @@ export const Unverified: Story = {
     docs: {
       description: {
         story:
-          "An unverified stamp. Its component reads as not verified yet, the header shows zero points earned so far, and the how-it-computes bar is omitted because nothing is earned. There is no expiry line (nothing is verified). The action resolves to Claim, so the state is never a dead end.",
+          "An unverified stamp. The header shows zero points earned so far, and because Coinbase scores from a single credential there is no breakdown accordion to restate that. There is no expiry line (nothing is verified). The action resolves to Claim, so the state is never a dead end.",
       },
     },
   },
 };
 
 export const CleanHands: Story = {
-  name: "Stamp detail / Proof of Clean Hands SBT",
-  render: () => drawerOver(SAMPLE_STAMP_DETAILS.CleanHands),
+  name: "Stamp detail / Proof of Clean Hands (Sign Protocol)",
+  render: () => drawerOver(SAMPLE_STAMP_DETAILS.CleanHands, { defaultOnchainOpen: true }),
   parameters: {
     docs: {
       description: {
         story:
-          "The Proof of Clean Hands SBT. A verified, mintable credential awarded after identity verification and sanctions validation. The plain description reads in full (with a more toggle when it runs long), the header clock's tooltip carries the validity and Human ID auto renew copy, and the action is the emerald Notarize stamp so the user can put the SBT on chain.",
+          "Proof of Clean Hands is a SIGN PROTOCOL attestation, not an SBT and not EAS, so its onchain block is labeled 'Sign Protocol attestation' and its link reads 'View on Sign Protocol' (scan.sign.global). Its issued line is privacy accurate: 'Issued {date} · identity encrypted to the Human Network'. The attestation data is only a scope actionId with nothing to decode, so there is no observer and no signature shown, and the nullifier and user address are never rendered. The verified issuer is human.tech, linking to the attester on chain. The action is the emerald Notarize stamp.",
       },
     },
   },
 };
 
-export const PaginatedComponents: Story = {
-  name: "Stamp detail / Civic (paginated components)",
+export const ComponentBreakdown: Story = {
+  name: "Stamp detail / Civic (component accordion)",
   render: () => drawerOver(SAMPLE_STAMP_DETAILS.Civic),
   parameters: {
     docs: {
       description: {
         story:
-          "Civic scores across three real sub-credentials (Captcha 0.82, Uniqueness 5.0, Liveness 3.04, summing to 8.86), so the list paginates with dots and arrows. There is no scrollbar (an absolute SOP rule). The how-it-computes bar and the bottom-pinned action stay fixed while the component rows page.",
+          "Civic scores across three real sub-credentials (Captcha 0.82, Uniqueness 5.0, Liveness 3.04, summing to 8.86). They live in a Score breakdown accordion that opens by default, so all three rows are reachable and readable at once, none clipped. Each component's points show once on its row; the total (8.86) shows once in the header, so the redundant 'how your points add up = 8.86' caption is gone and the weighted bar carries no number. There is no scrollbar (an absolute SOP rule); if a stamp ever had more than a page of components the accordion paginates. The bottom-pinned action stays fixed.",
       },
     },
   },
