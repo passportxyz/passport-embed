@@ -197,8 +197,9 @@
   min-width: 0;
 }
 
-/* On-chain status pill: the ONE carrier of on-chain state in the header (the
- * medallion drops its pip). Colored by state; a small glass tooltip explains it. */
+/* State pill: the ONE carrier of the stamp's state in the header, named in words
+ * (Minted / Mintable / Verified / Expiring in Nd / Expired). Colored by state; a
+ * small glass tooltip explains it. Amber ONLY for the expiring (soon) tone. */
 .statusPill {
   display: inline-flex;
   align-items: center;
@@ -210,10 +211,14 @@
   cursor: help;
   color: rgb(var(--on-surface));
   background: rgba(var(--on-surface), 0.08);
+  transition: filter var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
 }
 .statusPill:focus-visible {
   outline: 2px solid rgb(var(--accent));
   outline-offset: 2px;
+}
+.statusPill:active {
+  filter: brightness(0.96);
 }
 .statusDot {
   width: 15px;
@@ -225,33 +230,53 @@
   background: rgba(var(--on-surface), 0.2);
   color: rgb(var(--on-surface));
 }
-.statusPill[data-onchain="minted"] {
+/* Minted: solid emerald tint + a filled chain dot. */
+.statusPill[data-state="minted"] {
   background: rgba(var(--accent), 0.16);
 }
-.statusPill[data-onchain="minted"] .statusDot {
+.statusPill[data-state="minted"] .statusDot {
   background: rgb(var(--accent));
   color: rgb(var(--on-accent));
 }
-/* Mintable: emerald outline invite, never gold. Distinct from the solid minted
- * pill by being a lighter fill + ring with an outlined chain dot. */
-.statusPill[data-onchain="mintable"] {
+/* Mintable: emerald outline invite, never gold. Lighter fill + ring with an
+ * outlined chain dot. */
+.statusPill[data-state="mintable"] {
   background: rgba(var(--accent), 0.1);
   box-shadow: inset 0 0 0 1px rgba(var(--accent), 0.4);
 }
-.statusPill[data-onchain="mintable"] .statusDot {
+.statusPill[data-state="mintable"] .statusDot {
   background: rgba(var(--accent), 0.25);
   color: rgb(var(--accent));
 }
-.statusPill[data-onchain="none"] {
+/* Verified off-chain: a calm emerald tint, no chain dot. */
+.statusPill[data-state="verified"] {
+  color: rgb(var(--accent));
+  background: rgba(var(--accent), 0.1);
+}
+/* Expiring soon: the ONLY amber in the drawer header pill. */
+.statusPill[data-state="soon"] {
+  color: rgb(var(--warn));
+  background: rgba(var(--warn), 0.16);
+}
+/* Expired / not verified: neutral, reads inactive. */
+.statusPill[data-state="expired"],
+.statusPill[data-state="none"] {
   color: rgba(var(--on-surface), 0.72);
+  background: rgba(var(--on-surface), 0.08);
 }
 
+/* Points, shown once: a first-class "+N points" pill (the medallion drops its
+ * chip, so this is the single points carrier). Emerald tint so it reads as earned. */
 .headPoints {
   flex: none;
-  font-size: var(--font-size-sm-c6dbf459);
-  font-weight: var(--weight-semibold-c6dbf459);
-  color: rgba(var(--on-surface), 0.8);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill-c6dbf459);
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-bold-c6dbf459);
+  color: rgb(var(--accent));
+  background: rgba(var(--accent), 0.12);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* Timer: a small clock whose tooltip carries the whole-stamp validity / renewal
@@ -265,7 +290,7 @@
   height: 22px;
   flex: none;
   border-radius: var(--radius-pill-c6dbf459);
-  color: rgba(var(--on-surface), 0.6);
+  color: rgba(var(--on-surface), 0.62);
   background: rgba(var(--on-surface), 0.08);
   cursor: help;
 }
@@ -781,16 +806,43 @@ a.ocIssuer:focus-visible {
   color: rgb(var(--on-surface));
 }
 
+/* Press micro-interaction on the drawer's secondary buttons (the primary .cta
+ * already presses via translateY above). Subtle scale at ~motion-fast. */
+.back,
+.sectionHead,
+.pagerArrow,
+.moreBtn {
+  transition:
+    background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    color var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    transform var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.back:active,
+.sectionHead:active,
+.pagerArrow:active:not(:disabled),
+.moreBtn:active {
+  transform: scale(0.96);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .scrim,
   .drawer,
   .handleBar,
   .cta,
   .back,
+  .sectionHead,
   .pagerArrow,
   .pagerDot,
+  .moreBtn,
   .sectionChev,
   .sectionChevOpen {
     transition: none;
+  }
+  .cta:active,
+  .back:active,
+  .sectionHead:active,
+  .pagerArrow:active,
+  .moreBtn:active {
+    transform: none;
   }
 }

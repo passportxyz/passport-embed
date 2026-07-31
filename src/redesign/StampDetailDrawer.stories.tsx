@@ -13,7 +13,7 @@ import { ThemePair, SAMPLE_ACCOUNT, SAMPLE_MEDALLION_STAMPS, SAMPLE_STAMP_DETAIL
  * status pill, plus whole-stamp expiry behind the clock tooltip. Then, for
  * multi-component stamps, a Score breakdown accordion (all components reachable,
  * never clipped or scrolled); for SBT / attestation stamps, an Onchain credential
- * accordion. Then one bottom-pinned state-driven action (Notarize stamp / Claim /
+ * accordion. Then one bottom-pinned state-driven action (Mint stamp / Claim /
  * View on chain / Verified). Both themes, no network, everything inside the shell.
  */
 const meta: Meta<typeof StampDetailDrawer> = {
@@ -93,13 +93,13 @@ export const OnchainCredential: Story = {
 };
 
 export const MintableReward: Story = {
-  name: "Stamp detail / Biometrics (Notarize stamp)",
+  name: "Stamp detail / Biometrics (Mint stamp)",
   render: () => drawerOver(SAMPLE_STAMP_DETAILS.Biometrics),
   parameters: {
     docs: {
       description: {
         story:
-          "The Biometrics SBT: verified and mintable on chain. The status pill is an emerald outline (Mintable, never gold) and the bottom-pinned action is the emerald Notarize stamp CTA (notarizing takes the stamp on chain). One primary action, so nothing competes with it. The header stays clean: the validity and Human ID auto renew copy live behind the small clock's tooltip.",
+          "The Biometrics SBT: verified and mintable on chain. The status pill is an emerald outline (Mintable, never gold) and the bottom-pinned action is the emerald Mint stamp CTA (minting takes the stamp on chain). One primary action, so nothing competes with it. The header stays clean: the validity and Human ID auto renew copy live behind the small clock's tooltip.",
       },
     },
   },
@@ -125,7 +125,7 @@ export const CleanHands: Story = {
     docs: {
       description: {
         story:
-          "Proof of Clean Hands is a SIGN PROTOCOL attestation, not an SBT and not EAS, so its onchain block is labeled 'Sign Protocol attestation' and its link reads 'View on Sign Protocol' (scan.sign.global). Its issued line is privacy accurate: 'Issued {date} · identity encrypted to the Human Network'. The attestation data is only a scope actionId with nothing to decode, so there is no observer and no signature shown, and the nullifier and user address are never rendered. The verified issuer is human.tech, linking to the attester on chain. The action is the emerald Notarize stamp.",
+          "Proof of Clean Hands is a SIGN PROTOCOL attestation, not an SBT and not EAS, so its onchain block is labeled 'Sign Protocol attestation' and its link reads 'View on Sign Protocol' (scan.sign.global). Its issued line is privacy accurate: 'Issued {date}. Identity encrypted to the Human Network.', with Expires on its own line beneath. The attestation data is only a scope actionId with nothing to decode, so there is no observer and no signature shown, and the nullifier and user address are never rendered. The verified issuer is human.tech, linking to the attester on chain. The action is the emerald Mint stamp.",
       },
     },
   },
@@ -191,7 +191,7 @@ export const Interactive: Story = {
     docs: {
       description: {
         story:
-          "Switch category, then tap any medallion to slide its detail drawer in over the grid. The scrim dims and blurs the grid behind; tap the scrim, the drag handle, the back arrow, or press Escape to close. Each stamp resolves to its own action: minted stamps view on chain, mintable stamps notarize, off-chain verified stamps show Verified, and unverified stamps claim.",
+          "Switch category, then tap any medallion to slide its detail drawer in over the grid. The scrim dims and blurs the grid behind; tap the scrim, the drag handle, the back arrow, or press Escape to close. Each stamp resolves to its own action: minted stamps view on chain, mintable stamps mint, off-chain verified stamps show Verified, and unverified stamps claim.",
       },
     },
   },

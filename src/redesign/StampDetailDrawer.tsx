@@ -91,7 +91,7 @@ export type StampDetail = Stamp & {
     expires?: string;
     /** Chain the credential lives on, e.g. "Optimism". */
     chain: string;
-    /** Revocation flag from the SBT / attestation; false renders "Not revoked". */
+    /** Revocation flag from the SBT / attestation; false renders "Valid". */
     revoked: boolean;
     /** Credential type, e.g. "Government ID". */
     credential: string;
@@ -140,7 +140,7 @@ export type StampDetailDrawerProps = {
 
   /** Close the drawer (scrim tap, drag handle, close button, Escape). */
   onClose?: () => void;
-  /** Notarize the stamp on-chain (the emerald reward action when mintable, never gold). */
+  /** Mint the stamp on-chain (the emerald reward action when mintable, never gold). */
   onMint?: () => void;
   /** Claim / verify the stamp (unverified). */
   onClaim?: () => void;
@@ -169,16 +169,56 @@ export type StampDetailDrawerProps = {
   defaultOnchainOpen?: boolean;
 };
 
-const ONCHAIN_PILL: Record<StampOnchain, string> = {
-  minted: "Minted",
-  mintable: "Mintable",
-  none: "Off chain",
-};
-
 const ONCHAIN_TIP: Record<StampOnchain, string> = {
   minted: "This stamp is recorded on chain.",
   mintable: "You can mint this stamp on chain to earn the reward.",
   none: "This stamp lives off chain. Nothing is written on chain.",
+};
+
+/**
+ * The header STATE pill: one word (or short phrase) that names the stamp's state,
+ * matching the grid medallion's carrier so the two never disagree. Precedence puts
+ * the time-sensitive states first, so an expiring minted stamp reads the actionable
+ * "Expiring in Nd" while its onchain state is still carried by the drawer's onchain
+ * block. `showLink` renders the chain-link dot only when the state IS an onchain one.
+ */
+type StatePill = {
+  label: string;
+  /** Drives the pill color: minted / mintable / verified (emerald tints), soon
+   *  (amber), expired / none (neutral). */
+  tone: "minted" | "mintable" | "verified" | "soon" | "expired" | "none";
+  showLink: boolean;
+  tip: string;
+};
+
+const deriveStatePill = (
+  stamp: StampDetail,
+  expiry: ReturnType<typeof formatExpiry>,
+  override?: React.ReactNode
+): StatePill => {
+  const tipFor = (fallback: string): string =>
+    typeof override === "string" ? override : fallback;
+  if (expiry?.state === "expired") {
+    return { label: "Expired", tone: "expired", showLink: false, tip: tipFor("This stamp has expired. Renew it to keep the points.") };
+  }
+  if (expiry?.state === "soon") {
+    return {
+      label: `Expiring in ${expiry.days}${expiry.days === 1 ? " day" : "d"}`,
+      tone: "soon",
+      showLink: false,
+      tip: tipFor(`${expiry.long}. Renew it to keep the points.`),
+    };
+  }
+  if (!stamp.verified) {
+    return { label: "Not verified", tone: "none", showLink: false, tip: tipFor(ONCHAIN_TIP.none) };
+  }
+  if (stamp.onchain === "minted") {
+    return { label: "Minted", tone: "minted", showLink: true, tip: tipFor(ONCHAIN_TIP.minted) };
+  }
+  if (stamp.onchain === "mintable") {
+    return { label: "Mintable", tone: "mintable", showLink: true, tip: tipFor(ONCHAIN_TIP.mintable) };
+  }
+  return { label: "Verified", tone: "verified", showLink: false, tip: tipFor(ONCHAIN_TIP.none) };
 };
 
 // Components fit within the expanded breakdown accordion, paginating (never
@@ -319,16 +359,20 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
 
   // The drawer body is an accordion GROUP: at most one section is open at a time,
   // so an expanded section always fits the fixed drawer height (no clip, no
-  // scroll). A multi-component stamp opens "Score breakdown" by default so every
-  // component is immediately readable (Civic's three no longer clip); the taller
-  // "Onchain credential" block defaults collapsed, and only IT hides the
-  // description while open, to stay within the fixed height. Reset on stamp change.
+  // scroll). FILL SPACE, do not hide (design-sop): when a section fits, it opens
+  // by default, so the fixed height is used rather than left empty with content
+  // hidden behind a closed row. A multi-component stamp opens "Score breakdown"
+  // (every component immediately readable, Civic's three no longer clip); a
+  // single-component stamp WITH an onchain credential has room for the taller
+  // "Onchain credential" block, so it opens that instead of sitting empty. Only
+  // when both would overflow does the group keep the other collapsed (progressive
+  // disclosure for genuine overflow, not the default). Reset on stamp change.
   type Section = "breakdown" | "onchain";
   const initialSection = (): Section | null =>
-    isMulti ? "breakdown" : oc && defaultOnchainOpen ? "onchain" : null;
+    isMulti ? "breakdown" : oc ? "onchain" : null;
   const [openSection, setOpenSection] = useState<Section | null>(initialSection);
   useEffect(() => {
-    setOpenSection(isMulti ? "breakdown" : oc && defaultOnchainOpen ? "onchain" : null);
+    setOpenSection(isMulti ? "breakdown" : oc ? "onchain" : null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stamp.id, isMulti, defaultOnchainOpen]);
   const breakdownOpen = openSection === "breakdown";
@@ -392,6 +436,7 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
   // validity / renewal copy now lives in the header timer's tooltip. Human ID
   // SBTs add the auto renew note.
   const expiry = formatExpiry(stamp.expirationDate);
+  const statePill = deriveStatePill(stamp, expiry, statusTooltip);
   const renewNote = stamp.isHumanId
     ? " Auto renews after 90 days, full reverification after a year."
     : "";
@@ -460,23 +505,34 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
           <div className={styles.headMeta}>
             <h3 className={styles.name}>{stamp.name}</h3>
             <div className={styles.headSub}>
-              <Tooltip content={statusTooltip ?? ONCHAIN_TIP[stamp.onchain]} placement="top" className={glass.tip}>
+              {/* State pill: the ONE header carrier of the stamp's state, naming it
+                  in words (Minted / Mintable / Verified / Expiring in Nd / Expired)
+                  so it matches the grid medallion. Its glass tooltip carries the
+                  detail. */}
+              <Tooltip content={statePill.tip} placement="top" className={glass.tip}>
                 <span
                   className={styles.statusPill}
-                  data-onchain={stamp.onchain}
+                  data-state={statePill.tone}
                   tabIndex={0}
                   role="button"
-                  aria-label={`${ONCHAIN_PILL[stamp.onchain]}. ${
-                    statusTooltip ? "" : ONCHAIN_TIP[stamp.onchain]
-                  }`}
+                  aria-label={`${statePill.label}. ${statePill.tip}`}
                 >
-                  <span className={styles.statusDot} aria-hidden="true">
-                    {stamp.onchain === "none" ? null : <LinkIcon size={9} strokeWidth={2} />}
-                  </span>
-                  {ONCHAIN_PILL[stamp.onchain]}
+                  {statePill.showLink ? (
+                    <span className={styles.statusDot} aria-hidden="true">
+                      <LinkIcon size={9} strokeWidth={2} />
+                    </span>
+                  ) : null}
+                  {statePill.label}
                 </span>
               </Tooltip>
-              <span className={styles.headPoints}>{earned} points</span>
+              {/* Points, shown ONCE (the medallion drops its chip): a first-class
+                  "+N points" pill. */}
+              <span className={styles.headPoints}>+{earned} points</span>
+              {/* Timer: the validity affordance. The days-left count rides on the
+                  state pill ("Expiring in Nd") and the tooltip ("Valid for N days"
+                  / "Expires {date}"), so the clock stays a compact icon and the
+                  three-item header row never crowds or clips at 300px. Amber only
+                  when expiring soon; a plain clock once expired. */}
               {expiry ? (
                 <Tooltip content={expiryTip} placement="top" className={glass.tip}>
                   <span
@@ -588,37 +644,30 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
             </button>
             {onchainOpen ? (
               <div className={styles.ocBody}>
-                {/* Protocol + chain, labeled with a logo (never the word alone). */}
+                {/* Protocol + chain, labeled with the Optimism logo next to the
+                    chain (never the word alone). Both the SBT and the Sign Protocol
+                    attestation live on Optimism (chain id 10), so the chain glyph
+                    renders for both. */}
                 <div className={styles.ocProtocol}>
-                  {oc.protocol === "sbt" ? (
-                    <span className={styles.ocChain} aria-hidden="true">
-                      <OptimismIcon size={14} />
-                    </span>
-                  ) : null}
+                  <span className={styles.ocChain} aria-hidden="true">
+                    <OptimismIcon size={14} />
+                  </span>
                   <span className={styles.ocProtocolText}>
-                    {oc.protocol === "sbt" ? `Onchain SBT · ${oc.chain}` : "Sign Protocol attestation"}
+                    {oc.protocol === "sbt" ? `Onchain SBT · ${oc.chain}` : `Sign Protocol · ${oc.chain}`}
                   </span>
                 </div>
 
-                {/* Issued / Expires on ONE line. For a Sign Protocol attestation
-                    (Proof of Clean Hands) the issued line is privacy-accurate:
-                    the identity is held encrypted, so there is nothing to decode. */}
-                {oc.protocol === "sign" ? (
-                  <>
-                    {oc.issued ? (
-                      <p className={styles.ocLine}>
-                        Issued {oc.issued} · identity encrypted to the Human Network
-                      </p>
-                    ) : null}
-                    {oc.expires ? <p className={styles.ocLine}>Expires {oc.expires}</p> : null}
-                  </>
-                ) : oc.issued || oc.expires ? (
+                {/* Issued and Expires on SEPARATE lines (the joined line wrapped
+                    badly). For a Sign Protocol attestation (Proof of Clean Hands)
+                    the issued line is privacy-accurate: the identity is held
+                    encrypted, so there is nothing to decode. */}
+                {oc.issued ? (
                   <p className={styles.ocLine}>
-                    {oc.issued ? `Issued ${oc.issued}` : ""}
-                    {oc.issued && oc.expires ? " · " : ""}
-                    {oc.expires ? `Expires ${oc.expires}` : ""}
+                    Issued {oc.issued}
+                    {oc.protocol === "sign" ? ". Identity encrypted to the Human Network." : ""}
                   </p>
                 ) : null}
+                {oc.expires ? <p className={styles.ocLine}>Expires {oc.expires}</p> : null}
 
                 <dl className={styles.ocGrid}>
                   <div className={styles.ocItem}>
@@ -653,7 +702,7 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
                   <div className={styles.ocItem}>
                     <dt className={styles.ocKey}>Status</dt>
                     <dd className={styles.ocVal} data-revoked={oc.revoked ? "true" : "false"}>
-                      {oc.revoked ? "Revoked" : "Not revoked"}
+                      {oc.revoked ? "Revoked" : "Valid"}
                     </dd>
                   </div>
                 </dl>
@@ -679,13 +728,13 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
             the two-action case reserves no extra height inside the fixed shell. */}
         <div className={`${styles.actions} ${showRenew ? styles.actionsRow : ""}`}>
           {action === "mint" ? (
-            /* Notarize = anchor the stamp on chain. Emerald primary (never gold),
-               with the chain-link glyph. */
+            /* Mint = anchor the stamp on chain. Emerald primary (never gold), with
+               the chain-link glyph. */
             <button type="button" className={styles.cta} onClick={onMint}>
               <span className={styles.ctaIcon}>
                 <LinkIcon size={15} strokeWidth={1.9} />
               </span>
-              <span className={styles.ctaLabel}>{mintLabel ?? "Notarize stamp"}</span>
+              <span className={styles.ctaLabel}>{mintLabel ?? "Mint stamp"}</span>
             </button>
           ) : action === "claim" ? (
             <button type="button" className={styles.cta} onClick={onClaim}>
