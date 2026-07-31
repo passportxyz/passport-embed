@@ -169,6 +169,10 @@
   border: 0;
   background: transparent;
   cursor: pointer;
+  /* Fill the grid cell whether the direct parent is the cell or the Tooltip
+   * trigger wrapper (added when a stamp has a description), so the medallion
+   * stays centered under both. */
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -225,6 +229,39 @@
   );
 }
 
+/* Mintable (verified, not notarized yet): an emerald outline invite. Emerald,
+ * never gold. A soft ring lifts it above the calm off-chain medallion. */
+.medallion[data-verified="true"][data-onchain="mintable"] {
+  box-shadow:
+    var(--shadow-sm-c6dbf459),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 0 0 1.5px rgba(var(--accent), 0.45);
+}
+
+/* Minted (notarized on-chain): the "special" state. A stronger emerald ring plus
+ * an outer glow, and a subtle settle-in on mount (below). */
+.medallion[data-verified="true"][data-onchain="minted"] {
+  box-shadow:
+    var(--shadow-sm-c6dbf459),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    0 0 0 1.5px rgba(var(--accent), 0.6),
+    0 0 16px rgba(var(--accent), 0.4);
+}
+.medallionMinted {
+  animation: rdMintSettle var(--motion-slow-c6dbf459) var(--ease-standard-c6dbf459) both;
+}
+@keyframes rdMintSettle {
+  0% {
+    transform: scale(0.92);
+  }
+  55% {
+    transform: scale(1.04);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 .face {
   width: 100%;
   height: 100%;
@@ -269,12 +306,16 @@
   height: 17px;
 }
 
-/* Expired stamp: reads as lapsed at a glance, on the grid AND in the drawer header.
- * The emerald rim drops to a neutral ring and the face desaturates, so the earned
- * emphasis drains away. Grayscale stays on the FACE (not the whole medallion) so
- * the amber "Expired" chip keeps its warn color instead of graying out with it. */
+/* Expired stamp: reads as lapsed at a glance, on the grid AND in the drawer
+ * header. The emerald rim drops to a neutral ring, the face desaturates, and a
+ * muted outline replaces any earned glow, so the emphasis drains away and it
+ * reads inactive. Declared AFTER the minted / mintable rules so it always wins. */
 .medallion[data-expired="true"] {
   background: rgba(var(--on-surface), 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 0 1px rgba(var(--on-surface), 0.2);
+  animation: none;
 }
 .medallion[data-expired="true"] .face {
   filter: grayscale(1);
@@ -283,8 +324,8 @@
   opacity: 0.55;
 }
 
-/* Corner on-chain pip: the ONE carrier of on-chain state. A surface-colored ring
- * punches it off the medallion (a notch, not a divider). */
+/* Minted chain-link pip: the single "notarized on chain" mark, emerald. A
+ * surface-colored ring punches it off the medallion (a notch, not a divider). */
 .pip {
   position: absolute;
   top: -2px;
@@ -294,19 +335,30 @@
   border-radius: var(--radius-pill-c6dbf459);
   display: grid;
   place-items: center;
-  box-shadow: 0 0 0 2px rgb(var(--surface));
-}
-.medallion[data-onchain="minted"] .pip {
   color: rgb(var(--on-accent));
   background: rgb(var(--accent));
+  box-shadow: 0 0 0 2px rgb(var(--surface));
 }
-.medallion[data-onchain="mintable"] .pip {
-  color: rgb(var(--on-accent));
-  /* gold: reuse the amber "attention / available" semantic token. */
+.medallionSm .pip {
+  width: 15px;
+  height: 15px;
+}
+
+/* Expiring-soon dot: the ONLY amber on the medallion, a small corner indicator
+ * (mirrors the pip corner). No text; the drawer's timer tooltip states the days. */
+.expiringDot {
+  position: absolute;
+  top: -3px;
+  left: -3px;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-pill-c6dbf459);
   background: rgb(var(--warn));
+  box-shadow: 0 0 0 2px rgb(var(--surface));
 }
-.medallion[data-onchain="none"] .pip {
-  background: rgba(var(--on-surface), 0.16);
+.medallionSm .expiringDot {
+  width: 9px;
+  height: 9px;
 }
 
 /* Points chip: overlaps the medallion foot like a badge ribbon. Emerald when
@@ -329,42 +381,6 @@
   background: rgb(var(--accent));
   color: rgb(var(--on-accent));
   box-shadow: var(--shadow-sm-c6dbf459);
-}
-
-/* Compact expiry chip: top-left corner of the medallion (mirrors the on-chain
- * pip top-right), so expiry reads without adding a caption line that would grow
- * the badge and risk overflow. Muted when healthy, amber when soon, warn when
- * expired. Adds no layout height (absolutely positioned). */
-.expiryChip {
-  position: absolute;
-  top: -6px;
-  left: -4px;
-  padding: 0 5px;
-  border-radius: var(--radius-pill-c6dbf459);
-  font-size: 9px;
-  line-height: 15px;
-  height: 15px;
-  font-weight: var(--weight-bold-c6dbf459);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  box-shadow: 0 0 0 2px rgb(var(--surface));
-  background: rgba(var(--on-surface), 0.14);
-  color: rgba(var(--on-surface), 0.72);
-}
-.expiryChip[data-state="soon"] {
-  background: rgb(var(--warn));
-  color: rgb(var(--on-accent));
-}
-.expiryChip[data-state="expired"] {
-  background: rgb(var(--warn));
-  color: rgb(var(--on-accent));
-}
-.medallionSm .expiryChip {
-  top: -5px;
-  font-size: 8px;
-  line-height: 13px;
-  height: 13px;
 }
 
 .name {
@@ -561,10 +577,6 @@
   bottom: -5px;
   padding: 0 6px;
 }
-.medallionSm .pip {
-  width: 15px;
-  height: 15px;
-}
 .miniWin .name {
   -webkit-line-clamp: 1;
   min-height: calc(var(--font-size-xs-c6dbf459) * var(--line-tight-c6dbf459));
@@ -616,7 +628,8 @@
   .pagerDot {
     transition: none;
   }
-  .spin {
+  .spin,
+  .medallionMinted {
     animation: none;
   }
 }

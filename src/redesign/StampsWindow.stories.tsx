@@ -1,8 +1,24 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import React from "react";
-import { StampsWindow } from "./StampsWindow";
+import { StampsWindow, type Stamp } from "./StampsWindow";
 import { PassportShell } from "./PassportShell";
 import { ThemePair, SAMPLE_ACCOUNT, SAMPLE_MEDALLION_STAMPS } from "./storyFrame";
+
+// One stamp of each state, all in a single category so they land on one page: a
+// side-by-side read of minted / mintable / unminted / expiring / expired /
+// unverified. Everything is emerald except the small amber "expiring" dot.
+const pick = (id: string): Stamp => ({
+  ...SAMPLE_MEDALLION_STAMPS.find((s) => s.id === id)!,
+  category: "Stamp states",
+});
+const STATE_STAMPS: Stamp[] = [
+  pick("HumanIdKyc"), // minted (emerald glow + chain pip + settle)
+  pick("Biometrics"), // mintable (emerald outline invite)
+  pick("Binance"), // unminted: verified, off-chain, calm
+  pick("Civic"), // expiring soon (small amber dot)
+  pick("NFT"), // expired (desaturated, muted)
+  pick("Coinbase"), // unverified (recessive)
+];
 
 /**
  * StampsWindow - the real Human Passport catalog as glass medallion plaques,
@@ -38,7 +54,20 @@ export const FullGrid: Story = {
     docs: {
       description: {
         story:
-          "The real catalog, navigated by category. The segmented control at the top carries the three real Passport categories (Physical Verification, Blockchain Networks and Activities, Web2 Platforms & Services), each with a verified/total count; the active category name shows below it. Each stamp is a glass medallion with its real platform icon (currentColor, so it adapts to both themes), a points chip, a corner on-chain pip (emerald minted, gold mintable, muted off-chain), and a compact expiry chip. The persistent compact score sits in the shell chrome, top-left.",
+          "The real catalog, navigated by category. The segmented control at the top carries the three real Passport categories (Physical Verification, Blockchain Networks and Activities, Web2 Platforms & Services), each with a verified/total count; the active category name shows below it. Each medallion is now pared to icon + name + points, and its state is carried by the medallion itself: a calm emerald glass when verified off-chain, an emerald outline when mintable, and an emerald glow + chain-link pip + a subtle settle when minted on chain. Hover or focus any medallion to see a tooltip describing what the stamp does. The persistent compact score sits in the shell chrome, top-left.",
+      },
+    },
+  },
+};
+
+export const States: Story = {
+  name: "Stamps / Stamp states",
+  render: () => inShell(<StampsWindow stamps={STATE_STAMPS} onSelectStamp={() => undefined} onVerify={() => undefined} />),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "One medallion of each state, side by side. Minted (Government ID) carries the emerald glow, the chain-link pip, and a settle animation. Mintable (Biometrics) shows an emerald outline invite, never gold. An off-chain verified stamp (Binance) is calm emerald glass. An expiring stamp (Civic, nine days) adds a small amber dot, the only amber on the medallion. An expired stamp (NFT) desaturates with a muted outline and reads inactive. An unverified stamp (Coinbase) is recessive. Everything but the expiring dot is emerald.",
       },
     },
   },
@@ -80,7 +109,7 @@ export const Expired: Story = {
     docs: {
       description: {
         story:
-          "Expiry reads on the grid. Each stamp shows a compact expiry chip: neutral days remaining when healthy, amber when expiring soon, and an expired stamp (here the NFT credential) desaturates and reads Expired. Every stamp expires as a whole; the drawer states the full 'Valid for N days' / 'Expires {date}' / 'Expired' copy.",
+          "Expiry reads on the grid without a chip. A stamp expiring soon carries a small amber dot in the corner (the only amber on the medallion), while an expired stamp (here the NFT credential) desaturates with a muted outline and reads inactive. The full validity copy ('Valid for N days' / 'Expires {date}' / 'Expired') moves to the drawer, where it lives behind the header timer's tooltip.",
       },
     },
   },

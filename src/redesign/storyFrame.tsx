@@ -135,7 +135,7 @@ const CAT_WEB2 = "Web2 Platforms & Services";
  * expired. `expirationDate` is present on verified stamps (a stamp expires as a
  * whole; default lifetime is 90 days). `isHumanId` flags the SBT stamps.
  */
-export const SAMPLE_MEDALLION_STAMPS: Stamp[] = [
+const MEDALLION_BASE: Stamp[] = [
   // ---- Physical Verification ----
   {
     id: "HumanIdKyc",
@@ -375,10 +375,6 @@ export const SAMPLE_MEDALLION_STAMPS: Stamp[] = [
   },
 ];
 
-// The full catalog already spills each category past one page (Physical 7,
-// Blockchain 12), so category nav + within-category paging both read from it.
-export const SAMPLE_MEDALLION_STAMPS_PAGED = SAMPLE_MEDALLION_STAMPS;
-
 /**
  * Per-stamp detail payload: real description + the sub-credential components used
  * to score it. Single-credential platforms (including every Human ID SBT) list
@@ -508,6 +504,20 @@ const DETAIL_META: Record<string, { description: string; components: StampCompon
     components: [{ name: "Verify X Verified Account", points: 2, verified: false }],
   },
 };
+
+/**
+ * The catalog with each stamp's plain description attached (from DETAIL_META), so
+ * the grid medallion's hover / focus tooltip explains WHAT the stamp does. The
+ * drawer reuses the same description verbatim.
+ */
+export const SAMPLE_MEDALLION_STAMPS: Stamp[] = MEDALLION_BASE.map((s) => ({
+  ...s,
+  description: DETAIL_META[s.id]?.description,
+}));
+
+// The full catalog already spills each category past one page (Physical 7,
+// Blockchain 12), so category nav + within-category paging both read from it.
+export const SAMPLE_MEDALLION_STAMPS_PAGED = SAMPLE_MEDALLION_STAMPS;
 
 /**
  * Presentational join: the catalog `Stamp` (icons / weights / category / expiry /

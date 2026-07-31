@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import styles from "./StampsWindow.module.css";
+import glass from "./glassTip.module.css";
+import { Tooltip } from "../components/Tooltip";
 import { CaretDownIcon, LinkIcon, PlusIcon, StarIcon } from "./icons";
 import { CATEGORY_ICONS } from "./stampIcons";
 import { formatExpiry } from "./expiry";
@@ -16,10 +18,12 @@ import type { ShellSize } from "./PassportShell";
  */
 
 /**
- * On-chain state of a stamp, carried by ONE signal (the corner pip):
- *  - "minted"   the stamp is recorded on-chain (emerald chain pip)
- *  - "mintable" the stamp can be minted on-chain (gold chain pip)
- *  - "none"     the stamp lives off-chain (muted, recessive pip)
+ * On-chain state of a stamp. Everything is emerald (no gold): the medallion's
+ * own treatment carries the state, not a colored chip.
+ *  - "minted"   notarized on-chain: emerald glow + a small chain-link pip + a
+ *               subtle settle animation. The "special" state.
+ *  - "mintable" verified but not notarized yet: emerald outline / glow invite.
+ *  - "none"     lives off-chain: a calm neutral-glass medallion.
  */
 export type StampOnchain = "minted" | "mintable" | "none";
 
@@ -51,6 +55,12 @@ export type Stamp = {
    * reverification after a year - the drawer reflects that copy.
    */
   isHumanId?: boolean;
+  /**
+   * Plain one-line description of what the stamp proves. Surfaced as the grid
+   * medallion's hover / focus tooltip (what the stamp does) and reused verbatim
+   * by the detail drawer. Omit to render the medallion with no tooltip.
+   */
+  description?: string;
 };
 
 export type StampsWindowProps = {
@@ -135,7 +145,7 @@ const deriveCategories = (items: Stamp[]): CategoryGroup[] => {
 };
 
 export type MedallionProps = {
-  /** The stamp whose face, on-chain pip, and points chip to render. */
+  /** The stamp whose face, state treatment, and points chip to render. */
   stamp: Stamp;
   /** Condensed ~half-size medallion (mini card). */
   compact?: boolean;
@@ -143,40 +153,44 @@ export type MedallionProps = {
    *  the total as its own text, so it renders the medallion WITHOUT the chip to
    *  avoid stating the points twice (one carrier per signal). */
   showPoints?: boolean;
-  /** Show the corner on-chain pip. Default true. The drawer header carries the
-   *  on-chain state in its status pill instead, so it drops the medallion pip. */
+  /** Show the corner status glyphs (the minted chain-link pip + the expiring dot).
+   *  Default true (grid). The drawer header carries on-chain state in its status
+   *  pill and expiry in its timer tooltip, so it passes false to drop both. */
   showPip?: boolean;
-  /** Show the compact expiry chip on the medallion (grid only). Default false;
-   *  the drawer header states expiry in its own line instead. The expired VISUAL
-   *  state (desaturation) applies regardless, so an expired stamp always reads. */
-  showExpiry?: boolean;
   /** Override the diameter (px). Sets --rd-med inline (wins over the size rule). */
   sizePx?: number;
 };
 
 /**
- * A single glass medallion: a rim + embossed face carrying the stamp icon, a
- * corner on-chain pip, and a points chip. Verified vs not is carried by the face
- * / rim tone; on-chain by the pip; points by the chip. One signal per meaning.
+ * A single glass medallion: a rim + embossed face carrying the stamp icon, with
+ * its on-brand STATE carried by the medallion itself (no chips):
+ *  - unverified: recessive, neutral rim.
+ *  - verified + off-chain ("none"): calm emerald-glass (unminted).
+ *  - verified + mintable: an emerald outline / glow invite (never gold).
+ *  - verified + minted: emerald glow + a small chain-link pip + a settle animation.
+ *  - expiring soon: a small amber dot in the corner (the ONLY amber here).
+ *  - expired: desaturated with a muted outline; reads inactive.
+ * Points ride on the chip; everything else is emerald. One carrier per meaning.
  *
  * Exported so the stamp detail drawer reuses the exact medallion look for its
- * header (a shared primitive, not a duplicated treatment). The header passes
- * showPoints/showPip false so the same on-chain + points signal is not stated
- * twice (§ no redundancy).
+ * header. The header passes showPoints/showPip false so on-chain + expiry are not
+ * stated twice (the drawer states them in its own pill + timer).
  */
 export const Medallion: React.FC<MedallionProps> = ({
   stamp,
   compact,
   showPoints = true,
   showPip = true,
-  showExpiry = false,
   sizePx,
 }) => {
   const expiry = formatExpiry(stamp.expirationDate);
   const expired = expiry?.state === "expired";
+  const soon = expiry?.state === "soon";
+  // Minted is the "special" state: an emerald glow + chain pip + a settle-in.
+  const minted = stamp.verified && stamp.onchain === "minted" && !expired;
   return (
     <span
-      className={`${styles.medallion} ${compact ? styles.medallionSm : ""}`}
+      className={`${styles.medallion} ${compact ? styles.medallionSm : ""} ${minted ? styles.medallionMinted : ""}`}
       data-verified={stamp.verified ? "true" : "false"}
       data-onchain={stamp.onchain}
       data-expired={expired ? "true" : undefined}
@@ -187,22 +201,49 @@ export const Medallion: React.FC<MedallionProps> = ({
           {stamp.icon ?? <StarIcon size={compact ? 15 : 20} strokeWidth={1.6} />}
         </span>
       </span>
-      {/* On-chain pip: the ONE carrier of on-chain state. Glyph only when it relates
-          to the chain (minted / mintable); "none" is a recessive muted disc. */}
-      {showPip ? (
+      {/* Minted chain-link pip: the single "notarized on chain" mark. Emerald only;
+          mintable / off-chain carry their state through the medallion treatment. */}
+      {showPip && minted ? (
         <span className={styles.pip} aria-hidden="true">
-          {stamp.onchain === "none" ? null : <LinkIcon size={compact ? 8 : 9} strokeWidth={2} />}
+          <LinkIcon size={compact ? 8 : 9} strokeWidth={2} />
         </span>
       ) : null}
-      {/* Compact expiry chip (grid only): reads the SAME expiry the drawer states
-          in full, condensed to "88d" / "8d" / "Expired". One carrier per meaning. */}
-      {showExpiry && expiry ? (
-        <span className={styles.expiryChip} data-state={expiry.state} aria-hidden="true">
-          {expiry.short}
-        </span>
-      ) : null}
+      {/* Expiring-soon dot: the ONLY amber on the medallion, and a small indicator
+          only (never the whole face). Suppressed once expired (that reads muted). */}
+      {showPip && soon && !expired ? <span className={styles.expiringDot} aria-hidden="true" /> : null}
       {showPoints ? <span className={styles.points}>+{stamp.points}</span> : null}
     </span>
+  );
+};
+
+/**
+ * One grid badge: the medallion + name, the whole thing a tap target. When the
+ * stamp carries a description it is wrapped in the portal glass Tooltip so hover
+ * / focus reveals WHAT the stamp does, readable in both themes and never clipped
+ * (the tooltip portals to the body, so it escapes the fixed shell bounds).
+ */
+const StampBadge: React.FC<{
+  stamp: Stamp;
+  compact?: boolean;
+  onSelect?: (id: string) => void;
+}> = ({ stamp, compact, onSelect }) => {
+  const btn = (
+    <button
+      type="button"
+      className={styles.badge}
+      onClick={() => onSelect?.(stamp.id)}
+      aria-label={stampLabel(stamp)}
+    >
+      <Medallion stamp={stamp} compact={compact} />
+      <span className={styles.name}>{stamp.name}</span>
+    </button>
+  );
+  return stamp.description ? (
+    <Tooltip content={stamp.description} placement="top" className={glass.tip}>
+      {btn}
+    </Tooltip>
+  ) : (
+    btn
   );
 };
 
@@ -448,16 +489,7 @@ export const StampsWindow: React.FC<StampsWindowProps> = ({
         <div className={styles.pages}>
           <div className={styles.grid}>
             {pageStamps.map((s) => (
-              <button
-                type="button"
-                key={s.id}
-                className={styles.badge}
-                onClick={() => onSelectStamp?.(s.id)}
-                aria-label={stampLabel(s)}
-              >
-                <Medallion stamp={s} compact showExpiry />
-                <span className={styles.name}>{s.name}</span>
-              </button>
+              <StampBadge key={s.id} stamp={s} compact onSelect={onSelectStamp} />
             ))}
           </div>
         </div>
@@ -492,16 +524,7 @@ export const StampsWindow: React.FC<StampsWindowProps> = ({
       <div className={styles.pages}>
         <div className={styles.grid}>
           {pageStamps.map((s) => (
-            <button
-              type="button"
-              key={s.id}
-              className={styles.badge}
-              onClick={() => onSelectStamp?.(s.id)}
-              aria-label={stampLabel(s)}
-            >
-              <Medallion stamp={s} showExpiry />
-              <span className={styles.name}>{s.name}</span>
-            </button>
+            <StampBadge key={s.id} stamp={s} onSelect={onSelectStamp} />
           ))}
         </div>
       </div>
