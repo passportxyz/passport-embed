@@ -394,7 +394,9 @@ const AccountMenu: React.FC<{
                   className={`${styles.menuItem} ${i === activeIndex ? styles.menuItemOn : ""}`}
                   onClick={() => select(i)}
                 >
-                  <span className={styles.menuAvatar} aria-hidden="true" />
+                  <span className={styles.menuAvatar} aria-hidden="true">
+                    <WaaPIcon size={14} />
+                  </span>
                   <span className={styles.menuName}>{opt.display}</span>
                   {opt.kind ? <span className={styles.menuKind}>{opt.kind}</span> : null}
                 </button>

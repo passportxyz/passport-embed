@@ -746,12 +746,17 @@
   background: rgba(var(--accent), 0.22);
 }
 
+/* The account avatar carries the WaaP mark (the account behind the passport), so
+ * the switch-accounts rows read as accounts, not an unexplained green box. */
 .menuAvatar {
   width: 24px;
   height: 24px;
   flex: none;
   border-radius: var(--radius-md-c6dbf459);
-  background: linear-gradient(135deg, rgb(var(--accent)), rgba(var(--accent), 0.45));
+  display: grid;
+  place-items: center;
+  color: rgb(var(--on-accent));
+  background: linear-gradient(135deg, rgb(var(--accent)), rgba(var(--accent), 0.55));
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
 }
 
@@ -811,9 +816,55 @@
 
 /* Footer lives in the shared SecuredByFooter component (§ harmonized footer). */
 
+/* Press micro-interaction (design-sop §7.5 buttons): every button gets a subtle
+ * :active press on top of its existing hover state-layer + focus ring. A short
+ * transform transition keeps it at ~motion-fast; it degrades to none under
+ * reduced-motion below. */
+.appIcon,
+.acct,
+.copyBtn,
+.unlinkBtn,
+.linkWalletBtn,
+.signOut,
+.menuItem,
+.info {
+  transition:
+    background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    color var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    transform var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.appIcon:active,
+.acct:active,
+.copyBtn:active,
+.unlinkBtn:active,
+.linkWalletBtn:active,
+.signOut:active,
+.menuItem:active,
+.info:active {
+  transform: scale(0.96);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .menu,
-  .acctCaret {
+  .acctCaret,
+  .appIcon,
+  .acct,
+  .copyBtn,
+  .unlinkBtn,
+  .linkWalletBtn,
+  .signOut,
+  .menuItem,
+  .info {
     transition: none;
+  }
+  .appIcon:active,
+  .acct:active,
+  .copyBtn:active,
+  .unlinkBtn:active,
+  .linkWalletBtn:active,
+  .signOut:active,
+  .menuItem:active,
+  .info:active {
+    transform: none;
   }
 }
