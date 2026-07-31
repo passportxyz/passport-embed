@@ -1,8 +1,19 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import styles from "./StampsWindow.module.css";
 import { CaretDownIcon, LinkIcon, PlusIcon, StarIcon } from "./icons";
+import { CATEGORY_ICONS } from "./stampIcons";
+import { formatExpiry } from "./expiry";
 import { useReducedMotion } from "./hooks";
 import type { ShellSize } from "./PassportShell";
+
+/*
+ * Real data model note: in production the presentational shape below is the JOIN
+ * of two endpoints, keyed by credential id. `/embed/stamps/metadata` supplies the
+ * icon, weight, category, credential ids and descriptions; `/embed/score` supplies
+ * the per-stamp `expiration_date`, `dedup`, and earned `score`. The catalog + the
+ * score are merged into these `Stamp` / `StampDetail` props before render; the
+ * components here take that joined shape and never fetch.
+ */
 
 /**
  * On-chain state of a stamp, carried by ONE signal (the corner pip):
@@ -27,6 +38,19 @@ export type Stamp = {
   onchain: StampOnchain;
   /** Optional badge face art (an emoji, an <img>, or an icon node). */
   icon?: React.ReactNode;
+  /**
+   * ISO date this stamp expires. Every stamp expires as a whole (the score
+   * endpoint carries a per-stamp expiration date; default lifetime is 90 days).
+   * Drives the "Valid for N days" / "Expires {date}" / "Expired" copy + the
+   * expired visual state. Omit for a stamp that is not yet verified.
+   */
+  expirationDate?: string;
+  /**
+   * True when this stamp is a Human ID SBT (Government ID, Phone, Biometrics,
+   * Proof of Clean Hands). Such stamps auto-renew after 90 days, with full
+   * reverification after a year - the drawer reflects that copy.
+   */
+  isHumanId?: boolean;
 };
 
 export type StampsWindowProps = {
@@ -41,8 +65,10 @@ export type StampsWindowProps = {
   onVerify?: () => void;
   /** Override the verify CTA label. */
   verifyLabel?: string;
-  /** Badges per page before it paginates. Defaults to 6 (full) / 3 (mini). */
+  /** Badges per category page before it paginates. Defaults to 6 (full) / 3 (mini). */
   pageSize?: number;
+  /** Category selected on first paint (by verbatim name). Defaults to the first. */
+  initialCategory?: string;
   /** Override the header label. Defaults to "Your stamps". */
   headline?: string;
   /** Empty-state message. Defaults to a plain "No stamps yet" line. */
@@ -59,10 +85,11 @@ export type StampsWindowProps = {
   size?: ShellSize;
 };
 
-// Kept small so a page never renders more medallion rows than the shell's fixed
-// height holds (each category becomes its own row, so few-item categories add up
-// fast). Stories that show a denser single page pass an explicit larger pageSize.
-const DEFAULT_PAGE_SIZE: Record<ShellSize, number> = { full: 4, mini: 3, pill: 3 };
+// Badges per page WITHIN a category before it paginates. The primary nav is the
+// category selector; paging is the secondary overflow within one category, never
+// a scrollbar. Full fits two rows of three under the tabs + heading + CTA in the
+// fixed shell height; mini keeps one short row.
+const DEFAULT_PAGE_SIZE: Record<ShellSize, number> = { full: 6, mini: 3, pill: 3 };
 
 const ONCHAIN_LABEL: Record<StampOnchain, string> = {
   minted: "Minted on chain",
@@ -87,8 +114,11 @@ const paginate = <T,>(items: T[], per: number): T[][] => {
   return pages.length ? pages : [[]];
 };
 
-/** Group a page's stamps by category, preserving first-appearance order. */
-const groupByCategory = (items: Stamp[]): Array<{ category: string; stamps: Stamp[] }> => {
+type CategoryGroup = { category: string; stamps: Stamp[]; verified: number };
+
+/** Group stamps by category, preserving first-appearance order, with a per-category
+ *  verified count for the tab badge (e.g. "5/7"). */
+const deriveCategories = (items: Stamp[]): CategoryGroup[] => {
   const order: string[] = [];
   const map = new Map<string, Stamp[]>();
   for (const s of items) {
@@ -98,7 +128,10 @@ const groupByCategory = (items: Stamp[]): Array<{ category: string; stamps: Stam
     }
     map.get(s.category)!.push(s);
   }
-  return order.map((category) => ({ category, stamps: map.get(category)! }));
+  return order.map((category) => {
+    const stamps = map.get(category)!;
+    return { category, stamps, verified: stamps.filter((s) => s.verified).length };
+  });
 };
 
 export type MedallionProps = {
@@ -113,6 +146,10 @@ export type MedallionProps = {
   /** Show the corner on-chain pip. Default true. The drawer header carries the
    *  on-chain state in its status pill instead, so it drops the medallion pip. */
   showPip?: boolean;
+  /** Show the compact expiry chip on the medallion (grid only). Default false;
+   *  the drawer header states expiry in its own line instead. The expired VISUAL
+   *  state (desaturation) applies regardless, so an expired stamp always reads. */
+  showExpiry?: boolean;
   /** Override the diameter (px). Sets --rd-med inline (wins over the size rule). */
   sizePx?: number;
 };
@@ -132,29 +169,42 @@ export const Medallion: React.FC<MedallionProps> = ({
   compact,
   showPoints = true,
   showPip = true,
+  showExpiry = false,
   sizePx,
-}) => (
-  <span
-    className={`${styles.medallion} ${compact ? styles.medallionSm : ""}`}
-    data-verified={stamp.verified ? "true" : "false"}
-    data-onchain={stamp.onchain}
-    style={sizePx ? ({ "--rd-med": `${sizePx}px` } as React.CSSProperties) : undefined}
-  >
-    <span className={styles.face}>
-      <span className={styles.glyph} aria-hidden="true">
-        {stamp.icon ?? <StarIcon size={compact ? 15 : 20} strokeWidth={1.6} />}
+}) => {
+  const expiry = formatExpiry(stamp.expirationDate);
+  const expired = expiry?.state === "expired";
+  return (
+    <span
+      className={`${styles.medallion} ${compact ? styles.medallionSm : ""}`}
+      data-verified={stamp.verified ? "true" : "false"}
+      data-onchain={stamp.onchain}
+      data-expired={expired ? "true" : undefined}
+      style={sizePx ? ({ "--rd-med": `${sizePx}px` } as React.CSSProperties) : undefined}
+    >
+      <span className={styles.face}>
+        <span className={styles.glyph} aria-hidden="true">
+          {stamp.icon ?? <StarIcon size={compact ? 15 : 20} strokeWidth={1.6} />}
+        </span>
       </span>
+      {/* On-chain pip: the ONE carrier of on-chain state. Glyph only when it relates
+          to the chain (minted / mintable); "none" is a recessive muted disc. */}
+      {showPip ? (
+        <span className={styles.pip} aria-hidden="true">
+          {stamp.onchain === "none" ? null : <LinkIcon size={compact ? 8 : 9} strokeWidth={2} />}
+        </span>
+      ) : null}
+      {/* Compact expiry chip (grid only): reads the SAME expiry the drawer states
+          in full, condensed to "88d" / "8d" / "Expired". One carrier per meaning. */}
+      {showExpiry && expiry ? (
+        <span className={styles.expiryChip} data-state={expiry.state} aria-hidden="true">
+          {expiry.short}
+        </span>
+      ) : null}
+      {showPoints ? <span className={styles.points}>+{stamp.points}</span> : null}
     </span>
-    {/* On-chain pip: the ONE carrier of on-chain state. Glyph only when it relates
-        to the chain (minted / mintable); "none" is a recessive muted disc. */}
-    {showPip ? (
-      <span className={styles.pip} aria-hidden="true">
-        {stamp.onchain === "none" ? null : <LinkIcon size={compact ? 8 : 9} strokeWidth={2} />}
-      </span>
-    ) : null}
-    {showPoints ? <span className={styles.points}>+{stamp.points}</span> : null}
-  </span>
-);
+  );
+};
 
 /**
  * Interim loader, mirroring ScoreWindow's ScoreLoader (a simple indeterminate
@@ -215,11 +265,46 @@ const Pager: React.FC<{ page: number; pageCount: number; onPage: (p: number) => 
 );
 
 /**
+ * Category selector (segmented control): one segment per real Passport category.
+ * Each segment carries the category glyph + a verified/total count; the active
+ * segment is highlighted. This is the PRIMARY navigation - it switches the whole
+ * grid to that category (no blind whole-catalog paging). The full verbatim name
+ * rides on the active-category heading below + every segment's accessible label.
+ */
+const CategoryTabs: React.FC<{
+  groups: CategoryGroup[];
+  active: number;
+  onSelect: (index: number) => void;
+}> = ({ groups, active, onSelect }) => (
+  <div className={styles.tabs} role="tablist" aria-label="Stamp categories">
+    {groups.map((g, i) => (
+      <button
+        type="button"
+        key={g.category}
+        role="tab"
+        aria-selected={i === active}
+        className={`${styles.tab} ${i === active ? styles.tabOn : ""}`}
+        onClick={() => onSelect(i)}
+        title={`${g.category}. ${g.verified} of ${g.stamps.length} verified.`}
+        aria-label={`${g.category}. ${g.verified} of ${g.stamps.length} verified.`}
+      >
+        <span className={styles.tabIcon} aria-hidden="true">
+          {CATEGORY_ICONS[g.category] ?? <StarIcon size={18} strokeWidth={1.6} />}
+        </span>
+        <span className={styles.tabCount}>
+          {g.verified}/{g.stamps.length}
+        </span>
+      </button>
+    ))}
+  </div>
+);
+
+/**
  * StampsWindow - the medallion catalog, rendered INSIDE PassportShell like the
- * Score window. Stamps are glass plaques grouped by category, paginated and never
- * scrolled (§4 / §Windows). Presentational: props only, no data hooks, both-theme
- * legible, reduced-motion aware. Tapping a badge fires onSelectStamp; the detail
- * drawer is a later slice.
+ * Score window. Stamps are glass plaques navigated BY CATEGORY (a segmented
+ * control at the top), and within a category paginated and never scrolled
+ * (§4 / §Windows). Presentational: props only, no data hooks, both-theme legible,
+ * reduced-motion aware. Tapping a badge fires onSelectStamp.
  */
 export const StampsWindow: React.FC<StampsWindowProps> = ({
   stamps,
@@ -227,22 +312,46 @@ export const StampsWindow: React.FC<StampsWindowProps> = ({
   onVerify,
   verifyLabel,
   pageSize,
+  initialCategory,
   headline,
   emptyLabel,
   loading = false,
   size = "full",
 }) => {
-  const [page, setPage] = useState(0);
   const per = pageSize ?? DEFAULT_PAGE_SIZE[size];
   const compact = size !== "full";
 
-  const pages = useMemo(() => paginate(stamps, per), [stamps, per]);
+  const categories = useMemo(() => deriveCategories(stamps), [stamps]);
+  const initialActive = useMemo(() => {
+    const i = categories.findIndex((c) => c.category === initialCategory);
+    return i >= 0 ? i : 0;
+  }, [categories, initialCategory]);
+
+  // active = which category tab is selected (full only); page = the page WITHIN
+  // that category. Switching category resets the page to its first (bug fix: the
+  // old flat pager split a single category across pages and mislabeled counts).
+  const [active, setActive] = useState(initialActive);
+  const [page, setPage] = useState(0);
+  const activeIndex = Math.min(active, Math.max(0, categories.length - 1));
+  const selectCategory = (i: number) => {
+    setActive(i);
+    setPage(0);
+  };
+  // Keep the page valid if the active category or data shrinks under the cursor.
+  useEffect(() => {
+    setPage(0);
+  }, [activeIndex]);
+
+  const verifiedCount = useMemo(() => stamps.filter((s) => s.verified).length, [stamps]);
+
+  // full navigates a single category; mini flattens the whole list (no tabs) to
+  // keep the half-size card to one short paged row.
+  const activeGroup = categories[activeIndex];
+  const source = compact ? stamps : activeGroup ? activeGroup.stamps : [];
+  const pages = useMemo(() => paginate(source, per), [source, per]);
   const pageCount = pages.length;
   const current = Math.min(page, pageCount - 1);
   const pageStamps = pages[current] ?? [];
-  const groups = useMemo(() => groupByCategory(pageStamps), [pageStamps]);
-
-  const verifiedCount = useMemo(() => stamps.filter((s) => s.verified).length, [stamps]);
 
   const winClass = `${styles.window} ${size === "mini" ? styles.miniWin : ""} ${
     size === "pill" ? styles.pillWin : ""
@@ -323,23 +432,20 @@ export const StampsWindow: React.FC<StampsWindowProps> = ({
     );
   }
 
-  return (
-    <div className={winClass}>
-      <p className={styles.srOnly} aria-live="polite">
-        {stamps.length} stamps, {verifiedCount} verified. Page {current + 1} of {pageCount}.
-      </p>
-
-      <div className={styles.head}>
-        <span className={styles.title}>{headline ?? "Your stamps"}</span>
-        <span className={styles.count}>
-          {verifiedCount}/{stamps.length} verified
-        </span>
-      </div>
-
-      <div className={styles.pages}>
-        {compact ? (
-          // mini stays simpler: one flat grid, no category headers, so the
-          // half-size card keeps to a single medallion row per page.
+  // ---- mini: no category tabs. One flat, paged, half-size grid. ----
+  if (compact) {
+    return (
+      <div className={winClass}>
+        <p className={styles.srOnly} aria-live="polite">
+          {stamps.length} stamps, {verifiedCount} verified. Page {current + 1} of {pageCount}.
+        </p>
+        <div className={styles.head}>
+          <span className={styles.title}>{headline ?? "Your stamps"}</span>
+          <span className={styles.count}>
+            {verifiedCount}/{stamps.length} verified
+          </span>
+        </div>
+        <div className={styles.pages}>
           <div className={styles.grid}>
             {pageStamps.map((s) => (
               <button
@@ -349,40 +455,61 @@ export const StampsWindow: React.FC<StampsWindowProps> = ({
                 onClick={() => onSelectStamp?.(s.id)}
                 aria-label={stampLabel(s)}
               >
-                <Medallion stamp={s} compact />
+                <Medallion stamp={s} compact showExpiry />
                 <span className={styles.name}>{s.name}</span>
               </button>
             ))}
           </div>
-        ) : (
-          groups.map((group) => (
-            <div className={styles.group} key={group.category}>
-              {/* Category header: tonal text + space, no hard line (§ no-hard-lines). */}
-              <div className={styles.catHead}>{group.category}</div>
-              <div className={styles.grid}>
-                {group.stamps.map((s) => (
-                  <button
-                    type="button"
-                    key={s.id}
-                    className={styles.badge}
-                    onClick={() => onSelectStamp?.(s.id)}
-                    aria-label={stampLabel(s)}
-                  >
-                    <Medallion stamp={s} />
-                    <span className={styles.name}>{s.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))
-        )}
+        </div>
+        {pageCount > 1 ? <Pager page={current} pageCount={pageCount} onPage={setPage} /> : null}
+      </div>
+    );
+  }
+
+  // ---- full: category selector + a single category's grid, paged within it. ----
+  return (
+    <div className={winClass}>
+      <p className={styles.srOnly} aria-live="polite">
+        {activeGroup?.category}. {activeGroup?.verified} of {activeGroup?.stamps.length} verified. Page{" "}
+        {current + 1} of {pageCount}.
+      </p>
+
+      <CategoryTabs groups={categories} active={activeIndex} onSelect={selectCategory} />
+
+      {activeGroup ? (
+        <div className={styles.catBar}>
+          {/* Verbatim category name (single line; full name in title + tab a11y
+              labels), plus its verified/total count. */}
+          <span className={styles.catName} title={activeGroup.category}>
+            {activeGroup.category}
+          </span>
+          <span className={styles.count}>
+            {activeGroup.verified}/{activeGroup.stamps.length}
+          </span>
+        </div>
+      ) : null}
+
+      <div className={styles.pages}>
+        <div className={styles.grid}>
+          {pageStamps.map((s) => (
+            <button
+              type="button"
+              key={s.id}
+              className={styles.badge}
+              onClick={() => onSelectStamp?.(s.id)}
+              aria-label={stampLabel(s)}
+            >
+              <Medallion stamp={s} showExpiry />
+              <span className={styles.name}>{s.name}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {pageCount > 1 ? <Pager page={current} pageCount={pageCount} onPage={setPage} /> : null}
 
-      {/* Bottom-pinned verify entry, consistent with the shell's primary CTA. mini
-          stays simpler and drops it to keep the half-size card uncluttered. */}
-      {onVerify && !compact ? (
+      {/* Bottom-pinned verify entry, consistent with the shell's primary CTA. */}
+      {onVerify ? (
         <button type="button" className={styles.cta} onClick={onVerify}>
           <span className={styles.ctaIcon}>
             <PlusIcon size={15} strokeWidth={2} />
