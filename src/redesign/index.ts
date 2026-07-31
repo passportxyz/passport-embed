@@ -34,6 +34,15 @@ export type {
   StampAction,
 } from "./StampDetailDrawer";
 
+export { WalletLinking } from "./WalletLinking";
+export type {
+  WalletLinkingProps,
+  WalletLinkStep,
+  WalletLinkKind,
+  LinkWalletInfo,
+  LinkGain,
+} from "./WalletLinking";
+
 export { SecuredByFooter } from "./SecuredByFooter";
 
 export { humanizeError, classifyError } from "./humanizeError";
