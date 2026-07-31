@@ -23,8 +23,16 @@ export type { ScoreDrilldownProps, StampContribution } from "./ScoreDrilldown";
 export { ScoreHome } from "./ScoreHome";
 export type { ScoreHomeProps } from "./ScoreHome";
 
-export { StampsWindow } from "./StampsWindow";
-export type { StampsWindowProps, Stamp, StampOnchain } from "./StampsWindow";
+export { StampsWindow, Medallion } from "./StampsWindow";
+export type { StampsWindowProps, Stamp, StampOnchain, MedallionProps } from "./StampsWindow";
+
+export { StampDetailDrawer } from "./StampDetailDrawer";
+export type {
+  StampDetailDrawerProps,
+  StampDetail,
+  StampComponent,
+  StampAction,
+} from "./StampDetailDrawer";
 
 export { SecuredByFooter } from "./SecuredByFooter";
 
