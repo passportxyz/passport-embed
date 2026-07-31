@@ -388,16 +388,6 @@
   color: rgba(var(--on-surface), 0.62);
   white-space: nowrap;
 }
-/* SBT metadata sub-line (issued / id / chain). Rendered only when the research
- * pass supplies StampComponent.sbt; a quiet caption under the component name. */
-.rowSbt {
-  font-size: var(--font-size-xs-c6dbf459);
-  color: rgba(var(--on-surface), 0.5);
-  font-variant-numeric: tabular-nums;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .rowPoints {
   flex: none;
   padding: 1px 8px;
@@ -526,9 +516,124 @@
   border-radius: var(--radius-pill-c6dbf459);
 }
 
+/* ---- onchain credential: a collapsible metadata block (Human ID SBTs only) --- */
+/* Collapsed it is a single tonal row (fits trivially); expanded it shows a compact
+ * two-column grid + a View on chain link. Kept small so an open block still fits
+ * the fixed drawer height alongside the one SBT component row (never scrolls). */
+.oc {
+  flex: none;
+  margin-top: var(--space-3-c6dbf459);
+}
+.ocHead {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px var(--space-2-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+  background: rgba(var(--on-surface), 0.05);
+  color: rgb(var(--on-surface));
+  cursor: pointer;
+  font-family: inherit;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+}
+.ocHead:hover {
+  background: rgba(var(--on-surface), 0.08);
+}
+.ocHead:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: -2px;
+}
+.ocHeadIcon {
+  display: inline-flex;
+  color: rgb(var(--accent));
+}
+.ocHeadLabel {
+  flex: 1;
+  text-align: left;
+  letter-spacing: 0.02em;
+}
+.ocChev,
+.ocChevOpen {
+  flex: none;
+  color: rgba(var(--on-surface), 0.6);
+  transition: transform var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.ocChevOpen {
+  transform: rotate(180deg);
+}
+.ocBody {
+  padding: var(--space-1-c6dbf459) var(--space-2-c6dbf459) 0;
+}
+/* One readable column: each row is Label ... value, so long values (dates,
+ * "Proof of Clean Hands") never truncate. Compact line-height keeps the six rows
+ * within the space freed by the component list stepping aside (never scrolls). */
+.ocGrid {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ocItem {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3-c6dbf459);
+  min-width: 0;
+  line-height: 1.3;
+}
+.ocKey {
+  flex: none;
+  font-size: var(--font-size-xs-c6dbf459);
+  color: rgba(var(--on-surface), 0.55);
+}
+.ocVal {
+  margin: 0;
+  min-width: 0;
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  color: rgb(var(--on-surface));
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* Not revoked reads positive (emerald); revoked reads as a warn state. */
+.ocVal[data-revoked="false"] {
+  color: rgb(var(--accent));
+}
+.ocVal[data-revoked="true"] {
+  color: rgb(var(--warn));
+}
+.ocView {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: var(--space-1-c6dbf459);
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  color: rgb(var(--accent));
+  text-decoration: none;
+  cursor: pointer;
+}
+.ocView:hover {
+  text-decoration: underline;
+}
+.ocView:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm-c6dbf459);
+}
+
 /* ---- action area: bottom-pinned, one primary action + optional renew ---- */
+/* margin-top:auto pins it to the bottom when there is no flex-grow list to do so
+ * (the focused onchain-credential view drops the list); inert otherwise. */
 .actions {
   flex: none;
+  margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: var(--space-2-c6dbf459);
@@ -645,7 +750,9 @@
   .cta,
   .back,
   .pagerArrow,
-  .pagerDot {
+  .pagerDot,
+  .ocChev,
+  .ocChevOpen {
     transition: none;
   }
 }

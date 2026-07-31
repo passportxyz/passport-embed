@@ -78,6 +78,19 @@ export const VerifiedMinted: Story = {
   },
 };
 
+export const OnchainCredential: Story = {
+  name: "Stamp detail / Onchain credential (Human ID SBT)",
+  render: () => drawerOver(SAMPLE_STAMP_DETAILS.HumanIdKyc, { onRenew: noop, defaultOnchainOpen: true }),
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "The Government ID SBT with its Onchain credential block expanded. This block appears only on the four Human ID SBT stamps (Government ID, Biometrics, Phone, Proof of Clean Hands) and shows non-PII metadata only: issued date, expiry, chain (Optimism), revocation status, credential type, issuer (Human ID), and a View on chain link (the HubV3 contract on Optimism for the SBTs, the Sign Protocol attestation for Proof of Clean Hands). It never surfaces the nullifier or any personal field, and there is no fake token id. The block is collapsible so it always fits the fixed drawer height without scrolling.",
+      },
+    },
+  },
+};
+
 export const MintableReward: Story = {
   name: "Stamp detail / Biometrics (Notarize stamp)",
   render: () => drawerOver(SAMPLE_STAMP_DETAILS.Biometrics),

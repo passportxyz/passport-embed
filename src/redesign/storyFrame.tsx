@@ -519,6 +519,42 @@ export const SAMPLE_MEDALLION_STAMPS: Stamp[] = MEDALLION_BASE.map((s) => ({
 // Blockchain 12), so category nav + within-category paging both read from it.
 export const SAMPLE_MEDALLION_STAMPS_PAGED = SAMPLE_MEDALLION_STAMPS;
 
+// ---- Onchain credential block, Human ID SBT stamps only (all non-PII). ----
+// The HubV3 SBT contract on Optimism; Proof of Clean Hands points at its Sign
+// Protocol attestation. In production these fields come from the Human ID SDK
+// getters (already fetched in useHumanIDVerification and discarded); here we seed
+// the same non-PII shape. No nullifier / indexingValue, no fake tokenId.
+const HUB_V3 = "0x2AA822e264F8cc31A2b9C22f39e5551241e94DfB";
+const OP_CONTRACT_URL = `https://optimistic.etherscan.io/address/${HUB_V3}`;
+const HUMAN_ID_ONCHAIN: Record<string, { credential: string; explorerUrl: string }> = {
+  HumanIdKyc: { credential: "Government ID", explorerUrl: OP_CONTRACT_URL },
+  Biometrics: { credential: "Biometrics", explorerUrl: OP_CONTRACT_URL },
+  HumanIdPhone: { credential: "Phone", explorerUrl: OP_CONTRACT_URL },
+  CleanHands: { credential: "Proof of Clean Hands", explorerUrl: "https://scan.sign.global/attestation" },
+};
+
+const ONE_DAY = 86_400_000;
+const fmtDate = (iso: string): string =>
+  new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+
+const buildOnchain = (stamp: Stamp): StampDetail["onchainCredential"] => {
+  const oc = HUMAN_ID_ONCHAIN[stamp.id];
+  if (!oc) return undefined;
+  // Issued is derivable (SBT default lifetime is 90 days), so issued = expiry - 90d.
+  const issued = stamp.expirationDate
+    ? fmtDate(new Date(new Date(stamp.expirationDate).getTime() - 90 * ONE_DAY).toISOString())
+    : undefined;
+  return {
+    issued,
+    expires: stamp.expirationDate ? fmtDate(stamp.expirationDate) : undefined,
+    chain: "Optimism",
+    revoked: false,
+    credential: oc.credential,
+    issuer: "Human ID",
+    explorerUrl: oc.explorerUrl,
+  };
+};
+
 /**
  * Presentational join: the catalog `Stamp` (icons / weights / category / expiry /
  * on-chain, from the metadata + score endpoints) merged with its scoring
@@ -533,6 +569,7 @@ export const SAMPLE_STAMP_DETAILS: Record<string, StampDetail> = SAMPLE_MEDALLIO
       components: meta?.components ?? [
         { name: stamp.name, points: stamp.points, verified: stamp.verified },
       ],
+      onchainCredential: buildOnchain(stamp),
     };
     return acc;
   },

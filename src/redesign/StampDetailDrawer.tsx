@@ -35,20 +35,6 @@ export type StampComponent = {
   expiry?: string;
   /** Optional row icon (an emoji, an <img>, or an icon node). Omit for no icon. */
   icon?: React.ReactNode;
-  /**
-   * TODO(sbt-metadata): the in-progress research pass is sourcing the real SBT
-   * fields for each component (issued date, on-chain SBT id, chain). They render
-   * as a quiet sub-line under the component name when present; until the data
-   * lands this stays undefined so nothing shows. Drop the values in here.
-   */
-  sbt?: {
-    /** Human date the credential was issued, e.g. "Issued Apr 12". */
-    issued?: string;
-    /** Short SBT token id, e.g. "#4821". */
-    sbtId?: string;
-    /** Chain the SBT lives on, e.g. "Optimism". */
-    chain?: string;
-  };
 };
 
 /**
@@ -61,6 +47,48 @@ export type StampDetail = Stamp & {
   components: StampComponent[];
   /* `description` is inherited from Stamp (surfaced as the grid tooltip and the
      drawer's own description line). */
+  /**
+   * Onchain credential metadata, for the Human ID SBT stamps ONLY (Government ID,
+   * Biometrics, Phone, Proof of Clean Hands). Everything here is non-PII.
+   *
+   * Data model: these come from the Human ID SDK getters. The SBT reads
+   * (getKycSBTByAddress / getPhoneSBTByAddress / getBiometricsSBTByAddress)
+   * return { expiry, publicValues: [expiry, recipient, actionId, nullifier,
+   * issuer], revoked }; Proof of Clean Hands returns a Sign Protocol attestation
+   * ({ attestTimestamp, validUntil, revoked, attestationId }). The embed already
+   * fetches these in useHumanIDVerification and discards them, so this block is
+   * purely presentational: seed it via props, render, done.
+   *
+   * DELIBERATELY NOT SURFACED: name, DOB, document number, nationality, phone
+   * number, biometric data, the ABI `data` blob, and crucially the
+   * nullifier / indexingValue (a stable per-user correlation handle). Leaving the
+   * nullifier out is the privacy point, not an oversight. There is no ERC-721
+   * tokenId and no mint transaction in the SBT read path, so no "SBT #1234" id is
+   * shown; only Proof of Clean Hands has an attestation id / tx for its link.
+   *
+   * Named `onchainCredential` (not `onchain`) because `Stamp.onchain` already
+   * carries the minted / mintable / none state string.
+   */
+  onchainCredential?: {
+    /** Issue date, e.g. "Apr 12, 2026". Omit when unknown (never invented). */
+    issued?: string;
+    /** Expiry date, e.g. "Oct 17, 2026". Mirrors the header clock's validity. */
+    expires?: string;
+    /** Chain the credential lives on, e.g. "Optimism". */
+    chain: string;
+    /** Revocation flag from the SBT / attestation; false renders "Not revoked". */
+    revoked: boolean;
+    /** Credential type, e.g. "Government ID". */
+    credential: string;
+    /** Issuing authority, e.g. "Human ID". */
+    issuer: string;
+    /**
+     * Explorer link: the HubV3 contract
+     * (0x2AA822e264F8cc31A2b9C22f39e5551241e94DfB) on Optimism for the SBTs, or
+     * the attestation for Proof of Clean Hands. Omit to drop the affordance.
+     */
+    explorerUrl?: string;
+  };
 };
 
 /** The bottom-pinned action the drawer resolves to. One primary action. */
@@ -106,6 +134,13 @@ export type StampDetailDrawerProps = {
 
   /** Override the on-chain status pill's glass tooltip copy. */
   statusTooltip?: React.ReactNode;
+  /**
+   * Render the "Onchain credential" block expanded on first paint (Human ID SBT
+   * stamps only, and only when `stamp.onchainCredential` is supplied). Defaults
+   * to collapsed so the fixed drawer height is never at risk; open it to show the
+   * metadata rows.
+   */
+  defaultOnchainOpen?: boolean;
 };
 
 const ONCHAIN_PILL: Record<StampOnchain, string> = {
@@ -145,16 +180,11 @@ const paginate = <T,>(items: T[], per: number): T[][] => {
 /**
  * One sub-credential row: [meaningful icon, if any] + name + verified / expiry
  * state + points chip. No filler icon: when a component has no real icon the row
- * simply leads with the name (the old placeholder star was meaningless). An
- * optional SBT metadata sub-line (issued / id / chain) shows when present.
+ * simply leads with the name (the old placeholder star was meaningless).
  */
 const ComponentRow: React.FC<{ component: StampComponent }> = ({ component }) => {
-  const { name, points, verified, expiry, icon, sbt } = component;
+  const { name, points, verified, expiry, icon } = component;
   const state = verified ? (expiry ? expiry : "Verified") : "Not verified yet";
-  // SBT slot: joined into one quiet line, only for the parts that are present.
-  const sbtLine = sbt
-    ? [sbt.issued, sbt.sbtId, sbt.chain].filter(Boolean).join("  ·  ")
-    : "";
   return (
     <div className={styles.row} data-verified={verified ? "true" : "false"}>
       {icon ? (
@@ -174,7 +204,6 @@ const ComponentRow: React.FC<{ component: StampComponent }> = ({ component }) =>
           ) : null}
           {state}
         </span>
-        {sbtLine ? <span className={styles.rowSbt}>{sbtLine}</span> : null}
       </span>
       <span className={styles.rowPoints}>+{points}</span>
     </div>
@@ -250,10 +279,25 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
   verifiedLabel,
   renewLabel,
   statusTooltip,
+  defaultOnchainOpen = false,
 }) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const accent = useAccentRgb(rootRef);
   const [page, setPage] = useState(0);
+
+  // Onchain credential block: collapsed by default so the fixed drawer height is
+  // never at risk. Reset when the stamp changes.
+  const oc = stamp.onchainCredential;
+  const [ocOpen, setOcOpen] = useState(defaultOnchainOpen);
+  useEffect(() => {
+    setOcOpen(defaultOnchainOpen);
+  }, [stamp.id, defaultOnchainOpen]);
+  // When the onchain block is open it takes over the drawer's flexible middle:
+  // the component list, its pager, and the one-segment compute bar step aside so
+  // the full credential rows fit the fixed height with no truncation or scroll.
+  // Human ID SBT stamps carry a single component that just restates the header,
+  // so nothing meaningful is hidden. Everything returns when the block collapses.
+  const ocViewOpen = Boolean(oc && ocOpen);
 
   // Description: clamped to two lines by default, with an inline "more" toggle so
   // the full text is always reachable (no dead-end truncation). "more" only shows
@@ -414,7 +458,7 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
           </div>
         </header>
 
-        {stamp.description ? (
+        {stamp.description && !ocViewOpen ? (
           <div className={styles.descWrap}>
             <p ref={descRef} className={`${styles.desc} ${descOpen ? styles.descOpen : ""}`}>
               {stamp.description}
@@ -432,21 +476,29 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
           </div>
         ) : null}
 
-        {/* Sub-credential rows, paginated (never scrolled). */}
-        <div className={styles.list}>
-          <p className={styles.srOnly} aria-live="polite">
-            {stamp.components.length} components. Page {current + 1} of {pageCount}.
-          </p>
-          {pageComponents.map((c, i) => (
-            <ComponentRow key={`${c.name}-${current}-${i}`} component={c} />
-          ))}
-        </div>
-
-        {pageCount > 1 ? <Pager page={current} pageCount={pageCount} onPage={setPage} /> : null}
+        {/* Sub-credential rows, paginated (never scrolled). While the onchain block
+            is open this whole region (and the description + compute bar) steps
+            aside for a focused credential view, so nothing is clipped or scrolls. */}
+        {ocViewOpen ? null : (
+          <>
+            <div className={styles.list}>
+              <p className={styles.srOnly} aria-live="polite">
+                {stamp.components.length} components. Page {current + 1} of {pageCount}.
+              </p>
+              {pageComponents.map((c, i) => (
+                <ComponentRow key={`${c.name}-${current}-${i}`} component={c} />
+              ))}
+            </div>
+            {pageCount > 1 ? <Pager page={current} pageCount={pageCount} onPage={setPage} /> : null}
+          </>
+        )}
 
         {/* How the score is computed: the weighted components summing to the total.
-            Length encodes each share; one accent family; the total on the right. */}
-        {segments.length ? (
+            Length encodes each share; one accent family; the total on the right.
+            Hidden while the onchain block is expanded so the credential rows and
+            the component row both fit the fixed height (the header keeps the total
+            points either way; for a single-component SBT this bar is one segment). */}
+        {segments.length && !ocViewOpen ? (
           <div className={styles.compute}>
             <div className={styles.computeHead}>
               <span className={styles.computeLabel}>How your points add up</span>
@@ -465,6 +517,74 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
                 />
               ))}
             </div>
+          </div>
+        ) : null}
+
+        {/* Onchain credential (Human ID SBT stamps only). A collapsible block so
+            the fixed drawer height is never at risk: collapsed it is one row;
+            expanded it shows a compact two-column metadata grid + a View on chain
+            link. All non-PII (see StampDetail.onchainCredential). */}
+        {oc ? (
+          <div className={styles.oc}>
+            <button
+              type="button"
+              className={styles.ocHead}
+              onClick={() => setOcOpen((v) => !v)}
+              aria-expanded={ocOpen}
+            >
+              <span className={styles.ocHeadIcon} aria-hidden="true">
+                <LinkIcon size={13} strokeWidth={1.9} />
+              </span>
+              <span className={styles.ocHeadLabel}>Onchain credential</span>
+              <CaretDownIcon className={ocOpen ? styles.ocChevOpen : styles.ocChev} size={13} />
+            </button>
+            {ocOpen ? (
+              <div className={styles.ocBody}>
+                <dl className={styles.ocGrid}>
+                  {oc.issued ? (
+                    <div className={styles.ocItem}>
+                      <dt className={styles.ocKey}>Issued</dt>
+                      <dd className={styles.ocVal}>{oc.issued}</dd>
+                    </div>
+                  ) : null}
+                  {oc.expires ? (
+                    <div className={styles.ocItem}>
+                      <dt className={styles.ocKey}>Expires</dt>
+                      <dd className={styles.ocVal}>{oc.expires}</dd>
+                    </div>
+                  ) : null}
+                  <div className={styles.ocItem}>
+                    <dt className={styles.ocKey}>Chain</dt>
+                    <dd className={styles.ocVal}>{oc.chain}</dd>
+                  </div>
+                  <div className={styles.ocItem}>
+                    <dt className={styles.ocKey}>Status</dt>
+                    <dd className={styles.ocVal} data-revoked={oc.revoked ? "true" : "false"}>
+                      {oc.revoked ? "Revoked" : "Not revoked"}
+                    </dd>
+                  </div>
+                  <div className={styles.ocItem}>
+                    <dt className={styles.ocKey}>Credential</dt>
+                    <dd className={styles.ocVal}>{oc.credential}</dd>
+                  </div>
+                  <div className={styles.ocItem}>
+                    <dt className={styles.ocKey}>Issuer</dt>
+                    <dd className={styles.ocVal}>{oc.issuer}</dd>
+                  </div>
+                </dl>
+                {oc.explorerUrl ? (
+                  <a
+                    className={styles.ocView}
+                    href={oc.explorerUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                  >
+                    <LinkIcon size={13} strokeWidth={1.9} />
+                    View on chain
+                  </a>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         ) : null}
 
