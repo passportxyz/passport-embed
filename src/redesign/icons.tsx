@@ -177,6 +177,14 @@ export const HumanTechMark: React.FC<IconProps> = ({ className, size = 12, title
   </svg>
 );
 
+/** External link (arrow out of a box) - open an on-chain view in a new tab. */
+export const ExternalLinkIcon: React.FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M14 4h6v6M20 4l-8.5 8.5" />
+    <path d="M18 13.5V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4.5" />
+  </Svg>
+);
+
 /** Small clock (cooldown / pending wallet status). */
 export const ClockIcon: React.FC<IconProps> = (p) => (
   <Svg {...p}>

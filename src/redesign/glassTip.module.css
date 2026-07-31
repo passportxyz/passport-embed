@@ -30,9 +30,15 @@
   box-shadow:
     var(--shadow-md-c6dbf459),
     inset 0 0 0 1px rgba(var(--on-surface), 0.08) !important;
+  /* Spacing / margins / text size / text weight mirror the tooltip Shield ships
+   * (§7.5 one cross-app tooltip). Shield has no tokenized Tooltip component: it
+   * uses react-tooltip with per-instance overrides (padding ~6-8px, font-size
+   * 12-13px, weight 400, line-height ~1.35, max-width 220-240px). We land those
+   * concrete metrics on THIS app's token scale: padding space-2/space-3 (§7.5),
+   * font-size-sm, weight-regular (Shield's body weight, not bold), line-normal. */
   padding: var(--space-2-c6dbf459) var(--space-3-c6dbf459) !important;
   font-size: var(--font-size-sm-c6dbf459) !important;
-  font-weight: var(--weight-medium-c6dbf459);
+  font-weight: var(--weight-regular-c6dbf459);
   line-height: var(--line-normal-c6dbf459) !important;
   /* Cap width (~260px) AND length so a tooltip stays a glanceable panel, never a
    * paragraph. text-wrap:balance keeps short copy from a ragged last line. */
