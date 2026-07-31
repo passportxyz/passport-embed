@@ -1,8 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import styles from "./StampsWindow.module.css";
-import glass from "./glassTip.module.css";
-import { Tooltip } from "../components/Tooltip";
-import { CaretDownIcon, LinkIcon, PlusIcon, StarIcon } from "./icons";
+import { AwardIcon, CaretDownIcon, LinkIcon, PlusIcon } from "./icons";
 import { CATEGORY_ICONS } from "./stampIcons";
 import { formatExpiry } from "./expiry";
 import { useReducedMotion } from "./hooks";
@@ -99,14 +97,16 @@ export type StampsWindowProps = {
 // category selector; paging is the secondary overflow within one category, never
 // a scrollbar. Full fits two rows of three under the tabs + heading + CTA in the
 // fixed shell height; mini keeps one short row.
-const DEFAULT_PAGE_SIZE: Record<ShellSize, number> = { full: 6, mini: 3, pill: 3 };
+// Mini fills its whitespace with two short rows of three (design-sop fill-space):
+// the half-size card has room the single row left empty. Full keeps two rows of
+// three; pill summarizes.
+const DEFAULT_PAGE_SIZE: Record<ShellSize, number> = { full: 6, mini: 6, pill: 3 };
 
 /**
- * Short, plain display labels for the real (long) Passport category names. The
- * category tabs are ICONS (design-sop §7.5), so the label rides on the active
- * tab and every tab's hover tooltip / accessible name. "Web" (not "web2") is the
- * user-facing name for the Web2 platforms category. Falls back to the first word
- * of any unmapped category.
+ * Short, plain display labels for the real (long) Passport category names. Each
+ * category tab shows its icon AND this short label (design-sop §7.5: label the
+ * icon, no hover tooltip). "Web" (not "web2") is the user-facing name for the
+ * Web2 platforms category. Falls back to the first word of any unmapped category.
  */
 const SHORT_CATEGORY: Record<string, string> = {
   "Physical Verification": "Physical",
@@ -277,7 +277,7 @@ export const Medallion: React.FC<MedallionProps> = ({
     >
       <span className={styles.face}>
         <span className={styles.glyph} aria-hidden="true">
-          {stamp.icon ?? <StarIcon size={compact ? 15 : 20} strokeWidth={1.6} />}
+          {stamp.icon ?? <AwardIcon size={compact ? 15 : 20} strokeWidth={1.6} />}
         </span>
       </span>
       {/* Expiring-soon validity ring: a thin amber arc drawn on the medallion rim.
@@ -305,44 +305,29 @@ export const Medallion: React.FC<MedallionProps> = ({
 };
 
 /**
- * One grid badge: the medallion + name, the whole thing a tap target. Wrapped in
- * the portal glass Tooltip so hover / focus reveals the stamp's STATUS in words
- * (Minted on-chain / Expiring in N days / Expired / Not yet on-chain / Not
- * verified yet) plus WHAT the stamp does. The tooltip portals to document.body,
- * so it escapes the fixed shell bounds, is never occluded by the chrome, and
- * edge-flips against the viewport (design-sop states-are-legible + overlay
- * layering). Readable in both themes.
+ * One grid badge: the medallion + name, the whole thing a tap target. No hover
+ * tooltip: the badge is self-evident (the medallion carries the state, the name
+ * labels it), and its full status + description live one tap away in the detail
+ * drawer, so a per-stamp tooltip on every medallion was overuse (design-sop §7.5
+ * cut tooltips to where information is genuinely needed and unavailable otherwise).
+ * The plain-words status + description still ride on the button's accessible name
+ * for screen readers.
  */
 const StampBadge: React.FC<{
   stamp: Stamp;
   compact?: boolean;
   onSelect?: (id: string) => void;
-}> = ({ stamp, compact, onSelect }) => {
-  const tip = (
-    <>
-      <strong>{statusPhrase(stamp)}</strong>
-      {stamp.description ? (
-        <>
-          <br />
-          {stamp.description}
-        </>
-      ) : null}
-    </>
-  );
-  return (
-    <Tooltip content={tip} placement="top" className={glass.tip}>
-      <button
-        type="button"
-        className={styles.badge}
-        onClick={() => onSelect?.(stamp.id)}
-        aria-label={stampLabel(stamp)}
-      >
-        <Medallion stamp={stamp} compact={compact} />
-        <span className={styles.name}>{stamp.name}</span>
-      </button>
-    </Tooltip>
-  );
-};
+}> = ({ stamp, compact, onSelect }) => (
+  <button
+    type="button"
+    className={styles.badge}
+    onClick={() => onSelect?.(stamp.id)}
+    aria-label={stampLabel(stamp)}
+  >
+    <Medallion stamp={stamp} compact={compact} />
+    <span className={styles.name}>{stamp.name}</span>
+  </button>
+);
 
 /**
  * Interim loader, mirroring ScoreWindow's ScoreLoader (a simple indeterminate
@@ -404,13 +389,12 @@ const Pager: React.FC<{ page: number; pageCount: number; onPage: (p: number) => 
 
 /**
  * Category selector (segmented control): one segment per real Passport category,
- * carried by its Lucide category ICON (a card / globe / person for Physical /
- * Blockchain / Web), not text (design-sop §7.5). Each segment has a glass hover
- * tooltip naming the category and its verified/total count; the ACTIVE segment
- * additionally shows the short name (so the selected tab "shows it", which is why
- * the separate category-name label next to the filter is dropped). Inactive tabs
- * carry the count on the same line, so switching never shifts the icon. This is
- * the PRIMARY navigation - it switches the whole grid to that category.
+ * each a Lucide category ICON (a card / globe / person for Physical / Blockchain
+ * / Web) with its short name ALWAYS shown beneath it, so the icon is self-labeled
+ * and needs no hover tooltip (design-sop §7.5: label the icon rather than hide the
+ * meaning behind a tooltip). The per-category verified count rides on the catBar
+ * summary below, so the tab stays a clean labeled icon. This is the PRIMARY
+ * navigation - it switches the whole grid to that category.
  */
 const CategoryTabs: React.FC<{
   groups: CategoryGroup[];
@@ -420,25 +404,21 @@ const CategoryTabs: React.FC<{
   <div className={styles.tabs} role="tablist" aria-label="Stamp categories">
     {groups.map((g, i) => {
       const label = shortCategory(g.category);
-      const tip = `${label}. ${g.verified} of ${g.stamps.length} verified.`;
       return (
-        <Tooltip key={g.category} content={tip} placement="bottom" className={glass.tip}>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={i === active}
-            className={`${styles.tab} ${i === active ? styles.tabOn : ""}`}
-            onClick={() => onSelect(i)}
-            aria-label={tip}
-          >
-            <span className={styles.tabIcon} aria-hidden="true">
-              {CATEGORY_ICONS[g.category] ?? <StarIcon size={17} strokeWidth={1.7} />}
-            </span>
-            <span className={styles.tabSub}>
-              {i === active ? label : `${g.verified}/${g.stamps.length}`}
-            </span>
-          </button>
-        </Tooltip>
+        <button
+          type="button"
+          key={g.category}
+          role="tab"
+          aria-selected={i === active}
+          className={`${styles.tab} ${i === active ? styles.tabOn : ""}`}
+          onClick={() => onSelect(i)}
+          aria-label={`${label}. ${g.verified} of ${g.stamps.length} verified.`}
+        >
+          <span className={styles.tabIcon} aria-hidden="true">
+            {CATEGORY_ICONS[g.category] ?? <AwardIcon size={17} strokeWidth={1.7} />}
+          </span>
+          <span className={styles.tabSub}>{label}</span>
+        </button>
       );
     })}
   </div>
@@ -474,7 +454,7 @@ const FilterTabs: React.FC<{
     <div className={styles.filter} role="group" aria-label="Filter stamps by verification">
       {seg("all", "All", true)}
       {seg("verified", "Verified", verifiedCount > 0)}
-      {seg("verifiable", "Verifiable", verifiableCount > 0)}
+      {seg("verifiable", "Pending", verifiableCount > 0)}
       {seg("expired", "Expired", expiredCount > 0)}
     </div>
   );
@@ -513,7 +493,7 @@ export const StampsWindow: React.FC<StampsWindowProps> = ({
   // old flat pager split a single category across pages and mislabeled counts).
   const [active, setActive] = useState(initialActive);
   const [page, setPage] = useState(0);
-  // Top filter (full only): All / On-chain / Expiring. Resets with the category.
+  // Top filter: All / Verified / Pending / Expired. Resets with the category.
   const [filter, setFilter] = useState<StampFilter>("all");
   const activeIndex = Math.min(active, Math.max(0, categories.length - 1));
   const selectCategory = (i: number) => {
@@ -626,7 +606,7 @@ export const StampsWindow: React.FC<StampsWindowProps> = ({
         </div>
         <div className={styles.center}>
           <span className={styles.emptyMark} aria-hidden="true">
-            <StarIcon size={22} strokeWidth={1.6} />
+            <AwardIcon size={22} strokeWidth={1.6} />
           </span>
           <p className={styles.emptyText}>{emptyLabel ?? "No stamps yet. Verify one to start your passport."}</p>
         </div>

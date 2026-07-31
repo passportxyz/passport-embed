@@ -85,17 +85,12 @@
    * hard divider lines between segments (§ no-hard-lines). */
   background: rgba(var(--on-surface), 0.06);
 }
-/* Each segment is wrapped in the shared glass Tooltip, whose trigger div is the
- * direct child here. Make that trigger an equal-width flex slot so the segmented
- * control stays even (the Tooltip trigger is content-width by default). */
-.tabs > div {
-  flex: 1 1 0;
-  min-width: 0;
-  display: flex;
-}
 .tab {
   appearance: none;
   border: 0;
+  /* Equal-width flex slots so the segmented control stays even (the tabs are now
+   * direct children of .tabs, no Tooltip trigger wrapper). */
+  flex: 1 1 0;
   width: 100%;
   min-width: 0;
   display: inline-flex;
@@ -358,26 +353,59 @@
 }
 
 .face {
+  position: relative;
   width: 100%;
   height: 100%;
+  /* Clip the minted sheen sweep to the disc. */
+  overflow: hidden;
   border-radius: var(--radius-pill-c6dbf459);
   display: grid;
   place-items: center;
   color: rgba(var(--on-surface), 0.85);
-  /* embossed plate: a top-left highlight + inset depth so it reads as struck
-   * metal, not a flat disc. */
-  background:
-    radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.35), transparent 55%),
-    rgb(var(--surface));
-  box-shadow:
-    inset 0 1px 2px rgba(0, 0, 0, 0.22),
-    inset 0 -1px 1px rgba(255, 255, 255, 0.12);
+  /* FLAT plate by default: a plain surface fill, no emboss. Only a MINTED stamp
+   * gets the struck-metal treatment below, so minted vs unminted read as clearly
+   * different (founder review: minted = stamped, unminted = flat). */
+  background: rgb(var(--surface));
+  box-shadow: none;
 }
 .medallion[data-verified="true"] .face {
   color: rgb(var(--on-surface));
+  /* Verified off-chain / pending: a calm FLAT emerald tint, still no emboss. */
+  background: linear-gradient(160deg, rgba(var(--accent), 0.22), rgba(var(--accent), 0.08));
+}
+
+/* Minted = physically STAMPED. Only the minted medallion gets the embossed
+ * struck-metal plate: a top-left highlight + inset depth so it reads as pressed
+ * into the surface, the embossed look the founder liked. Not applied when
+ * expired (an expired stamp stays flat + grey). */
+.medallion:not([data-expired="true"])[data-onchain="minted"][data-verified="true"] .face {
   background:
-    radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.42), transparent 55%),
-    linear-gradient(160deg, rgba(var(--accent), 0.24), rgba(var(--accent), 0.1));
+    radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.45), transparent 55%),
+    linear-gradient(160deg, rgba(var(--accent), 0.3), rgba(var(--accent), 0.12));
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, 0.28),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.2);
+}
+/* A clean official sheen sweeps ONCE on load for a minted stamp (a struck-coin
+ * glint that says "freshly stamped"). Degrades to nothing under reduced motion. */
+.medallion:not([data-expired="true"])[data-onchain="minted"][data-verified="true"] .face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 34%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 66%
+  );
+  transform: translateX(-130%);
+  animation: rdSheen 1.4s var(--ease-standard-c6dbf459) 0.25s 1;
+  pointer-events: none;
+}
+@keyframes rdSheen {
+  to {
+    transform: translateX(130%);
+  }
 }
 /* Available (not verified): a GHOSTED OUTLINE, not a filled disc. Fill = verified
  * (design-sop state system): the rim drops to a thin neutral ring, the face is a
@@ -715,9 +743,10 @@
   font-size: var(--font-size-sm-c6dbf459);
 }
 
-/* ---- mini: condensed half card. Smaller medallions, one header, no CTA. ---- */
+/* ---- mini: condensed half card. Smaller medallions, one header, no CTA. Two
+ * short rows fill the space the single row used to leave empty. ---- */
 .miniWin .grid {
-  row-gap: var(--space-3-c6dbf459);
+  row-gap: var(--space-2-c6dbf459);
 }
 .medallionSm {
   --rd-med: 42px;
@@ -791,5 +820,10 @@
   }
   .spin {
     animation: none;
+  }
+  /* No struck-coin sheen when the user prefers reduced motion. */
+  .medallion[data-onchain="minted"] .face::after {
+    animation: none;
+    display: none;
   }
 }

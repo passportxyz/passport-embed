@@ -76,6 +76,18 @@ export const StarIcon: React.FC<IconProps> = (p) => (
   </Svg>
 );
 
+/**
+ * Award / medal (Lucide `award`): a seal with two ribbon tails. The meaningful
+ * fallback for a credential medallion or an empty stamps state, replacing the
+ * old ambiguous star (a stamp is an earned credential, not a favourite).
+ */
+export const AwardIcon: React.FC<IconProps> = (p) => (
+  <Svg {...p}>
+    <circle cx="12" cy="8" r="6" />
+    <path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11" />
+  </Svg>
+);
+
 export const InfoIcon: React.FC<IconProps> = (p) => (
   <Svg {...p}>
     <circle cx="12" cy="12" r="9.5" />
