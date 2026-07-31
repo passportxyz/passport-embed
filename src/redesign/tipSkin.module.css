@@ -1,0 +1,60 @@
+/*
+ * Solid tooltip skin for the redesign.
+ *
+ * Founder review (2026-07-31) supersedes the earlier glass-panel direction in
+ * design-sop §7.5: a small SOLID tooltip reads better than a large translucent
+ * glass panel. This matches Shield (shield.human.tech), which uses react-tooltip
+ * v5 with its DEFAULT look plus tiny per-instance overrides:
+ *   - surface `#222` at 0.9 opacity (near-solid dark), white text
+ *   - Shield's Header override: font-size 12px, padding 4px 8px
+ *   - an 8px arrow that `inherit`s the surface color
+ * We land those concrete metrics on THIS widget so the tooltip feels like
+ * Shield's: a compact, legible dark chip in BOTH themes, never a big blurred
+ * glass panel.
+ *
+ * Passed as `className` to the shared <Tooltip>, so it overrides the shipped
+ * solid-surface skin WITHOUT editing the live Tooltip module (which the shipped
+ * PassportScoreWidget still uses). Portaled + edge-flipped by <Tooltip>.
+ */
+.tip {
+  /* Solid near-black surface, theme-independent (like Shield). A floating chip
+   * does not invert per theme: white text on #1F2127 clears AA (~14:1) on any
+   * host background, light or dark. No translucency, no backdrop blur. */
+  background: rgb(31, 33, 39) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
+  border: 0 !important;
+  border-radius: var(--radius-md-c6dbf459) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  /* One soft drop shadow, no inset scrim: a small solid chip, not a glass panel. */
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28) !important;
+  /* Shield metrics: ~6px/10px padding, 12px text, regular weight, tight leading,
+   * a ~220px cap so a tooltip stays a glanceable chip, never a paragraph. */
+  padding: 6px 10px !important;
+  font-size: var(--font-size-xs-c6dbf459) !important;
+  font-weight: var(--weight-regular-c6dbf459) !important;
+  line-height: 1.35 !important;
+  max-width: 220px !important;
+  text-wrap: balance;
+}
+
+/* The arrow is the tooltip's LAST child div (after the .content div). Match the
+ * solid surface and drop the shipped 1px border, so it reads as one clean chip
+ * edge (Shield's arrow `inherit`s its surface the same way). */
+.tip > div:last-child {
+  background: rgb(31, 33, 39) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Emphasis reads a touch brighter, the quiet tail a touch dimmer, both on the
+ * dark chip. */
+.tip b,
+.tip strong {
+  color: #fff;
+  font-weight: var(--weight-semibold-c6dbf459);
+}
+.tip em {
+  font-style: normal;
+  color: rgba(255, 255, 255, 0.7);
+}

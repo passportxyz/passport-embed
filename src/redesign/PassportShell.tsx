@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styles from "./PassportShell.module.css";
-import glass from "./glassTip.module.css";
+import tip from "./tipSkin.module.css";
 import { Tooltip } from "../components/Tooltip";
 import {
   CaretDownIcon,
@@ -537,7 +537,7 @@ export const PassportShell: React.FC<PassportShellProps> = ({
             wrap it only when they supply their own appIconTooltip copy. */}
         {appIconEl ? (
           appIconTooltip ? (
-            <Tooltip content={appIconTooltip} placement="bottom-start" className={glass.tip}>
+            <Tooltip content={appIconTooltip} placement="bottom-start" className={tip.tip}>
               {appIconEl}
             </Tooltip>
           ) : (
@@ -559,7 +559,7 @@ export const PassportShell: React.FC<PassportShellProps> = ({
           <span className={styles.spacer} />
         )}
 
-        <Tooltip content={infoTooltip} placement="bottom-end" className={glass.tip}>
+        <Tooltip content={infoTooltip} placement="bottom-end" className={tip.tip}>
           <span className={styles.info} tabIndex={0} role="button" aria-label="About your score">
             <InfoIcon className={styles.gl} size={13} />
           </span>

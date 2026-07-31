@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./ScoreWindow.module.css";
-import glass from "./glassTip.module.css";
+import tip from "./tipSkin.module.css";
 import { Tooltip } from "../components/Tooltip";
 import { CheckIcon, LinkIcon, PlusIcon, RetryIcon } from "./icons";
 import { useCountUp, useReducedMotion } from "./hooks";
@@ -210,7 +210,7 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
     : `${toGo} more to reach the threshold. Tap to see how your score is computed.`;
 
   const ringButton = (
-    <Tooltip content={ringTip} placement="top" className={glass.tip}>
+    <Tooltip content={ringTip} placement="top" className={tip.tip}>
       <button type="button" className={styles.ringButton} onClick={onDrilldown} aria-label={ringLabel}>
         <ScoreRing fill={verified ? 1 : fill} passing={verified} celebrate={verified && !compact} reduced={reduced}>
           <span className={styles.scoreWrap}>
@@ -362,7 +362,7 @@ export const ScoreWindow: React.FC<ScoreWindowProps> = ({
                   </>
                 }
                 placement="top"
-                className={glass.tip}
+                className={tip.tip}
               >
                 <button
                   type="button"
