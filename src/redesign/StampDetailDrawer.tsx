@@ -11,11 +11,10 @@ import {
   LinkIcon,
   PlusIcon,
   RetryIcon,
-  StarIcon,
 } from "./icons";
 import { deriveTints } from "./deriveTints";
 import { formatExpiry } from "./expiry";
-import { useAccentRgb, useReducedMotion } from "./hooks";
+import { useAccentRgb } from "./hooks";
 import type { ShellSize } from "./PassportShell";
 
 /**
@@ -34,8 +33,22 @@ export type StampComponent = {
    * "Expired". Kept plain, no crypto jargon, no dashes. Omit when not relevant.
    */
   expiry?: string;
-  /** Optional row icon (an emoji, an <img>, or an icon node). */
+  /** Optional row icon (an emoji, an <img>, or an icon node). Omit for no icon. */
   icon?: React.ReactNode;
+  /**
+   * TODO(sbt-metadata): the in-progress research pass is sourcing the real SBT
+   * fields for each component (issued date, on-chain SBT id, chain). They render
+   * as a quiet sub-line under the component name when present; until the data
+   * lands this stays undefined so nothing shows. Drop the values in here.
+   */
+  sbt?: {
+    /** Human date the credential was issued, e.g. "Issued Apr 12". */
+    issued?: string;
+    /** Short SBT token id, e.g. "#4821". */
+    sbtId?: string;
+    /** Chain the SBT lives on, e.g. "Optimism". */
+    chain?: string;
+  };
 };
 
 /**
@@ -46,8 +59,8 @@ export type StampComponent = {
 export type StampDetail = Stamp & {
   /** The components / sub-credentials that were used to score this stamp. */
   components: StampComponent[];
-  /** Optional plain one-line description of what the stamp proves. */
-  description?: string;
+  /* `description` is inherited from Stamp (surfaced as the grid tooltip and the
+     drawer's own description line). */
 };
 
 /** The bottom-pinned action the drawer resolves to. One primary action. */
@@ -129,15 +142,26 @@ const paginate = <T,>(items: T[], per: number): T[][] => {
   return pages.length ? pages : [[]];
 };
 
-/** One sub-credential row: icon + name + verified / expiry line + points chip. */
+/**
+ * One sub-credential row: [meaningful icon, if any] + name + verified / expiry
+ * state + points chip. No filler icon: when a component has no real icon the row
+ * simply leads with the name (the old placeholder star was meaningless). An
+ * optional SBT metadata sub-line (issued / id / chain) shows when present.
+ */
 const ComponentRow: React.FC<{ component: StampComponent }> = ({ component }) => {
-  const { name, points, verified, expiry, icon } = component;
+  const { name, points, verified, expiry, icon, sbt } = component;
   const state = verified ? (expiry ? expiry : "Verified") : "Not verified yet";
+  // SBT slot: joined into one quiet line, only for the parts that are present.
+  const sbtLine = sbt
+    ? [sbt.issued, sbt.sbtId, sbt.chain].filter(Boolean).join("  ·  ")
+    : "";
   return (
     <div className={styles.row} data-verified={verified ? "true" : "false"}>
-      <span className={styles.rowIcon} aria-hidden="true">
-        {icon ?? <StarIcon size={15} strokeWidth={1.6} />}
-      </span>
+      {icon ? (
+        <span className={styles.rowIcon} aria-hidden="true">
+          {icon}
+        </span>
+      ) : null}
       <span className={styles.rowMeta}>
         <span className={styles.rowName}>{name}</span>
         <span className={styles.rowState}>
@@ -150,6 +174,7 @@ const ComponentRow: React.FC<{ component: StampComponent }> = ({ component }) =>
           ) : null}
           {state}
         </span>
+        {sbtLine ? <span className={styles.rowSbt}>{sbtLine}</span> : null}
       </span>
       <span className={styles.rowPoints}>+{points}</span>
     </div>
@@ -227,9 +252,20 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
   statusTooltip,
 }) => {
   const rootRef = useRef<HTMLDivElement>(null);
-  const reduced = useReducedMotion();
   const accent = useAccentRgb(rootRef);
   const [page, setPage] = useState(0);
+
+  // Description: clamped to two lines by default, with an inline "more" toggle so
+  // the full text is always reachable (no dead-end truncation). "more" only shows
+  // when the text actually overflows the clamp, measured after render.
+  const descRef = useRef<HTMLParagraphElement>(null);
+  const [descOpen, setDescOpen] = useState(false);
+  const [descClamped, setDescClamped] = useState(false);
+  useEffect(() => {
+    setDescOpen(false);
+    const el = descRef.current;
+    if (el) setDescClamped(el.scrollHeight - el.clientHeight > 2);
+  }, [stamp.description, stamp.id]);
 
   // Escape closes the drawer while it is open.
   useEffect(() => {
@@ -272,9 +308,20 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
   const action = deriveAction(stamp, actionState);
   const showRenew = Boolean(onRenew) && stamp.verified && action !== "claim";
 
-  // Every stamp expires as a whole. The header states it in full ("Valid for N
-  // days" / "Expires {date}" / "Expired"); Human ID SBTs add the auto-renew note.
+  // Every stamp expires as a whole. Rather than a long line at the top, the
+  // validity / renewal copy now lives in the header timer's tooltip. Human ID
+  // SBTs add the auto renew note.
   const expiry = formatExpiry(stamp.expirationDate);
+  const renewNote = stamp.isHumanId
+    ? " Auto renews after 90 days, full reverification after a year."
+    : "";
+  const expiryLead = expiry
+    ? expiry.state === "expired"
+      ? "This stamp has expired."
+      : `${expiry.long}.`
+    : "";
+  const expiryTip = expiry ? `${expiryLead}${renewNote}` : null;
+  const expiryAria = expiry ? `Validity. ${expiryLead}${renewNote}` : "";
 
   const compact = size !== "full";
   const medallionPx = compact ? 40 : 46;
@@ -325,7 +372,9 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
         </div>
 
         {/* Header: clean medallion (no chip / pip, so points + on-chain are stated
-            once, below) + name + total points + on-chain status pill. */}
+            once, below) + name + total points + on-chain status pill + a small
+            timer whose tooltip carries the whole-stamp validity / renewal copy, so
+            the long validity line no longer crowds the top. */}
         <header className={styles.header}>
           <Medallion stamp={stamp} showPoints={false} showPip={false} sizePx={medallionPx} />
           <div className={styles.headMeta}>
@@ -348,28 +397,38 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
                 </span>
               </Tooltip>
               <span className={styles.headPoints}>{earned} points</span>
+              {expiry ? (
+                <Tooltip content={expiryTip} placement="top" className={glass.tip}>
+                  <span
+                    className={styles.timer}
+                    data-state={expiry.state}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={expiryAria}
+                  >
+                    <ClockIcon size={14} strokeWidth={1.9} />
+                  </span>
+                </Tooltip>
+              ) : null}
             </div>
           </div>
         </header>
 
-        {stamp.description ? <p className={styles.desc}>{stamp.description}</p> : null}
-
-        {/* Expiry: a stamp expires as a whole. Amber when expiring soon, warn when
-            expired. Human ID SBTs carry the auto-renew note beside it. */}
-        {expiry ? (
-          <div className={styles.expiry} data-state={expiry.state}>
-            <span className={styles.expiryIcon} aria-hidden="true">
-              <ClockIcon size={13} strokeWidth={1.9} />
-            </span>
-            <span className={styles.expiryText}>
-              {expiry.long}
-              {stamp.isHumanId ? (
-                <span className={styles.expiryNote}>
-                  {" "}
-                  Auto renews after 90 days, full reverification after a year.
-                </span>
-              ) : null}
-            </span>
+        {stamp.description ? (
+          <div className={styles.descWrap}>
+            <p ref={descRef} className={`${styles.desc} ${descOpen ? styles.descOpen : ""}`}>
+              {stamp.description}
+            </p>
+            {descClamped ? (
+              <button
+                type="button"
+                className={styles.moreBtn}
+                onClick={() => setDescOpen((v) => !v)}
+                aria-expanded={descOpen}
+              >
+                {descOpen ? "less" : "more"}
+              </button>
+            ) : null}
           </div>
         ) : null}
 
@@ -414,9 +473,11 @@ export const StampDetailDrawer: React.FC<StampDetailDrawerProps> = ({
             the two-action case reserves no extra height inside the fixed shell. */}
         <div className={`${styles.actions} ${showRenew ? styles.actionsRow : ""}`}>
           {action === "mint" ? (
-            <button type="button" className={`${styles.cta} ${styles.ctaReward}`} onClick={onMint}>
+            /* Notarize = anchor the stamp on chain. Emerald primary (never gold),
+               with the chain-link glyph. */
+            <button type="button" className={styles.cta} onClick={onMint}>
               <span className={styles.ctaIcon}>
-                <StarIcon size={15} strokeWidth={1.9} />
+                <LinkIcon size={15} strokeWidth={1.9} />
               </span>
               <span className={styles.ctaLabel}>{mintLabel ?? "Notarize stamp"}</span>
             </button>

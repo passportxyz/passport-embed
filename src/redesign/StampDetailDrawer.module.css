@@ -232,12 +232,15 @@
   background: rgb(var(--accent));
   color: rgb(var(--on-accent));
 }
+/* Mintable: emerald outline invite, never gold. Distinct from the solid minted
+ * pill by being a lighter fill + ring with an outlined chain dot. */
 .statusPill[data-onchain="mintable"] {
-  background: rgba(var(--warn), 0.18);
+  background: rgba(var(--accent), 0.1);
+  box-shadow: inset 0 0 0 1px rgba(var(--accent), 0.4);
 }
 .statusPill[data-onchain="mintable"] .statusDot {
-  background: rgb(var(--warn));
-  color: rgb(var(--on-warn));
+  background: rgba(var(--accent), 0.25);
+  color: rgb(var(--accent));
 }
 .statusPill[data-onchain="none"] {
   color: rgba(var(--on-surface), 0.72);
@@ -251,56 +254,73 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* One plain description line, clamped so it never grows the fixed header. */
-.desc {
+/* Timer: a small clock whose tooltip carries the whole-stamp validity / renewal
+ * copy, so that long line no longer crowds the header. Amber ONLY when expiring
+ * soon (the sanctioned small indicator); muted (never amber) once expired. */
+.timer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  flex: none;
+  border-radius: var(--radius-pill-c6dbf459);
+  color: rgba(var(--on-surface), 0.6);
+  background: rgba(var(--on-surface), 0.08);
+  cursor: help;
+}
+.timer:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+.timer[data-state="soon"] {
+  color: rgb(var(--warn));
+  background: rgba(var(--warn), 0.15);
+}
+.timer[data-state="expired"] {
+  color: rgba(var(--on-surface), 0.5);
+  background: rgba(var(--on-surface), 0.08);
+}
+
+/* Description: clamped to two lines with an inline "more" toggle, so the full
+ * text is always reachable and never dead-ends in a truncation. */
+.descWrap {
   margin: var(--space-2-c6dbf459) 0 0;
   flex: none;
+}
+.desc {
+  margin: 0;
   font-size: var(--font-size-sm-c6dbf459);
   line-height: var(--line-normal-c6dbf459);
   color: rgba(var(--on-surface), 0.72);
   display: -webkit-box;
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
-/* ---- expiry line: whole-stamp validity, stated once, plain + dash-free ---- */
-.expiry {
-  margin-top: var(--space-2-c6dbf459);
-  flex: none;
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
+.descOpen {
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+.moreBtn {
+  appearance: none;
+  border: 0;
+  margin-top: 2px;
+  padding: 0;
+  background: transparent;
+  color: rgb(var(--accent));
+  font-family: inherit;
   font-size: var(--font-size-xs-c6dbf459);
-  line-height: var(--line-tight-c6dbf459);
-  color: rgba(var(--on-surface), 0.7);
-}
-.expiryIcon {
-  display: inline-flex;
-  flex: none;
-  margin-top: 1px;
-  color: rgba(var(--on-surface), 0.55);
-}
-.expiry[data-state="soon"] .expiryIcon,
-.expiry[data-state="soon"] .expiryText {
-  color: rgb(var(--warn));
-}
-.expiry[data-state="expired"] {
   font-weight: var(--weight-semibold-c6dbf459);
+  cursor: pointer;
 }
-.expiry[data-state="expired"] .expiryIcon,
-.expiry[data-state="expired"] .expiryText {
-  color: rgb(var(--warn));
+.moreBtn:hover {
+  text-decoration: underline;
 }
-.expiryText {
-  min-width: 0;
-}
-.expiryNote {
-  color: rgba(var(--on-surface), 0.55);
-  font-weight: var(--weight-regular-c6dbf459);
-}
-.expiry[data-state="expired"] .expiryNote {
-  color: rgba(var(--on-surface), 0.55);
+.moreBtn:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+  border-radius: var(--radius-sm-c6dbf459);
 }
 
 /* ---- sub-credential rows: grow to fill, pushing the pager + action down ---- */
@@ -366,6 +386,16 @@
   gap: 4px;
   font-size: var(--font-size-xs-c6dbf459);
   color: rgba(var(--on-surface), 0.62);
+  white-space: nowrap;
+}
+/* SBT metadata sub-line (issued / id / chain). Rendered only when the research
+ * pass supplies StampComponent.sbt; a quiet caption under the component name. */
+.rowSbt {
+  font-size: var(--font-size-xs-c6dbf459);
+  color: rgba(var(--on-surface), 0.5);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 .rowPoints {
@@ -520,8 +550,9 @@
   padding: 0 var(--space-3-c6dbf459);
 }
 
-/* ONE shared button box (matches the Score / Stamps windows). Emerald primary by
- * default; the reward variant is gold; the secondary is tonal. Only color shifts. */
+/* ONE shared button box (matches the Score / Stamps windows). Emerald primary for
+ * every action (Notarize / Claim / View), including mint; the secondary (renew)
+ * is tonal. Only color / weight shifts; no gold anywhere. */
 .cta {
   appearance: none;
   border: 0;
@@ -562,16 +593,6 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-/* Gold reward CTA: the mint action. Warm gold (the same amber "reward" token as
- * the mintable pip), legible black-on-gold text in both themes. */
-.ctaReward {
-  background: rgb(var(--warn));
-  color: rgb(var(--on-warn));
-}
-.ctaReward:focus-visible {
-  outline-color: rgb(var(--warn));
 }
 
 /* Secondary (renew): tonal, no hard line, quieter than the primary. */

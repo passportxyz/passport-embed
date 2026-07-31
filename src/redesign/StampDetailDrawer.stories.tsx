@@ -72,7 +72,7 @@ export const VerifiedMinted: Story = {
     docs: {
       description: {
         story:
-          "The Government ID SBT: verified and minted on chain. The header medallion drops its own chip and pip, so points and on-chain state are each stated once (the total points text and the emerald Minted pill). The whole-stamp expiry line reads 'Valid for N days', and because this is a Human ID SBT it adds the auto-renew note. The minted state resolves to View on chain, with a quiet Renew beneath it.",
+          "The Government ID SBT: verified and minted on chain. The header medallion drops its own chip and pip, so points and on-chain state are each stated once (the total points text and the emerald Minted pill). A small clock sits beside them; its tooltip carries the whole-stamp validity ('Valid for N days') plus, because this is a Human ID SBT, the auto renew note. The minted state resolves to View on chain, with a quiet Renew beside it.",
       },
     },
   },
@@ -85,7 +85,7 @@ export const MintableReward: Story = {
     docs: {
       description: {
         story:
-          "The Biometrics SBT: verified and mintable on chain. The status pill is gold (Mintable) and the bottom-pinned action is the gold Notarize stamp CTA (notarizing takes the stamp on chain). One primary action, so nothing competes with it. The Human ID auto-renew note rides beside the expiry line.",
+          "The Biometrics SBT: verified and mintable on chain. The status pill is an emerald outline (Mintable, never gold) and the bottom-pinned action is the emerald Notarize stamp CTA (notarizing takes the stamp on chain). One primary action, so nothing competes with it. The header stays clean: the validity and Human ID auto renew copy live behind the small clock's tooltip.",
       },
     },
   },
@@ -111,7 +111,7 @@ export const CleanHands: Story = {
     docs: {
       description: {
         story:
-          "The Proof of Clean Hands SBT. A verified, mintable credential awarded after identity verification and sanctions validation. The plain description avoids crypto jargon, the expiry line carries the Human ID auto-renew note, and the action is the gold Notarize stamp so the user can put the SBT on chain.",
+          "The Proof of Clean Hands SBT. A verified, mintable credential awarded after identity verification and sanctions validation. The plain description reads in full (with a more toggle when it runs long), the header clock's tooltip carries the validity and Human ID auto renew copy, and the action is the emerald Notarize stamp so the user can put the SBT on chain.",
       },
     },
   },
@@ -137,7 +137,7 @@ export const ExpiredStamp: Story = {
     docs: {
       description: {
         story:
-          "An expired stamp. The header medallion desaturates and the expiry line reads Expired in warn color. A quiet Renew action sits beside the primary so the lapsed credential can be refreshed.",
+          "An expired stamp. The header medallion desaturates with a muted outline and the clock reads muted (never amber, since amber is reserved for expiring); its tooltip says the stamp has expired. A quiet Renew action sits beside the primary so the lapsed credential can be refreshed.",
       },
     },
   },
