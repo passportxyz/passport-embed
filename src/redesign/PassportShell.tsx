@@ -129,8 +129,7 @@ export type PassportShellProps = {
   className?: string;
 };
 
-const DEFAULT_INFO_TIP =
-  "Your humanity score, proven with zero knowledge. Private by default. Nothing personal is revealed.";
+const DEFAULT_INFO_TIP = "Proven with zero knowledge. Nothing personal is revealed.";
 
 /** How many linked wallets show per page before the menu paginates (never scrolls). */
 const WALLETS_PER_PAGE = 3;
