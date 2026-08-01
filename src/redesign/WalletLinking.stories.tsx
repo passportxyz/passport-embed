@@ -4,14 +4,19 @@ import { WalletLinking } from "./WalletLinking";
 import type { LinkWalletInfo, WalletLinkStep, WalletLinkingProps } from "./WalletLinking";
 import { PassportShell } from "./PassportShell";
 import { ScoreWindow } from "./ScoreWindow";
+import { StampsWindow, type Stamp } from "./StampsWindow";
+import { STAMP_ICONS } from "./stampIcons";
+import { daysFromNow } from "./expiry";
 import { ThemePair, SAMPLE_ACCOUNT } from "./storyFrame";
 
 /**
- * WalletLinking - the wallet-linking flow as an in-shell overlay. It takes over
- * the fixed shell content region with a back / close affordance (StampDetailDrawer
- * pattern), so every step fits the shell height and the 360x600 wallet iframe with
- * no clip or scroll. Reproduces the HTDS design in the redesign token system (not
- * vendored). One story per state, full + mini, both themes.
+ * WalletLinking - the wallet-linking flow as a standalone popup WINDOW. Each step
+ * is a centered ModalCard (own bezel + header + elevation) floating over a scrim
+ * that dims the passport widget behind it (the Shield SDK popup pattern), NOT an
+ * in-shell drawer that takes over the content region. It renders in-frame so every
+ * step fits the shell height and the 360x600 wallet iframe with no clip or scroll.
+ * Reproduces the HTDS design in the redesign token system (not vendored). One story
+ * per state, full + mini, both themes.
  *
  * State machine (single SIWE signature, silk#895):
  *   picker -> connecting -> sign -> pending -> success | error409 | errorGeneric
@@ -43,8 +48,9 @@ const CONFLICT_WALLET: LinkWalletInfo = {
   ecosystem: "ethereum",
 };
 
-/** The stage fills the shell content region and positions the linking overlay so
- *  it takes over inside the shell bounds (never escaping the fixed height). */
+/** The stage fills the shell content region and positions the linking window so
+ *  its scrim + floating card stay inside the shell bounds (in-frame, never
+ *  escaping the fixed height). */
 const Stage: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div
     style={{
@@ -215,10 +221,40 @@ export const RelinkBlocked: Story = {
   },
 };
 
-/* ── Interactive: reachable from the AccountMenu ── */
+/* ── Interactive: reachable from the AccountMenu, with a mocked reflow ── */
+
+const CAT_CHAIN = "Blockchain Networks and Activities";
+/** The stamps the newly linked wallet contributes: inactive before the link,
+ *  ACTIVE / verified after it (a journey-7-style reflow). */
+const CONTRIBUTED_IDS = new Set(["ETH", "NFT", "Ens"]);
+
+/** The passport's stamps for the demo. The three CONTRIBUTED_IDS flip to verified
+ *  (and gain a valid-for window) once the new wallet is linked; the rest are
+ *  unchanged. Mock only: no backend. */
+const buildStamps = (linked: boolean): Stamp[] => [
+  { id: "ETH", name: "Ethereum", category: CAT_CHAIN, points: 2, verified: linked, onchain: linked ? "mintable" : "none", icon: STAMP_ICONS.ETH, expirationDate: linked ? daysFromNow(88) : undefined },
+  { id: "NFT", name: "NFT", category: CAT_CHAIN, points: 2, verified: linked, onchain: linked ? "mintable" : "none", icon: STAMP_ICONS.NFT, expirationDate: linked ? daysFromNow(88) : undefined },
+  { id: "Ens", name: "ENS", category: CAT_CHAIN, points: 1.4, verified: linked, onchain: linked ? "none" : "none", icon: STAMP_ICONS.Ens, expirationDate: linked ? daysFromNow(88) : undefined },
+  { id: "GtcStaking", name: "Identity Staking", category: CAT_CHAIN, points: 2.7, verified: false, onchain: "none", icon: STAMP_ICONS.GtcStaking },
+  { id: "Gitcoin", name: "Gitcoin Grants", category: CAT_CHAIN, points: 2.5, verified: false, onchain: "none", icon: STAMP_ICONS.Gitcoin },
+  { id: "Snapshot", name: "Snapshot", category: CAT_CHAIN, points: 1, verified: false, onchain: "none", icon: STAMP_ICONS.Snapshot },
+];
+
+/** Score before / after the link. Below the threshold before (amber ring), above
+ *  it after the reflow (emerald), so the update is unmistakable. The bump matches
+ *  the success screen's "+5.4" contribution. */
+const SCORE_BEFORE = 18.6;
+const SCORE_AFTER = 24;
+const CONTRIB = "+5.4";
 
 const InteractiveDemo: React.FC<{ size: "full" | "mini" }> = ({ size }) => {
   const [mode, setMode] = useState<"idle" | "link" | "unlink">("idle");
+  // Whether the new wallet is linked yet. Drives the mocked reflow: its stamps go
+  // active and the humanity score bumps once true.
+  const [linked, setLinked] = useState(false);
+
+  const score = linked ? SCORE_AFTER : SCORE_BEFORE;
+  const stamps = buildStamps(linked);
 
   // A mocked wallet connect / sign: brief delays drive the real state machine
   // (picker -> connecting -> sign -> pending -> success).
@@ -227,38 +263,48 @@ const InteractiveDemo: React.FC<{ size: "full" | "mini" }> = ({ size }) => {
 
   if (mode === "idle") {
     // The AccountMenu's "Link additional wallet" opens the flow; a wallet row's
-    // unlink opens the Unlink-confirm (replacing the immediate unlink).
+    // unlink opens the Unlink-confirm (replacing the immediate unlink). The key
+    // includes `linked` so the fresh mount lands with the menu closed after a
+    // successful link (an integrator closes it on link) - revealing the reflow:
+    // the contributed stamps now read active and the score has bumped.
     return (
       <PassportShell
-        key="idle"
+        key={`idle-${linked}`}
         account={SAMPLE_ACCOUNT}
         size={size}
-        defaultAccountMenuOpen
+        score={score}
+        threshold={20}
+        onScoreClick={noop}
+        defaultAccountMenuOpen={!linked}
         onLinkWallet={() => setMode("link")}
         onUnlinkWallet={() => setMode("unlink")}
       >
-        <ScoreWindow size={size} state="verified" score={24} threshold={20} onContinue={noop} />
+        <StampsWindow size={size} stamps={stamps} onVerify={noop} />
       </PassportShell>
     );
   }
 
   // Distinct key: remount so the account menu's open state resets (an integrator
-  // closes the menu on link; here the fresh mount does the same).
+  // closes the menu on link; here the fresh mount does the same). The linking
+  // window floats over the (dimmed) stamps.
   return (
-    <PassportShell key="flow" account={SAMPLE_ACCOUNT} size={size} score={24} threshold={20} onScoreClick={noop}>
+    <PassportShell key="flow" account={SAMPLE_ACCOUNT} size={size} score={score} threshold={20} onScoreClick={noop}>
       <Stage>
-        <ScoreWindow size={size} state="verified" score={24} threshold={20} onContinue={noop} />
+        <StampsWindow size={size} stamps={stamps} onVerify={noop} />
         <WalletLinking
           size={size}
           initialStep={mode === "unlink" ? "unlinkConfirm" : "picker"}
           wallet={DEMO_WALLET}
           conflictWallet={CONFLICT_WALLET}
-          scoreContribution="+1.4"
+          scoreContribution={CONTRIB}
           detectedWalletLabel="MetaMask"
           connect={connect}
           sign={sign}
           onClose={() => setMode("idle")}
-          onDone={() => setMode("idle")}
+          onDone={() => {
+            setLinked(true);
+            setMode("idle");
+          }}
           onConfirmUnlink={() => setMode("idle")}
         />
       </Stage>
@@ -284,7 +330,7 @@ export const Interactive: Story = {
     docs: {
       description: {
         story:
-          "Open the account menu, then 'Link additional wallet' launches the flow: pick a wallet type and the mocked connect / sign / verify runs through to success. A wallet row's unlink opens the Unlink-confirm instead of unlinking immediately. Back returns to the picker mid-flow, or exits from the picker.",
+          "Open the account menu, then 'Link additional wallet' launches the flow as a floating popup window over the (dimmed) passport: pick a wallet type and the mocked connect / sign / verify runs through to success. On Done the mocked reflow lands: the new wallet's contributed stamps (Ethereum, NFT, ENS) flip to active / verified and the Unique Humanity Score bumps from 18.6 (below the threshold, amber) to 24 (above it, emerald). A wallet row's unlink opens the Unlink-confirm instead of unlinking immediately. Back returns to the picker mid-flow, or exits from the picker.",
       },
     },
   },
