@@ -1,27 +1,79 @@
 /*
- * WalletLinking - the in-shell wallet-linking overlay. Fills the shell content
- * region (position:absolute; inset:0), takes over with a back / close affordance,
- * and never scrolls. Tokens only (§1), legible in both themes (§2/§8), structure
- * from space + tone not hard lines, bottom CTA always visible, full + mini (§9).
- * Reproduces the HTDS wallet-linking look in the redesign token system (NOT
- * vendored). Density tightens under data-size="mini" so every state still fits.
+ * WalletLinking - a standalone popup WINDOW, not an in-shell drawer. In production
+ * this flow arrives from the Shield SDK as its own popup window; the embed presents
+ * it the same way. Each step renders as a centered ModalCard (own rounded bezel +
+ * header + elevation) floating over a scrim that dims the passport widget behind
+ * it (HTDS ModalCard placement="center"), NOT the StampDetailDrawer in-shell
+ * takeover. Rendered in-frame (disablePortal-style) so it stays inside the widget
+ * area and fits the 360x600 iframe. Tokens only (§1), legible in both themes
+ * (§2/§8), one consistent internal padding so nothing crowds the bezel and every
+ * CTA aligns with it, bottom CTA always visible, full + mini (§9). Reproduces the
+ * HTDS wallet-linking look in the redesign token system (NOT vendored). Density
+ * tightens under data-size="mini" so every state still fits.
  */
 
+/* ---- overlay: the positioning + scrim container that floats the card ---- */
 .overlay {
   position: absolute;
   inset: 0;
   z-index: 6;
-  border-radius: inherit;
-  overflow: hidden;
+  display: flex;
+  box-sizing: border-box;
+  /* A scrim rim so the card floats with a visible margin (reads as a distinct
+   * window over the widget, not a full-bleed takeover). */
+  padding: var(--space-2-c6dbf459);
+}
+.overlay[data-size="mini"] {
+  padding: var(--space-1-c6dbf459);
+}
+
+/* ---- scrim: the ONE translucent layer. Dims + blurs the passport behind. ---- */
+.scrim {
+  appearance: none;
+  border: 0;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  padding: 0;
+  cursor: pointer;
+  /* Veil toward the surface so the window behind recedes in BOTH themes (washes
+   * out on white, darkens on near-black), plus a soft blur for depth. */
+  background: rgba(var(--surface), 0.62);
+  -webkit-backdrop-filter: blur(3px) saturate(1.05);
+  backdrop-filter: blur(3px) saturate(1.05);
+  animation: wlFade var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459) both;
+}
+
+/* ---- card: the floating popup window. Own bezel + elevation + internal padding.
+   Every step's content lives inside this one padded box, so nothing touches the
+   bezel and each CTA (width:100%) aligns flush with the internal padding. ---- */
+.card {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  /* Opaque takeover surface (a hair lighter than the shell via an on-surface film
-   * so it reads as a lifted sheet in both themes, no hard line). */
+  overflow: hidden;
+  padding: var(--space-3-c6dbf459);
+  border-radius: var(--radius-lg-c6dbf459);
+  /* Elevated, near-opaque surface: lifts off the scrim as a distinct window in
+   * both themes (a hair lighter than the shell via an on-surface film). Blur +
+   * shadow carry the separation instead of a hard border. */
   background:
-    linear-gradient(rgba(var(--on-surface), 0.03), rgba(var(--on-surface), 0.03)),
+    linear-gradient(rgba(var(--on-surface), 0.05), rgba(var(--on-surface), 0.05)),
     rgb(var(--surface));
-  animation: wlFade var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459) both;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  animation: wlRise var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459) both;
+}
+.overlay[data-size="mini"] .card {
+  /* Tighter internal padding in the condensed card: still clear of the bezel on
+   * every side, but reclaims the vertical room the dense states need. */
+  padding: var(--space-1-c6dbf459) var(--space-2-c6dbf459);
 }
 @keyframes wlFade {
   from {
@@ -31,8 +83,19 @@
     opacity: 1;
   }
 }
+@keyframes wlRise {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  .overlay {
+  .scrim,
+  .card {
     animation: none;
   }
 }
@@ -96,10 +159,10 @@
   padding-top: var(--space-2-c6dbf459);
 }
 .overlay[data-size="mini"] .head {
-  height: 28px;
+  height: 26px;
 }
 .overlay[data-size="mini"] .body {
-  padding-top: var(--space-1-c6dbf459);
+  padding-top: 0;
 }
 
 /* ═══ picker list ═══ */
@@ -214,17 +277,20 @@
   color: rgba(var(--on-surface), 0.5);
 }
 
-/* mini: drop subtitles, tighten rows so all five fit without scroll */
+/* mini: drop subtitles, tighten rows so all five fit the condensed card */
 .overlay[data-size="mini"] .rowSub {
   display: none;
+}
+.overlay[data-size="mini"] .list {
+  gap: 0;
 }
 .overlay[data-size="mini"] .row {
   gap: var(--space-2-c6dbf459);
   padding: var(--space-1-c6dbf459) var(--space-2-c6dbf459);
 }
 .overlay[data-size="mini"] .rowIcon {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
 }
 
 /* ═══ centered states (connecting / sign / pending / errors) ═══ */
@@ -258,7 +324,7 @@
   font-size: var(--font-size-md-c6dbf459);
 }
 .overlay[data-size="mini"] .center {
-  gap: var(--space-2-c6dbf459);
+  gap: var(--space-1-c6dbf459);
 }
 
 /* the centered CTA / stack bottom-anchors, so the message can center above it */
@@ -293,8 +359,8 @@
   border-radius: var(--radius-pill-c6dbf459);
 }
 .overlay[data-size="mini"] .bigIcon {
-  width: 42px;
-  height: 42px;
+  width: 32px;
+  height: 32px;
 }
 .bigIconDanger {
   background: rgba(var(--danger), 0.14);
@@ -370,6 +436,12 @@
   justify-content: center;
   gap: var(--space-2-c6dbf459);
   flex: none;
+  /* Breathing room so the wallet -> link -> WaaP row never crowds the bezel or
+   * the header above it. The card's own padding handles the left / right edge. */
+  padding: var(--space-1-c6dbf459) 0 var(--space-2-c6dbf459);
+}
+.overlay[data-size="mini"] .linkGraphic {
+  padding: 0 0 var(--space-1-c6dbf459);
 }
 .linkGlyph {
   flex: none;

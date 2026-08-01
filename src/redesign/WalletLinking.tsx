@@ -13,17 +13,24 @@ import { useReducedMotion } from "./hooks";
 import type { ShellSize } from "./PassportShell";
 
 /**
- * WalletLinking - the wallet-linking flow as an IN-SHELL overlay (SOP §4,
- * modeled on the StampDetailDrawer takeover pattern). It fills the shell content
- * region (position:absolute; inset:0), carries its own back / close affordance,
- * and drives a local state machine across the linking steps. Presentational:
- * the real wallet connect / sign happen via callback props (consistent with the
- * embed's callback architecture); stories mock them.
+ * WalletLinking - the wallet-linking flow as a standalone popup WINDOW, not an
+ * in-shell drawer. In production this flow arrives from the Shield SDK as its own
+ * popup window, so the embed presents it the same way: each step renders as a
+ * centered ModalCard (its own rounded bezel + header with back / close +
+ * elevation) floating over a scrim that dims the passport widget behind it (the
+ * HTDS ModalCard placement="center" pattern), NOT the StampDetailDrawer in-shell
+ * takeover. It is rendered in-frame (disablePortal-style) so it stays inside the
+ * widget area and fits the 360x600 iframe. It drives a local state machine across
+ * the linking steps. Presentational: the real wallet connect / sign happen via
+ * callback props (consistent with the embed's callback architecture); stories
+ * mock them.
  *
  * Reproduces the HTDS wallet-linking design (walletLinkingShared.tsx) in the
- * redesign token system - NOT vendored from @holonym-foundation/ui. Every screen
- * fits the fixed shell height and the 360x600 wallet iframe with no clip / scroll,
- * bottom CTA always visible, full + mini, both themes (design-sop §9).
+ * redesign token system - NOT vendored from @holonym-foundation/ui. One consistent
+ * internal padding means no element crowds the bezel and every CTA aligns flush
+ * with it. Every screen fits the fixed shell height and the 360x600 wallet iframe
+ * with no clip / scroll, bottom CTA always visible, full + mini, both themes
+ * (design-sop §9).
  */
 
 /** The step machine (single SIWE signature, silk#895). */
@@ -533,11 +540,10 @@ export const WalletLinking: React.FC<WalletLinkingProps> = ({
             </div>
             {scoreRow}
           </div>
-          <span className={styles.confirmRow}>
-            <span className={styles.confirmCheck} aria-hidden="true">
+          <span className={styles.confirmRow} aria-hidden="true">
+            <span className={styles.confirmCheck}>
               <CheckIcon size={14} strokeWidth={2.4} />
             </span>
-            Wallet linked
           </span>
           <button type="button" className={styles.cta} onClick={onDone}>
             Done
@@ -548,7 +554,7 @@ export const WalletLinking: React.FC<WalletLinkingProps> = ({
     bodyEl = (
       <div className={styles.center}>
         <span className={`${styles.bigIcon} ${styles.bigIconDanger}`} aria-hidden="true">
-          <AlertGlyph size={size === "mini" ? 24 : 30} />
+          <AlertGlyph size={size === "mini" ? 20 : 30} />
         </span>
         <span className={styles.centerTitle}>Wallet already linked</span>
         <span className={styles.centerDesc}>This wallet is already linked to another account.</span>
@@ -563,14 +569,17 @@ export const WalletLinking: React.FC<WalletLinkingProps> = ({
       </div>
     );
   } else if (step === "errorGeneric") {
+    const mini = size === "mini";
     bodyEl = (
       <div className={styles.center}>
         <span className={`${styles.bigIcon} ${styles.bigIconDanger}`} aria-hidden="true">
-          <AlertGlyph size={size === "mini" ? 24 : 30} />
+          <AlertGlyph size={mini ? 20 : 30} />
         </span>
         <span className={styles.centerTitle}>Linking failed</span>
         <span className={styles.centerDesc}>Something went wrong. No changes were made to your account.</span>
-        <div className={styles.actionStack}>
+        {/* Mini shares the two actions on one row so the shorter card keeps both
+            fully visible (matches the unlink-confirm mini pattern). */}
+        <div className={`${styles.actionStack} ${mini ? styles.actionRow : ""}`}>
           <button
             type="button"
             className={styles.cta}
@@ -640,19 +649,31 @@ export const WalletLinking: React.FC<WalletLinkingProps> = ({
       data-open={open ? "true" : "false"}
       data-size={size}
       role="dialog"
-      aria-modal="false"
+      aria-modal="true"
       aria-label={STEP_TITLE[step]}
     >
-      <header className={styles.head}>
-        <button type="button" className={styles.headBtn} onClick={onBack} aria-label="Back">
-          <ArrowLeftIcon size={16} />
-        </button>
-        <h2 className={styles.headTitle}>{STEP_TITLE[step]}</h2>
-        <button type="button" className={styles.headBtn} onClick={onClose} aria-label="Close">
-          <CloseGlyph size={16} />
-        </button>
-      </header>
-      <div className={styles.body}>{bodyEl}</div>
+      {/* Scrim: dims + blurs the passport window behind. Clicking it closes the
+          popup (same as the header close), so it reads as a true modal window. */}
+      <button
+        type="button"
+        className={styles.scrim}
+        onClick={onClose}
+        aria-label="Close"
+        tabIndex={-1}
+      />
+      {/* Card: the floating popup window with its own bezel, header, and padding. */}
+      <div className={styles.card}>
+        <header className={styles.head}>
+          <button type="button" className={styles.headBtn} onClick={onBack} aria-label="Back">
+            <ArrowLeftIcon size={16} />
+          </button>
+          <h2 className={styles.headTitle}>{STEP_TITLE[step]}</h2>
+          <button type="button" className={styles.headBtn} onClick={onClose} aria-label="Close">
+            <CloseGlyph size={16} />
+          </button>
+        </header>
+        <div className={styles.body}>{bodyEl}</div>
+      </div>
     </div>
   );
 };
