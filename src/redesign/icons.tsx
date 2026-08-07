@@ -18,7 +18,7 @@ type IconProps = {
 const Svg: React.FC<IconProps & { children: React.ReactNode; viewBox?: string }> = ({
   className,
   size = 16,
-  strokeWidth = 1.6,
+  strokeWidth = 2,
   title,
   viewBox = "0 0 24 24",
   children,
@@ -33,6 +33,10 @@ const Svg: React.FC<IconProps & { children: React.ReactNode; viewBox?: string }>
     strokeWidth={strokeWidth}
     strokeLinecap="round"
     strokeLinejoin="round"
+    // Lucide's contract: the stroke stays 2px on the 24 box however the glyph is
+    // scaled into a larger artboard (design-sop §7.5). Without this a 16px icon
+    // rendered at 20 or 24 thins out and reads as a different set.
+    vectorEffect="non-scaling-stroke"
     role={title ? "img" : "presentation"}
     aria-hidden={title ? undefined : true}
     aria-label={title}

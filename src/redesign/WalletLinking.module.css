@@ -366,6 +366,21 @@
   background: rgba(var(--danger), 0.14);
   color: rgb(var(--danger));
 }
+/* Unlink completed is a settled outcome, not a failure. It reads muted rather
+   than danger: the destructive moment was the confirm screen, and colouring the
+   acknowledgement red would say something went wrong. */
+.bigIconMuted {
+  background: rgba(var(--muted), 0.14);
+  color: rgba(var(--on-surface), 0.7);
+}
+
+/* The relink date, one step quieter than the description above it. */
+.centerNote {
+  font-size: var(--font-size-sm-c6dbf459);
+  line-height: var(--line-normal-c6dbf459);
+  color: rgba(var(--on-surface), 0.45);
+  max-width: 240px;
+}
 
 /* ═══ shared chip ═══ */
 .chip {

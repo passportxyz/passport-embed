@@ -195,27 +195,50 @@ export const ErrorGeneric: Story = {
   },
 };
 
+/**
+ * Cooldown dates are pinned so the rendered copy does not drift day to day.
+ * An unpinned `new Date()` would repaint every cooldown story every morning and
+ * show up as a visual diff that means nothing.
+ */
+const COOLDOWN_ENDS_AT = "2026-09-06T00:00:00.000Z";
+
 export const UnlinkConfirm: Story = {
-  ...state("unlinkConfirm"),
+  ...state("unlinkConfirm", { cooldownEndsAt: COOLDOWN_ENDS_AT }),
   name: "8. Unlink confirm",
   parameters: {
     docs: {
       description: {
         story:
-          "Replaces the embed's immediate unlink. The wallet chip plus three consequence bullets, then the danger 'Start 30 day unlink' and Cancel. The 30 day cooldown is spec-only (backend not built).",
+          "Replaces the embed's immediate unlink. The wallet chip plus three consequence bullets, then the danger 'Unlink wallet' and Cancel. The cooldown bullet names the date the wallet can be relinked rather than a bare duration, so the user is not left doing arithmetic. The cooldown itself is spec-only (backend not built, internal-docs#1935).",
+      },
+    },
+  },
+};
+
+export const UnlinkScheduled: Story = {
+  ...state("unlinkScheduled", { cooldownEndsAt: COOLDOWN_ENDS_AT }),
+  name: "9. Unlinked (cooldown started)",
+  parameters: {
+    docs: {
+      description: {
+        story:
+          "The acknowledgement that was missing. Confirming an unlink previously fired the callback and left the user on the confirm screen with nothing to show for it, which is the no-dead-ends rule (design-sop §5, PASSPORT-STATE-01) broken. It reads muted rather than danger: the destructive moment was the confirm screen, and a red acknowledgement would say something went wrong.",
       },
     },
   },
 };
 
 export const RelinkBlocked: Story = {
-  ...state("relinkBlocked", { cooldownDaysRemaining: 22 }),
-  name: "9. Relink blocked (cooldown)",
+  ...state("relinkBlocked", {
+    cooldownDaysRemaining: 22,
+    cooldownEndsAt: COOLDOWN_ENDS_AT,
+  }),
+  name: "10. Relink blocked (cooldown)",
   parameters: {
     docs: {
       description: {
         story:
-          "Relinking is blocked while the wallet's 30 day unlink cooldown is active, showing the days remaining. Spec-only: the backend cooldown is not built yet (mocked here).",
+          "Relinking is blocked while the wallet's unlink cooldown is active. Leads with the date it lifts and keeps the days remaining as the quieter supporting line. Spec-only: the backend cooldown is not built yet (internal-docs#1935).",
       },
     },
   },

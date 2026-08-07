@@ -43,6 +43,7 @@ export type WalletLinkStep =
   | "error409"
   | "errorGeneric"
   | "unlinkConfirm"
+  | "unlinkScheduled"
   | "relinkBlocked";
 
 /** Wallet types offered by the picker (order matches HTDS). */
@@ -86,8 +87,16 @@ export type WalletLinkingProps = {
   wallet?: LinkWalletInfo;
   /** The conflicting wallet for the 409 state. */
   conflictWallet?: LinkWalletInfo;
-  /** Days remaining in the mock 30 day cooldown (relink blocked). Default 22. */
+  /** Days remaining in the cooldown (relink blocked). Default 22. */
   cooldownDaysRemaining?: number;
+  /** Length of the unlink cooldown in days. Default 30. */
+  cooldownDays?: number;
+  /**
+   * ISO date the cooldown lifts. Copy names a DATE rather than making the user
+   * do arithmetic on a duration. Omit to compute it from `cooldownDays`; stories
+   * pin it so the rendered date does not drift day to day.
+   */
+  cooldownEndsAt?: string;
   /** Auto-detected browser wallet label, e.g. "MetaMask". Shown on the browser row. */
   detectedWalletLabel?: string;
 
@@ -133,6 +142,20 @@ function shortAddr(addr: string): string {
   return `${addr.slice(0, 5)}…${addr.slice(-3)}`;
 }
 
+const DAY_MS = 86_400_000;
+
+/**
+ * The day the cooldown lifts, as "Sep 6". Every cooldown string names a date
+ * rather than a duration: "30 days" makes the user hold today's date and do the
+ * arithmetic, and a wallet they cannot relink is exactly the moment not to.
+ * Matches the phrasing shape in `expiry.ts` and stays dash free.
+ */
+function cooldownEndLabel(days: number, endsAt?: string, now: Date = new Date()): string {
+  const end = endsAt ? new Date(endsAt) : new Date(now.getTime() + days * DAY_MS);
+  if (Number.isNaN(end.getTime())) return "";
+  return end.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
 /* ── Flow-local glyphs (currentColor, both themes). Reproduced here, not
    vendored: trivial marks for the picker + status bullets. ── */
 
@@ -147,9 +170,13 @@ const G: React.FC<{ size?: number; children: React.ReactNode; fill?: boolean }> 
     viewBox="0 0 24 24"
     fill={fill ? "currentColor" : "none"}
     stroke={fill ? "none" : "currentColor"}
-    strokeWidth={1.7}
+    // 2px on the 24 box, matching Lucide and `icons.tsx` (design-sop §7.5).
+    // These glyphs sit beside imported icons on the same screen, so a different
+    // weight here reads as two icon sets.
+    strokeWidth={2}
     strokeLinecap="round"
     strokeLinejoin="round"
+    vectorEffect={fill ? undefined : "non-scaling-stroke"}
     aria-hidden="true"
     focusable="false"
   >
@@ -340,6 +367,7 @@ const STEP_TITLE: Record<WalletLinkStep, string> = {
   error409: "Link a wallet",
   errorGeneric: "Link a wallet",
   unlinkConfirm: "Unlink this wallet?",
+  unlinkScheduled: "Wallet unlinked",
   relinkBlocked: "Link a wallet",
 };
 
@@ -351,6 +379,8 @@ export const WalletLinking: React.FC<WalletLinkingProps> = ({
   wallet,
   conflictWallet,
   cooldownDaysRemaining = 22,
+  cooldownDays = 30,
+  cooldownEndsAt,
   detectedWalletLabel,
   scoreContribution,
   gains,
@@ -417,6 +447,19 @@ export const WalletLinking: React.FC<WalletLinkingProps> = ({
 
   const loaderPx = size === "mini" ? 44 : 64;
   const gainList = gains ?? DEFAULT_GAINS;
+
+  // The date the cooldown lifts, for the confirm screen (full cooldown ahead)
+  // and the relink-blocked screen (part of it already served).
+  const cooldownEnd = cooldownEndLabel(cooldownDays, cooldownEndsAt);
+  const relinkDate = cooldownEndLabel(cooldownDaysRemaining, cooldownEndsAt);
+
+  // Confirming an unlink must land somewhere. Previously this fired the callback
+  // and left the user on the confirm screen with no acknowledgement, which is the
+  // no-dead-ends rule (design-sop §5, PASSPORT-STATE-01) broken.
+  const confirmUnlink = useCallback(() => {
+    onConfirmUnlink?.();
+    if (!controlled) go("unlinkScheduled");
+  }, [onConfirmUnlink, controlled, go]);
 
   // The header back affordance returns to the picker mid-flow, else exits.
   const midFlow =
@@ -603,20 +646,43 @@ export const WalletLinking: React.FC<WalletLinkingProps> = ({
             Stamps and points stop counting.
           </Bullet>
           <Bullet icon={<ClockIcon size={16} />} tint="warn">
-            A 30 day cooldown before relinking.
+            You can relink it from {cooldownEnd}, {cooldownDays} days from now.
           </Bullet>
           <Bullet icon={<BanGlyph size={16} />} tint="muted">
             Applies across all your accounts.
           </Bullet>
         </div>
         <div className={`${styles.actionStack} ${mini ? styles.actionRow : ""}`}>
-          <button type="button" className={`${styles.cta} ${styles.ctaDanger}`} onClick={onConfirmUnlink}>
-            {mini ? "Unlink" : "Start 30 day unlink"}
+          <button type="button" className={`${styles.cta} ${styles.ctaDanger}`} onClick={confirmUnlink}>
+            {mini ? "Unlink" : "Unlink wallet"}
           </button>
           <button type="button" className={`${styles.cta} ${styles.ctaSecondary}`} onClick={onClose}>
             Cancel
           </button>
         </div>
+      </div>
+    );
+  } else if (step === "unlinkScheduled") {
+    bodyEl = (
+      <div className={styles.center}>
+        <span className={`${styles.bigIcon} ${styles.bigIconMuted}`} aria-hidden="true">
+          <ClockIcon size={size === "mini" ? 20 : 30} />
+        </span>
+        {/* The header already says the wallet is unlinked, so the title carries
+            the next fact instead of repeating it. Each line adds something. */}
+        <span className={styles.centerTitle}>Cooldown started</span>
+        <span className={styles.centerDesc}>
+          Its stamps and points no longer count toward your score.
+        </span>
+        {wallet ? (
+          <div className={styles.centerChip}>
+            <WalletChip wallet={wallet} />
+          </div>
+        ) : null}
+        <span className={styles.centerNote}>You can link this wallet again from {cooldownEnd}.</span>
+        <button type="button" className={styles.cta} onClick={onDone ?? onClose}>
+          Done
+        </button>
       </div>
     );
   } else if (step === "relinkBlocked") {
@@ -628,10 +694,10 @@ export const WalletLinking: React.FC<WalletLinkingProps> = ({
             This wallet was unlinked recently.
           </Bullet>
           <Bullet icon={<CalendarGlyph size={16} />} tint="warn">
-            {cooldownDaysRemaining} days left in the cooldown.
+            You can link it again from {relinkDate}.
           </Bullet>
           <Bullet icon={<InfoIcon size={16} />} tint="muted">
-            You can link it again after that.
+            {cooldownDaysRemaining} days left in the cooldown.
           </Bullet>
         </div>
         <div className={styles.actionStack}>
