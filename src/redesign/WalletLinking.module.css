@@ -1,0 +1,687 @@
+/*
+ * WalletLinking - a standalone popup WINDOW, not an in-shell drawer. In production
+ * this flow arrives from the Shield SDK as its own popup window; the embed presents
+ * it the same way. Each step renders as a centered ModalCard (own rounded bezel +
+ * header + elevation) floating over a scrim that dims the passport widget behind
+ * it (HTDS ModalCard placement="center"), NOT the StampDetailDrawer in-shell
+ * takeover. Rendered in-frame (disablePortal-style) so it stays inside the widget
+ * area and fits the 360x600 iframe. Tokens only (§1), legible in both themes
+ * (§2/§8), one consistent internal padding so nothing crowds the bezel and every
+ * CTA aligns with it, bottom CTA always visible, full + mini (§9). Reproduces the
+ * HTDS wallet-linking look in the redesign token system (NOT vendored). Density
+ * tightens under data-size="mini" so every state still fits.
+ */
+
+/* ---- overlay: the positioning + scrim container that floats the card ---- */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: flex;
+  box-sizing: border-box;
+  /* A scrim rim so the card floats with a visible margin (reads as a distinct
+   * window over the widget, not a full-bleed takeover). */
+  padding: var(--space-2-c6dbf459);
+}
+.overlay[data-size="mini"] {
+  padding: var(--space-1-c6dbf459);
+}
+
+/* ---- scrim: the ONE translucent layer. Dims + blurs the passport behind. ---- */
+.scrim {
+  appearance: none;
+  border: 0;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  padding: 0;
+  cursor: pointer;
+  /* Veil toward the surface so the window behind recedes in BOTH themes (washes
+   * out on white, darkens on near-black), plus a soft blur for depth. */
+  background: rgba(var(--surface), 0.62);
+  -webkit-backdrop-filter: blur(3px) saturate(1.05);
+  backdrop-filter: blur(3px) saturate(1.05);
+  animation: wlFade var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459) both;
+}
+
+/* ---- card: the floating popup window. Own bezel + elevation + internal padding.
+   Every step's content lives inside this one padded box, so nothing touches the
+   bezel and each CTA (width:100%) aligns flush with the internal padding. ---- */
+.card {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
+  padding: var(--space-3-c6dbf459);
+  border-radius: var(--radius-lg-c6dbf459);
+  /* Elevated, near-opaque surface: lifts off the scrim as a distinct window in
+   * both themes (a hair lighter than the shell via an on-surface film). Blur +
+   * shadow carry the separation instead of a hard border. */
+  background:
+    linear-gradient(rgba(var(--on-surface), 0.05), rgba(var(--on-surface), 0.05)),
+    rgb(var(--surface));
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  animation: wlRise var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459) both;
+}
+.overlay[data-size="mini"] .card {
+  /* Tighter internal padding in the condensed card: still clear of the bezel on
+   * every side, but reclaims the vertical room the dense states need. */
+  padding: var(--space-1-c6dbf459) var(--space-2-c6dbf459);
+}
+@keyframes wlFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes wlRise {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .card {
+    animation: none;
+  }
+}
+
+/* ---- header: back | centered title | close ---- */
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-c6dbf459);
+  flex: none;
+  height: 34px;
+}
+.headTitle {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  text-align: center;
+  font-size: var(--font-size-md-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  color: rgb(var(--on-surface));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.headBtn {
+  appearance: none;
+  border: 0;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border-radius: var(--radius-sm-c6dbf459);
+  color: rgba(var(--on-surface), 0.66);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    color var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    transform var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.headBtn:hover {
+  background: rgba(var(--on-surface), 0.08);
+  color: rgb(var(--on-surface));
+}
+.headBtn:active {
+  transform: scale(0.94);
+}
+.headBtn:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: -2px;
+}
+
+/* ---- body: fills the rest, never scrolls ---- */
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-top: var(--space-2-c6dbf459);
+}
+.overlay[data-size="mini"] .head {
+  height: 26px;
+}
+.overlay[data-size="mini"] .body {
+  padding-top: 0;
+}
+
+/* ═══ picker list ═══ */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1-c6dbf459);
+}
+.row {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3-c6dbf459);
+  padding: var(--space-2-c6dbf459);
+  border-radius: var(--radius-md-c6dbf459);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    background var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459),
+    transform var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.row:hover {
+  background: rgba(var(--on-surface), 0.06);
+}
+.row:active {
+  transform: scale(0.99);
+}
+.row:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: -2px;
+}
+.rowDisabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.rowDisabled:hover {
+  background: transparent;
+}
+.rowIcon {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: var(--radius-md-c6dbf459);
+  display: grid;
+  place-items: center;
+}
+.rowMeta {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.rowTitle {
+  font-size: var(--font-size-sm-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  color: rgb(var(--on-surface));
+  line-height: 1.25;
+}
+.rowSub {
+  font-size: var(--font-size-xs-c6dbf459);
+  color: rgba(var(--on-surface), 0.55);
+  line-height: 1.25;
+  /* Single line, ellipsis: a wrapping subtitle would blow the fixed height. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rowTrailing {
+  flex: none;
+}
+.rowChevron {
+  flex: none;
+  color: rgba(var(--on-surface), 0.4);
+  display: inline-flex;
+}
+.soon {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill-c6dbf459);
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  background: rgba(var(--on-surface), 0.1);
+  color: rgba(var(--on-surface), 0.6);
+}
+
+/* icon tints */
+.tint-accent {
+  background: rgba(var(--accent), 0.14);
+  color: rgb(var(--accent));
+}
+.tint-orange {
+  background: rgba(var(--expiring), 0.16);
+  color: rgb(var(--expiring));
+}
+.tint-sky {
+  background: rgba(var(--pending), 0.14);
+  color: rgb(var(--pending));
+}
+.tint-purple {
+  background: rgba(139, 92, 246, 0.16);
+  color: rgb(167, 139, 250);
+}
+.tint-muted {
+  background: rgba(var(--on-surface), 0.08);
+  color: rgba(var(--on-surface), 0.5);
+}
+
+/* mini: drop subtitles, tighten rows so all five fit the condensed card */
+.overlay[data-size="mini"] .rowSub {
+  display: none;
+}
+.overlay[data-size="mini"] .list {
+  gap: 0;
+}
+.overlay[data-size="mini"] .row {
+  gap: var(--space-2-c6dbf459);
+  padding: var(--space-1-c6dbf459) var(--space-2-c6dbf459);
+}
+.overlay[data-size="mini"] .rowIcon {
+  width: 24px;
+  height: 24px;
+}
+
+/* ═══ centered states (connecting / sign / pending / errors) ═══ */
+.center {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-3-c6dbf459);
+  padding-bottom: var(--space-1-c6dbf459);
+}
+.centerTitle {
+  font-size: var(--font-size-lg-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  color: rgb(var(--on-surface));
+}
+.centerDesc {
+  font-size: var(--font-size-sm-c6dbf459);
+  line-height: var(--line-normal-c6dbf459);
+  color: rgba(var(--on-surface), 0.6);
+  max-width: 240px;
+}
+.centerChip {
+  display: flex;
+  justify-content: center;
+}
+.overlay[data-size="mini"] .centerTitle {
+  font-size: var(--font-size-md-c6dbf459);
+}
+.overlay[data-size="mini"] .center {
+  gap: var(--space-1-c6dbf459);
+}
+
+/* the centered CTA / stack bottom-anchors, so the message can center above it */
+.center > .cta,
+.center > .actionStack {
+  margin-top: auto;
+}
+
+.loaderWrap {
+  display: inline-flex;
+}
+.spin {
+  animation: wlSpin 1s linear infinite;
+  transform-origin: center;
+}
+@keyframes wlSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+}
+
+.bigIcon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-pill-c6dbf459);
+}
+.overlay[data-size="mini"] .bigIcon {
+  width: 32px;
+  height: 32px;
+}
+.bigIconDanger {
+  background: rgba(var(--danger), 0.14);
+  color: rgb(var(--danger));
+}
+/* Unlink completed is a settled outcome, not a failure. It reads muted rather
+   than danger: the destructive moment was the confirm screen, and colouring the
+   acknowledgement red would say something went wrong. */
+.bigIconMuted {
+  background: rgba(var(--muted), 0.14);
+  color: rgba(var(--on-surface), 0.7);
+}
+
+/* The relink date, one step quieter than the description above it. */
+.centerNote {
+  font-size: var(--font-size-sm-c6dbf459);
+  line-height: var(--line-normal-c6dbf459);
+  color: rgba(var(--on-surface), 0.45);
+  max-width: 240px;
+}
+
+/* ═══ shared chip ═══ */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2-c6dbf459);
+  min-width: 0;
+  max-width: 100%;
+  padding: 5px 10px 5px 5px;
+  border-radius: var(--radius-pill-c6dbf459);
+  background: rgba(var(--on-surface), 0.06);
+}
+.chipBlock {
+  display: flex;
+  width: 100%;
+}
+.chipWaap {
+  background: rgba(var(--accent), 0.12);
+}
+.chipIcon {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  background: rgba(var(--on-surface), 0.08);
+  color: rgb(var(--on-surface));
+}
+.chipWaap .chipIcon {
+  background: linear-gradient(135deg, rgb(var(--accent)), rgba(var(--accent), 0.55));
+  color: rgb(var(--on-accent));
+}
+.chipChain {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+  background: rgb(var(--surface));
+  color: rgba(var(--on-surface), 0.7);
+  box-shadow: 0 0 0 1.5px rgb(var(--surface));
+}
+.chipLabel {
+  font-size: var(--font-size-sm-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  color: rgb(var(--on-surface));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ═══ success ═══ */
+.success {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3-c6dbf459);
+}
+.linkGraphic {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2-c6dbf459);
+  flex: none;
+  /* Breathing room so the wallet -> link -> WaaP row never crowds the bezel or
+   * the header above it. The card's own padding handles the left / right edge. */
+  padding: var(--space-1-c6dbf459) 0 var(--space-2-c6dbf459);
+}
+.overlay[data-size="mini"] .linkGraphic {
+  padding: 0 0 var(--space-1-c6dbf459);
+}
+.linkGlyph {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-pill-c6dbf459);
+  background: rgba(var(--accent), 0.14);
+  color: rgb(var(--accent));
+}
+.gainsCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2-c6dbf459);
+  padding: var(--space-3-c6dbf459);
+  border-radius: var(--radius-lg-c6dbf459);
+  background: rgba(var(--on-surface), 0.05);
+}
+.gainsLabel {
+  font-size: var(--font-size-xs-c6dbf459);
+  font-weight: var(--weight-medium-c6dbf459);
+  color: rgba(var(--on-surface), 0.55);
+}
+.gainsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2-c6dbf459);
+}
+.gainRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2-c6dbf459);
+}
+.gainIcon {
+  flex: none;
+  display: inline-flex;
+  color: rgb(var(--accent));
+}
+.gainText {
+  font-size: var(--font-size-sm-c6dbf459);
+  color: rgb(var(--on-surface));
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scoreRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2-c6dbf459);
+  padding-top: var(--space-1-c6dbf459);
+  margin-top: var(--space-1-c6dbf459);
+  border-top: 1px solid rgba(var(--on-surface), 0.08);
+}
+.scoreValue {
+  font-size: var(--font-size-lg-c6dbf459);
+  font-weight: var(--weight-bold-c6dbf459);
+  color: rgb(var(--accent));
+}
+.scoreLabel {
+  font-size: var(--font-size-xs-c6dbf459);
+  color: rgba(var(--on-surface), 0.6);
+}
+.confirmRow {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2-c6dbf459);
+  font-size: var(--font-size-sm-c6dbf459);
+  font-weight: var(--weight-semibold-c6dbf459);
+  color: rgb(var(--on-surface));
+}
+.confirmCheck {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-pill-c6dbf459);
+  background: rgba(var(--accent), 0.16);
+  color: rgb(var(--accent));
+}
+
+/* success: mini condenses to graphic + one-line summary + score + Done. */
+.overlay[data-size="mini"] .success {
+  gap: var(--space-2-c6dbf459);
+}
+.miniSummary {
+  font-size: var(--font-size-sm-c6dbf459);
+  line-height: var(--line-normal-c6dbf459);
+  color: rgba(var(--on-surface), 0.75);
+  text-align: center;
+}
+.successCta {
+  margin-top: auto;
+}
+
+/* ═══ confirm (unlink / relink) ═══ */
+.confirm {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3-c6dbf459);
+}
+.bullets {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2-c6dbf459);
+}
+.bullet {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2-c6dbf459);
+}
+.bulletIcon {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-pill-c6dbf459);
+  display: grid;
+  place-items: center;
+}
+.bullet-danger {
+  background: rgba(var(--danger), 0.14);
+  color: rgb(var(--danger));
+}
+.bullet-warn {
+  background: rgba(var(--expiring), 0.16);
+  color: rgb(var(--expiring));
+}
+.bullet-muted {
+  background: rgba(var(--on-surface), 0.08);
+  color: rgba(var(--on-surface), 0.55);
+}
+.bulletText {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--font-size-sm-c6dbf459);
+  line-height: var(--line-normal-c6dbf459);
+  color: rgba(var(--on-surface), 0.85);
+  align-self: center;
+}
+.overlay[data-size="mini"] .confirm {
+  gap: var(--space-2-c6dbf459);
+}
+.overlay[data-size="mini"] .bullets {
+  gap: var(--space-1-c6dbf459);
+}
+.overlay[data-size="mini"] .bulletIcon {
+  width: 24px;
+  height: 24px;
+}
+.overlay[data-size="mini"] .bulletText {
+  font-size: var(--font-size-xs-c6dbf459);
+}
+.confirm > .actionStack {
+  margin-top: auto;
+}
+
+/* ═══ actions ═══ */
+.actionStack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2-c6dbf459);
+  width: 100%;
+}
+/* Mini confirm: the two buttons share one row so the fixed half-height shell
+ * keeps both fully visible (the primary uses a short label at this size). */
+.actionRow {
+  flex-direction: row;
+}
+.actionRow .cta {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+}
+.cta {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  height: 46px;
+  flex: none;
+  padding: 0 var(--space-4-c6dbf459);
+  border-radius: var(--radius-lg-c6dbf459);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgb(var(--accent));
+  color: rgb(var(--on-accent));
+  font-family: inherit;
+  font-weight: var(--weight-semibold-c6dbf459);
+  font-size: var(--font-size-md-c6dbf459);
+  box-shadow: var(--shadow-sm-c6dbf459);
+  transition:
+    filter var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459),
+    background var(--motion-base-c6dbf459) var(--ease-standard-c6dbf459),
+    transform var(--motion-fast-c6dbf459) var(--ease-standard-c6dbf459);
+}
+.cta:hover {
+  filter: brightness(1.08);
+}
+.cta:active {
+  transform: translateY(1px);
+}
+.cta:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+.ctaSecondary {
+  background: rgba(var(--on-surface), 0.07);
+  color: rgb(var(--on-surface));
+  box-shadow: none;
+}
+.ctaSecondary:hover {
+  filter: none;
+  background: rgba(var(--on-surface), 0.12);
+}
+.ctaDanger {
+  background: rgb(var(--danger));
+  color: rgb(var(--on-danger));
+}
+.overlay[data-size="mini"] .cta {
+  height: 40px;
+  font-size: var(--font-size-sm-c6dbf459);
+}
